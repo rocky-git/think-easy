@@ -5,8 +5,7 @@
             <div>{$title}</div>
             <el-divider></el-divider>
             <!--{/notempty}-->
-
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="showAdd('添加')">添加</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
             <!--{if !isset($hideDeletesButton)}-->
             <el-button size="small" icon="el-icon-delete" v-if="selectButtonShow" @click="DeleteSelect()">删除选中</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">清空数据</el-button>
@@ -32,6 +31,7 @@
     export default {
         data(){
             return {
+                showEditId:0,
                 dialogVisible:false,
                 isDialog :false,
                 selectButtonShow:false,
@@ -72,6 +72,20 @@
                 })
             })
         },
+        watch:{
+            dialogVisible(val){
+                if(!val){
+                    this.showEditId=0
+                    this.requestPageData()
+                }
+            },
+            showEditId(val){
+                if(val != 0){
+
+                    this.showDialog('编辑',2)
+                }
+            },
+        },
         methods: {
             splitCode  (codeStr)  {
                 const script = this.getSource(codeStr, 'script').replace(/export default/, 'return ')
@@ -100,11 +114,16 @@
 
                 return source.slice(source.indexOf(openingTag) + openingTag.length, source.lastIndexOf(`</${type}>`))
             },
-            //
-            showAdd(title){
-                let url = this.$route.path+'/create'
+            //对话框表单
+            showDialog(title,type){
+                console.log(type)
+                let url
+                if(type == 1){
+                    url = this.$route.path+'/create'
+                }else if(type == 2){
+                    url = this.$route.path+'/'+this.showEditId+'/edit'
+                }
                 if(this.isDialog){
-
                     this.$request({
                         url: url,
                         method: 'get',
@@ -112,9 +131,7 @@
                             build_dialog:true
                         }
                     }).then(response=>{
-
                         this.{$dialogTitleVar|default='isDialog'} = title
-
                         let cmponent = response.data
                         this.plugDialog = () => new Promise(resolve => {
                             resolve(this.splitCode(cmponent))
@@ -127,7 +144,6 @@
 
                     this.$router.push(url)
                 }
-
             },
             //删除选中
             DeleteSelect(){
@@ -141,6 +157,19 @@
             deleteAll(){
                 this.deleteRequest('此操作将删除清空所有数据, 是否继续?','true')
             },
+            //递归寻找删除ID索引并删除
+            deleteTreeData(arr,id){
+                for(var i = arr.length ; i > 0 ; i--){
+                    if(arr[i-1].id == id){
+                        arr.splice(i-1,1);
+                    }else{
+                        if(arr[i-1].children){
+                            this.deleteTreeData(arr[i-1].children,id)
+                        }
+                    }
+                }
+            },
+            //删除请求
             deleteRequest(title,deleteIds){
                 this.$confirm(title, '提示', {
                     confirmButtonText: '确定',
@@ -158,14 +187,9 @@
                         if(deleteIds == 'true'){
                             this.{$tableDataScriptVar} = [];
                         }else{
-                            let idsArr = deleteIds;
-                            let data = [];
-                            this.{$tableDataScriptVar}.forEach((item)=>{
-                                if(idsArr.indexOf(item.id) == -1){
-                                    data.push(item)
-                                }
+                            deleteIds.forEach((delId)=>{
+                                this.deleteTreeData(this.{$tableDataScriptVar},delId)
                             })
-                            this.{$tableDataScriptVar} = data
                         }
                         this.$notify({
                             title: '操作完成',

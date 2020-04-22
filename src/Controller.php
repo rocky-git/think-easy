@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace thinkEasy;
 
-use app\common\tools\ApiJson;
+
 use think\App;
 use think\exception\ValidateException;
 use think\Validate;

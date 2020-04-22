@@ -11,6 +11,7 @@ namespace thinkEasy\grid;
 
 use thinkEasy\form\Dialog;
 use think\helper\Str;
+use thinkEasy\View;
 
 class Table extends View
 {
@@ -66,7 +67,7 @@ class Table extends View
      */
     public function setFormDialog($title,$width="40%")
     {
-        $dialog = new Dialog($title,"<component :is='plugDialog'></component>");
+        $dialog = new Dialog($title,"<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
         $dialog->setAttr('width', $width);
         $this->setVar('dialog', $dialog->render());
         $this->setVar('dialogVar', $dialog->getVisibleVar());

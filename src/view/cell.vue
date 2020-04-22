@@ -11,8 +11,12 @@
                 required: true
             },
             tableData: Array,
+            showEditId:Number,
         },
         methods:{
+            handleEdit(row,index){
+                this.$emit('update:showEditId', row.id)
+            },
             handleDelete(row, index) {
                 this.$confirm('此操作将删除该数据, 是否继续?', '提示', {
                     confirmButtonText: '确定',
@@ -24,7 +28,7 @@
                         url: url+'/'+row.id,
                         method: 'delete',
                     }).then(res=>{
-                        this.tableData.splice(index, 1)
+                        this.deleteTreeData(this.tableData,row.id)
                         this.$emit('update:tableData', this.tableData)
                         this.$notify({
                             title: '操作完成',
@@ -35,8 +39,18 @@
 
                     })
                 })
-
             },
+            deleteTreeData(arr,id){
+                for(var i = arr.length ; i > 0 ; i--){
+                    if(arr[i-1].id == id){
+                        arr.splice(i-1,1);
+                    }else{
+                        if(arr[i-1].children){
+                            this.deleteTreeData(arr[i-1].children,id)
+                        }
+                    }
+                }
+            }
         },
     }
 </script>

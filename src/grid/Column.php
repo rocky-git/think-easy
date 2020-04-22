@@ -9,6 +9,8 @@
 namespace thinkEasy\grid;
 
 
+use thinkEasy\View;
+
 class Column extends View
 {
     protected $attrs = [
@@ -136,7 +138,7 @@ class Column extends View
     }
     public function getDisplay($key,$tableDataScriptVar){
         if(!empty($this->cellVue)){
-            $this->display = '<component :is="cellComponent['.$key.']" :data="scope.row" :index="scope.$index" :tableData="'.$tableDataScriptVar.'"></component>';
+            $this->display = '<component :is="cellComponent['.$key.']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :tableData="'.$tableDataScriptVar.'"></component>';
             $cell = new Cell();
             $cell->setVar('cell',$this->cellVue);
             $this->cellVue =$cell->render();

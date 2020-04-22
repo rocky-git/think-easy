@@ -12,6 +12,7 @@ namespace thinkEasy\form;
 
 use think\facade\Request;
 use think\Model;
+use thinkEasy\View;
 
 /**
  * Class Form
@@ -46,6 +47,7 @@ class Form extends View
     //当前模型
     protected $model;
 
+    protected $data=['empty'=>0];
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -58,6 +60,7 @@ class Form extends View
     {
         return $this->formItem($name, $arguments[0], $arguments[1]);
     }
+
 
     /**
      * 表单选项卡标签页
@@ -82,6 +85,37 @@ class Form extends View
     }
 
     /**
+     * 更新数据
+     * @param $id  主键id
+     * @param $data 更新数据
+     * @return bool
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function update($id,$data){
+        $model = $this->model->find($id);
+        return $model->save($data);
+    }
+    /**
+     * 数据保存
+     */
+    public function save($data){
+        return $this->model->save($data);
+    }
+    /**
+     * 数据编辑
+     * @param $id 主键id
+     * @return $this
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function edit($id){
+        $this->data  = $this->model->find($id);
+        return $this;
+    }
+    /**
      * 添加表单元素
      * @param $class 组件类
      * @param $field 字段
@@ -90,7 +124,7 @@ class Form extends View
      */
     protected function formItem($name, $field, $label)
     {
-        $class = "app\\admin\\buildView\\form\\";
+        $class = "thinkEasy\\form\\";
         if ($name == 'text' || $name == 'textarea' || $name == 'number' || $name == 'password') {
             $class .= 'Input';
 
@@ -177,6 +211,7 @@ class Form extends View
         if (!empty($scriptStr)) {
             $formScriptVar = $formScriptVar .$scriptStr;
         }
+        $this->setVar('formData',json_encode($this->data,JSON_UNESCAPED_UNICODE));
         $this->setVar('attrStr', $attrStr);
         $this->setVar('formItem', $formItem);
         $this->setVar('formScriptVar', $formScriptVar);

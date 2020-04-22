@@ -12,6 +12,7 @@ namespace thinkEasy\grid;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
+use thinkEasy\View;
 
 class Grid extends View
 {
@@ -238,9 +239,12 @@ class Grid extends View
         $build_request_type = Request::get('build_request_type');
         switch ($build_request_type) {
             case 'page':
+                if (!$this->treeTable) {
+                    $this->data = $this->model->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+                }
                 $this->table->view();
-                $result['data'] = $this->data = $this->model->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
-                $result['total'] = $this->data = $this->model->count();
+                $result['data'] =$this->data;
+                $result['total'] = $this->model->count();
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
                 break;

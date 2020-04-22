@@ -9,6 +9,8 @@
 namespace thinkEasy\grid;
 
 
+use thinkEasy\View;
+
 class Cell extends View
 {
     public function __construct()

@@ -34,7 +34,13 @@ class BaseAdmin extends Controller
      */
     public function save(Request $request)
     {
-        //
+        $res = $this->form()->save($request->post());
+        if($res){
+            $this->successCode([],200,'数据保存成功');
+        }else{
+            $this->errorCode(999,'数据保存失败');
+        }
+
     }
 
     /**
@@ -55,7 +61,7 @@ class BaseAdmin extends Controller
      */
     public function edit($id)
     {
-        //
+        $this->successCode($this->form()->edit($id)->view());
     }
     /**
      * 保存更新的资源
@@ -66,7 +72,7 @@ class BaseAdmin extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->successCode($this->form()->update($id,$request->put()),200,'数据更新成功');
     }
 
     /**
