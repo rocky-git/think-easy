@@ -1,0 +1,26 @@
+{
+  "name": "rockys/think-easy",
+  "description": "ThinkPhP E-admin",
+  "license": "MIT",
+  "keywords": [
+    "E-admin",
+    "think-easy",
+    "thinkphp",
+    "CURD"
+  ],
+  "authors": [
+    {
+      "name": "rocky",
+      "email": "631670747@qq.com"
+    }
+  ],
+  "require": {
+	"php": ">=7.1.0",
+  },
+  "autoload": {
+    
+    "psr-4": {
+      "thinkEasy\\": "src"
+    }
+  }
+}
