@@ -4,10 +4,10 @@
             <div >{$title}</div>
             <el-divider></el-divider>
             <!--{/notempty}-->
-            <el-form ref="form" :model="form" {$attrStr|raw}>
+            <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
                 <el-form-item >
-                    <el-button type="primary" @click="onSubmit('form')">提交保存</el-button>
+                    <el-button type="primary" native-type="submit" @click="onSubmit('form')">提交保存</el-button>
                     <el-button @click="resetForm('form')">重置</el-button>
                 </el-form-item>
             </el-form>
