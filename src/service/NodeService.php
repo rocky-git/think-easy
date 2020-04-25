@@ -20,9 +20,7 @@ class NodeService extends Service
     public function all(){
         $files = $this->getControllerFiles();
         return $this->parse($files);
-
     }
-
     /**
      * 解析注释
      * @param $doc 注释
@@ -40,13 +38,24 @@ class NodeService extends Service
             return false;
         }
         $commentsLine = end($lines);
-        if(count($commentsLine) > 1){
-            list($title,$auth) = $commentsLine;
-            $auth = trim($auth) == '@auth' ? true : false;
+
+        if(count($commentsLine) > 0){
+            $auth = false;
+            $title = array_shift($commentsLine);
+            $method = 'any';
+            foreach ($commentsLine as $line){
+                $line = trim($line);
+                if(preg_match('/@auth\s*true/i',$line) && $auth == false){
+                    $auth  = true;
+                }elseif (preg_match('/@method\s(.*)/i',$line,$methods) && $method == 'any'){
+                    $method = $methods[1];
+                }
+
+            }
         }else{
            return false;
         }
-        return [trim($title),$auth];
+        return [trim($title),$auth,$method];
 
     }
     /**
@@ -65,43 +74,90 @@ class NodeService extends Service
             $appName = basename(dirname($path));
             $namespace = "$appName\\$moduleName\\controller\\$controller";
             $class = new \ReflectionClass($namespace);
-
             foreach ($class->getMethods() as $method){
                 $doc = $method->getDocComment();
+                $res = $this->parseDocComment($doc);
                 if($method->isProtected()){
                     if($method->name == 'grid'){
-                        $res = $this->parseDocComment($doc);
+                        $node = $moduleName.'/'.$controller;
+                        $node = strtolower($node);
                         if($res === false){
-                            $data[$moduleName.'/'.$controller] = [
+                            $auth = false;
+                            $data[] = [
                                 'title'=>$node,
-                                'is_auth'=>false,
+                                'rule'=>$node,
+                                'is_auth'=>$auth,
+                                'method'=>'get',
                             ];
                         }else{
-
                             list($title,$auth) = $res;
-                            $data[$moduleName.'/'.$controller] = [
+                            $data[] = [
                                 'title'=>$title,
+                                'rule'=>$node,
                                 'is_auth'=>$auth,
+                                'method'=>'get',
                             ];
                         }
                         continue;
                     }elseif ($method->name  == 'form'){
-                        //TODO
+                        if($res === false){
+                            $title = '';
+
+                        }else{
+                            list($title,$auth) = $res;
+                        }
+                        $data[] = [
+                            'title'=>$title.'添加',
+                            'rule'=>$node,
+                            'is_auth'=>$auth,
+                            'method'=>'post',
+                        ];
+                        $data[] = [
+                            'title'=>$title.'修改',
+                            'rule'=>$node.'/:id',
+                            'is_auth'=>$auth,
+                            'method'=>'put',
+                        ];
+                        $data[] = [
+                            'title'=>'删除权限',
+                            'rule'=>$node.'/:id',
+                            'is_auth'=>$auth,
+                            'method'=>'delete',
+                        ];
+                        continue;
+                    }elseif ($method->name == 'detail'){
+                        if($res === false){
+                            $title = '详情';
+                            $auth = false;
+                        }else{
+                            list($title,$auth) = $res;
+                        }
+                        $data[] = [
+                            'title'=>$title,
+                            'rule'=>$node.'/:id',
+                            'is_auth'=>$auth,
+                            'method'=>'get',
+                        ];
+                        continue;
                     }
                 }
                 if($method->class == $namespace){
-                    $node  = $controller.'/'.$method->getName();
-                    $res = $this->parseDocComment($doc);
+                    $node  = $moduleName.'/'.$controller.'/'.$method->getName();
+                    $node = strtolower($node);
                     if($res === false){
-                        $data[$node] = [
+                        $data[] = [
                             'title'=>$node,
+                            'rule'=>$node,
                             'is_auth'=>false,
+                            'method'=>'any',
                         ];
                     }else{
-                        list($title,$auth) = $res;
-                        $data[$node] = [
+                        list($title,$auth,$method) = $res;
+                        $data[] = [
                             'title'=>$title,
+                            'rule'=>$node,
                             'is_auth'=>$auth,
+                            'method'=>$method,
                         ];
                     }
                 }

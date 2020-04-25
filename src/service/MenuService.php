@@ -18,8 +18,10 @@ use thinkEasy\Service;
  */
 class MenuService extends Service
 {
-    public function lists(){
-        $data = Db::name('system_menu')->where('status',1)->order('sort asc,id asc')->select();
+    public function all(){
+        return $data = Db::name('system_menu')->where('status',1)->order('sort asc,id asc')->select()->toArray();
+    }
+    public function treeMenus($data){
         return $this->getTree($data);
     }
 

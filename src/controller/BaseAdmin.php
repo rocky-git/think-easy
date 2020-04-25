@@ -52,6 +52,7 @@ class BaseAdmin extends Controller
     public function read($id)
     {
         //
+       
     }
     /**
      * 显示编辑资源表单页.

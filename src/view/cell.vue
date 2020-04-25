@@ -25,7 +25,7 @@
                 }).then(() => {
                     let url  = this.$route.path
                     this.$request({
-                        url: url+'/'+row.id,
+                        url: url+'/'+row.id+'.html',
                         method: 'delete',
                     }).then(res=>{
                         this.deleteTreeData(this.tableData,row.id)

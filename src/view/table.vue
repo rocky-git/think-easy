@@ -119,9 +119,9 @@
                 console.log(type)
                 let url
                 if(type == 1){
-                    url = this.$route.path+'/create'
+                    url = this.$route.path+'/create.html'
                 }else if(type == 2){
-                    url = this.$route.path+'/'+this.showEditId+'/edit'
+                    url = this.$route.path+'/'+this.showEditId+'/edit.html'
                 }
                 if(this.isDialog){
                     this.$request({
@@ -178,7 +178,7 @@
                 }).then(() => {
                     let url  = this.$route.path
                     this.$request({
-                        url: url+'/delete',
+                        url: url+'/delete.html',
                         method: 'delete',
                         data:{
                             ids:deleteIds
@@ -225,7 +225,7 @@
                 this.loading = true
                 let url  = this.$route.path
                 this.$request({
-                    url: url,
+                    url: url+'.html',
                     method: 'get',
                     params:{
                         build_request_type:'page',

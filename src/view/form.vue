@@ -34,10 +34,10 @@
                 let urlArr = this.$route.path.split('/')
                 url = urlArr[1]+'/'+ urlArr[2]
                 if(this.form.id == undefined){
-                    url = url +'/save'
+                    url = url +'/save.html'
                     method = 'post'
                 }else{
-                    url = url +'/'+this.form.id
+                    url = url +'/'+this.form.id+'.html'
                     method = 'put'
                 }
 
