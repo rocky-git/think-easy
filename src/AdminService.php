@@ -10,17 +10,16 @@ namespace thinkEasy;
 
 
 use think\Service;
+use thinkEasy\middleware\Permission;
 
 class AdminService extends Service
 {
     public function register()
     {
-        $this->app->middleware->add([
-            
-        ]);
+       
     }
     public function boot()
     {
-       
+
     }
 }

@@ -108,19 +108,31 @@ class NodeService extends Service
                         }
                         $data[] = [
                             'title'=>$title.'添加',
-                            'rule'=>$node,
+                            'rule'=>$node.'.rest',
                             'is_auth'=>$auth,
                             'method'=>'post',
                         ];
                         $data[] = [
+                            'title'=>$title.'添加页面',
+                            'rule'=>$node.'/create.rest',
+                            'is_auth'=>$auth,
+                            'method'=>'get',
+                        ];
+                        $data[] = [
                             'title'=>$title.'修改',
-                            'rule'=>$node.'/:id',
+                            'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'put',
                         ];
                         $data[] = [
+                            'title'=>$title.'修改页面',
+                            'rule'=>$node.'/:id/edit.rest',
+                            'is_auth'=>$auth,
+                            'method'=>'get',
+                        ];
+                        $data[] = [
                             'title'=>'删除权限',
-                            'rule'=>$node.'/:id',
+                            'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'delete',
                         ];
@@ -134,7 +146,7 @@ class NodeService extends Service
                         }
                         $data[] = [
                             'title'=>$title,
-                            'rule'=>$node.'/:id',
+                            'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'get',
                         ];

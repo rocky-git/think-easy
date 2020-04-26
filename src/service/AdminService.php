@@ -67,16 +67,39 @@ class AdminService extends Service
     /**
      * 判断权限节点
      * @param $node 节点
+     * @method $method 请求方法
      * @return bool
      */
-    public function check($node)
+    public function check($node,$method='')
     {
-        $rules = array_column($this->permissions(), 'rule');
-        if (in_array($node, $rules)) {
-            return true;
-        } else {
+        $ext = pathinfo($node, PATHINFO_EXTENSION);
+        if(strpos($node,'edit.rest')){
+            $node = preg_replace("/(.+)\/(.+)\/(.+)\/edit\.rest$/U","\\1/\\2/:id/edit.rest",$node);
+        }elseif(strpos($node,'create.rest')){
+            $node = preg_replace("/(.+)\/(.+)\/(.+)\/create\.rest$/U","\\1/\\2/create.rest",$node);
+        }elseif($ext == 'rest'){
+
+            $node = preg_replace("/(.+)\/(.+)\/(.+)\.rest$/U","\\1/\\2/:id.rest",$node);
+        }
+        $permissions = $this->permissions();
+
+        if(empty($method)){
+            $rules = array_column($permissions, 'rule');
+            if (in_array($node, $rules)) {
+                return true;
+            } else {
+                return false;
+            }
+        }else{
+           
+            foreach ($permissions as $permission){
+                if($permission['rule'] == $node && $permission['method'] == $method){
+                    return true;
+                }
+            }
             return false;
         }
+
     }
 
     /**
@@ -95,15 +118,19 @@ class AdminService extends Service
     public function permissions()
     {
         $nodes = NodeService::instance()->all();
-        $permissions = $this->user()->permissions()->column('method', 'node');
+        $permissions = $this->user()->permissions();
+        $newNodes = [];
         foreach ($nodes as $key => $node) {
             if ($node['is_auth']) {
-                if (!isset($permissions[$node['rule']]) || $permissions[$node['rule']] != $node['method']) {
-                    unset($nodes[$key]);
+                foreach ($permissions as $permission){
+                    if($permission['node'] == $node['rule'] && $permission['method'] == $node['method']){
+                        $newNodes[] = $nodes[$key];
+                    }
                 }
+
             }
         }
-        return $nodes;
+        return $newNodes;
     }
 
     /**
