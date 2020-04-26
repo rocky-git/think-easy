@@ -21,5 +21,12 @@
     "psr-4": {
       "thinkEasy\\": "src"
     }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "thinkEasy\\AdminService"
+      ]
+    }
   }
 }

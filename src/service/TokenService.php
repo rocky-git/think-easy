@@ -135,7 +135,7 @@ class TokenService extends Service
      * @param $token 需要验证的token
      * @return bool|\think\response\Json 通过返回真
      */
-    public function auth($bool = true)
+    public function auth()
     {
         $token = Request::header('Authorization');
         if($token){
@@ -155,12 +155,7 @@ class TokenService extends Service
         if ($data['expire'] < time()) {
             $this->errorCode(4001);
         }
-        if ($bool) {
-            return true;
-        } else {
-            return $data;
-        }
-
+        return true;
     }
 
     /**
