@@ -26,6 +26,7 @@ abstract class Service
     public function __construct(App $app)
     {
         $this->app = $app;
+        
         $this->initialize();
     }
 

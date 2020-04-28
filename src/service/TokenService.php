@@ -28,7 +28,7 @@ class TokenService extends Service
     protected static $token = '';
     public function __construct()
     {
-        $key = config('admin.token_key', 'QsoYEClMJsgOSWUBkSCq26yWkApqSuH3');
+        $key = config('admin.token_key', 'QoYEClMJsgOSWUBkSCq26yWkApqSuH3');
         $this->key = substr(md5($key), 8, 16);
         $this->expire = config('admin.token_expire', 7200);
     }
@@ -104,7 +104,7 @@ class TokenService extends Service
         }
         return [
             'token' => $token,
-            'expire' => $this->expire
+            'expire' => (int)$this->expire
         ];
     }
 
@@ -129,13 +129,26 @@ class TokenService extends Service
     }
 
     /**
+     * 刷新token
+     * @param $token
+     * @return array|bool
+     */
+    public function refresh($token = ''){
+        $data = $this->decode($token);
+        if($data){
+            return $this->encode($data);
+        }else{
+            return false;
+        }
+    }
+    /**
      * 验证token
      * @Author: rocky
      * 2019/7/12 17:12
      * @param $token 需要验证的token
      * @return bool|\think\response\Json 通过返回真
      */
-    public function auth()
+    public function auth($bool = true)
     {
         $token = Request::header('Authorization');
         if($token){
@@ -146,16 +159,20 @@ class TokenService extends Service
             $token = self::$token ? self::$token : Request::header('Authorization');
         }
         if (empty($token)) {
-            $this->errorCode(4000);
+            $this->errorCode(4000,'请先登陆再访问');
         }
         $data = $this->decode($token);
         if ($data === false || Cache::has(md5($token))) {
-            $this->errorCode(4000);
+            $this->errorCode(4001,'授权认证失败');
         }
         if ($data['expire'] < time()) {
-            $this->errorCode(4001);
+            $this->errorCode(4002,'授权失效,身份过期');
         }
-        return true;
+        if ($bool) {
+            return true;
+        } else {
+            return $data;
+        }
     }
 
     /**
@@ -192,6 +209,7 @@ class TokenService extends Service
      */
     public function user($lock = false)
     {
+        
         if (is_null($this->id())) {
             return null;
         }
