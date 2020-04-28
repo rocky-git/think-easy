@@ -73,7 +73,9 @@ class AdminService extends Service
      */
     public function check($node,$method='')
     {
-
+        if ($this->id() == config('admin.admin_auth_id')) {
+            return true;
+        }
         $method = strtolower($method);
         $node = strtolower($node);
 

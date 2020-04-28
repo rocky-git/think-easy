@@ -12,7 +12,7 @@ namespace thinkEasy;
 use think\Service;
 use thinkEasy\middleware\Permission;
 
-class AdminService extends Service
+class AdminServiceRegister extends Service
 {
     public function register()
     {

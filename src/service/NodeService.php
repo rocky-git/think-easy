@@ -17,9 +17,18 @@ use thinkEasy\Service;
  */
 class NodeService extends Service
 {
+    //节点缓存key
+    protected $cacheKey = 'eadmin_node_list';
+    
     public function all(){
-        $files = $this->getControllerFiles();
-        return $this->parse($files);
+        if($this->app->cache->has($this->cacheKey)){
+            return unserialize($this->app->cache->get($this->cacheKey)));
+        }else{
+            $files = $this->getControllerFiles();
+            $data =  $this->parse($files);
+            $this->app->cache->set($this->cacheKey),serialize($data));
+            return $data;
+        }
     }
     /**
      * 解析注释

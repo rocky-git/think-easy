@@ -18,8 +18,17 @@ use thinkEasy\Service;
  */
 class MenuService extends Service
 {
+    //菜单列表缓存key
+    protected $cacheKey = 'eadmin_menu_list';
     public function all(){
-        return $data = Db::name('system_menu')->where('status',1)->order('sort asc,id asc')->select()->toArray();
+        
+        if($this->app->cache->has($this->cacheKey)){
+            return unserialize($this->app->cache->get($this->cacheKey));
+        }else{
+            $data = Db::name('system_menu')->where('status',1)->order('sort asc,id asc')->select()->toArray();
+            $this->app->cache->set($this->cacheKey,serialize($data));
+            return $data;
+        }
     }
     public function treeMenus($data){
         return $this->getTree($data);

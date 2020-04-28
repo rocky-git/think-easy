@@ -114,9 +114,8 @@
 
                 return source.slice(source.indexOf(openingTag) + openingTag.length, source.lastIndexOf(`</${type}>`))
             },
-            //对话框表单
+            //对话框表单 type=1添加，type=2编辑
             showDialog(title,type){
-                console.log(type)
                 let url
                 if(type == 1){
                     url = this.$route.path+'/create.rest'
