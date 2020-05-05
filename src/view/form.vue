@@ -6,9 +6,11 @@
             <!--{/notempty}-->
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
-                <el-form-item >
-                    <el-button type="primary" native-type="submit" @click="onSubmit('form')">提交保存</el-button>
+                <el-form-item style="margin-top: 15px;">
+                    <el-button type="primary" native-type="submit" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
+                    <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
+                    <!--{/if}-->
                 </el-form-item>
             </el-form>
 
@@ -29,6 +31,10 @@
             }
         },
         methods:{
+            handleCheckChange(data){
+                let field = this.$refs.tree.$attrs.field
+                this.form[field] = this.$refs.tree.getCheckedNodes();
+            },
             onSubmit(formName){
                 let url,method
                 let urlArr = this.$route.path.split('/')
@@ -69,5 +75,5 @@
 </script>
 
 <style scoped>
-
+    {$styleHorizontal|raw|default=''}
 </style>

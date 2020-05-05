@@ -19,16 +19,26 @@ class NodeService extends Service
 {
     //节点缓存key
     protected $cacheKey = 'eadmin_node_list';
-    
+    protected $treeArr = [];
     public function all(){
         if($this->app->cache->has($this->cacheKey)){
-            return unserialize($this->app->cache->get($this->cacheKey)));
+            return unserialize($this->app->cache->get($this->cacheKey));
         }else{
             $files = $this->getControllerFiles();
             $data =  $this->parse($files);
-            $this->app->cache->set($this->cacheKey),serialize($data));
+            $this->app->cache->set($this->cacheKey,serialize($data));
             return $data;
         }
+    }
+    //树形格式
+    public function tree(){
+        $files = $this->getControllerFiles();
+        $this->parse($files);
+        $data = [];
+        foreach ($this->treeArr as $tree){
+            $data[] = $tree;
+        }
+        return $data;
     }
     /**
      * 解析注释
@@ -73,16 +83,29 @@ class NodeService extends Service
      * @throws \ReflectionException
      */
     protected function parse($files){
+        
         $data = [];
-
-        foreach ($files as $file){
+       
+        foreach ($files as $key=>$file){
             $controller = str_replace('.php','',basename($file));
-
             $path = dirname(dirname($file));
             $moduleName = basename($path);
             $appName = basename(dirname($path));
             $namespace = "$appName\\$moduleName\\controller\\$controller";
             $class = new \ReflectionClass($namespace);
+
+            $res = $this->parseDocComment($class->getDocComment());
+            if($res === false){
+                $title = $controller;
+            }else{
+                $title = array_shift($res);
+            }
+            $this->treeArr[$moduleName]['children'][$key] = [
+
+                    'label'=>$title,
+                    'children'=>[]
+                
+            ];
             foreach ($class->getMethods() as $method){
                 $doc = $method->getDocComment();
                 $res = $this->parseDocComment($doc);
@@ -92,21 +115,25 @@ class NodeService extends Service
                         $node = strtolower($node);
                         if($res === false){
                             $auth = false;
-                            $data[] = [
-                                'title'=>$node,
+                            $nodeData = [
+                                'label'=>$node,
                                 'rule'=>$node,
                                 'is_auth'=>$auth,
                                 'method'=>'get',
                             ];
+
                         }else{
                             list($title,$auth) = $res;
-                            $data[] = [
-                                'title'=>$title,
+                            $nodeData = [
+                                'label'=>$title,
                                 'rule'=>$node,
                                 'is_auth'=>$auth,
                                 'method'=>'get',
                             ];
                         }
+                        $data[] = $nodeData;
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
                         continue;
                     }elseif ($method->name  == 'form'){
                         if($res === false){
@@ -115,36 +142,49 @@ class NodeService extends Service
                         }else{
                             list($title,$auth) = $res;
                         }
-                        $data[] = [
-                            'title'=>$title.'添加',
+                        $nodeData = [
+                            'label'=>$title.'添加',
                             'rule'=>$node.'.rest',
                             'is_auth'=>$auth,
                             'method'=>'post',
                         ];
-                        $data[] = [
-                            'title'=>$title.'添加页面',
+                        $data[] = $nodeData;
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
+                        $nodeData = [
+                            'label'=>$title.'添加页面',
                             'rule'=>$node.'/create.rest',
                             'is_auth'=>$auth,
                             'method'=>'get',
                         ];
-                        $data[] = [
-                            'title'=>$title.'修改',
+                        $data[] = $nodeData;
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $nodeData = [
+                            'label'=>$title.'修改',
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'put',
                         ];
-                        $data[] = [
-                            'title'=>$title.'修改页面',
+                        $data[] = $nodeData;
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
+                        $nodeData = [
+                            'label'=>$title.'修改页面',
                             'rule'=>$node.'/:id/edit.rest',
                             'is_auth'=>$auth,
                             'method'=>'get',
                         ];
-                        $data[] = [
-                            'title'=>'删除权限',
+                        $data[] = $nodeData;
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $nodeData = [
+                            'label'=>'删除权限',
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'delete',
                         ];
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $data[] = $nodeData;
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
                         continue;
                     }elseif ($method->name == 'detail'){
                         if($res === false){
@@ -153,12 +193,15 @@ class NodeService extends Service
                         }else{
                             list($title,$auth) = $res;
                         }
-                        $data[] = [
-                            'title'=>$title,
+                        $nodeData = [
+                            'label'=>$title,
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
                             'method'=>'get',
                         ];
+                        $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
+                        $data[] = $nodeData;
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
                         continue;
                     }
                 }
@@ -166,23 +209,36 @@ class NodeService extends Service
                     $node  = $moduleName.'/'.$controller.'/'.$method->getName();
                     $node = strtolower($node);
                     if($res === false){
-                        $data[] = [
-                            'title'=>$node,
+                        $nodeData = [
+                            'label'=>$node,
                             'rule'=>$node,
                             'is_auth'=>false,
                             'method'=>'any',
+                            'mark'=>md5($node.'any'),
                         ];
                     }else{
                         list($title,$auth,$method) = $res;
-                        $data[] = [
-                            'title'=>$title,
+                        $nodeData = [
+                            'label'=>$title,
                             'rule'=>$node,
                             'is_auth'=>$auth,
                             'method'=>$method,
+                            'mark'=>md5($node.$method),
                         ];
                     }
+                    if($auth){
+                        $data[] = $nodeData;
+                        $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
+                    }
+
                 }
+
             }
+            if(count($this->treeArr[$moduleName]['children'][$key]['children']) == 0){
+                unset($this->treeArr[$moduleName]['children'][$key]);
+
+            }
+            $this->treeArr[$moduleName]['children']= array_values($this->treeArr[$moduleName]['children']);
         }
         return $data;
     }
@@ -199,11 +255,20 @@ class NodeService extends Service
                 $modules[] = $file;
             }
         }
-        //扫描模块控制器下所有文件
+        //扫描存在配置权限模块控制器下所有文件
         foreach ($modules as $module){
-            foreach (glob($module.'/controller/'.'*.php') as $file){
-                if(is_file($file)){
-                    $controllerFiles[] =  $file;
+            $moduleName = basename($module);
+            //权限模块
+            $authNoduleName = config('admin.authNoduleName');
+            if(isset($authNoduleName[$moduleName])){
+                $authNoduleTitle= $authNoduleName[$moduleName];
+                $this->treeArr[$moduleName] = [
+                    'label'=>$authNoduleTitle,
+                ];
+                foreach (glob($module.'/controller/'.'*.php') as $file){
+                    if(is_file($file)){
+                        $controllerFiles[] =  $file;
+                    }
                 }
             }
         }

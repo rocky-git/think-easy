@@ -14,12 +14,25 @@ use think\helper\Str;
 
 abstract class View
 {
+    //模板变量
     protected $vars = [];
+    
+    //设置的组件属性
     protected $attrVars = [];
+    
+    //模板
     protected $template;
+    
+    //定义组件属性
     protected $attrs = [];
+    
+    //解析完成的已设置组件属性
     protected $attrArr = [];
+    
+    //js变量
     protected $scriptVar = [];
+    
+    
     protected $varMatk = null;
     /**
      * 设置变量
@@ -100,7 +113,7 @@ abstract class View
     }
 
     /**
-     * 设置属性变量，存在表格属性设置表格属性
+     * 设置属性变量
      * @param $name
      * @param $value
      */

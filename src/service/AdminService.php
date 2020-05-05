@@ -47,7 +47,6 @@ class AdminService extends Service
                 }
             }
         }
-
         return MenuService::instance()->treeMenus($menus);
     }
     protected function findMenuChildren($menu_id,$menuList=[]){
@@ -101,7 +100,7 @@ class AdminService extends Service
         }else{
            
             foreach ($permissions as $permission){
-                if($permission['rule'] == $node && $permission['method'] == $method){
+                if($permission['rule'] == $node && ($permission['method'] == $method || $permission['method'] == 'any')){
                     return true;
                 }
             }
@@ -131,11 +130,10 @@ class AdminService extends Service
         foreach ($nodes as $key => $node) {
             if ($node['is_auth']) {
                 foreach ($permissions as $permission){
-                    if($permission['node'] == $node['rule'] && $permission['method'] == $node['method']){
+                    if($permission['node'] == $node['rule'] && ($permission['method'] == $node['method'] || $node['method'] == 'any')){
                         $newNodes[] = $nodes[$key];
                     }
                 }
-
             }else{
                 $newNodes[] = $nodes[$key];
             }

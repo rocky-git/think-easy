@@ -72,6 +72,7 @@
                 })
             })
         },
+        inject:['reload'],
         watch:{
             dialogVisible(val){
                 if(!val){

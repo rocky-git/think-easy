@@ -1,5 +1,5 @@
 <?php
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace thinkEasy\controller;
 
@@ -17,6 +17,7 @@ class BaseAdmin extends Controller
     {
         $this->successCode($this->grid()->view());
     }
+
     /**
      * 显示创建资源表单页.
      *
@@ -24,21 +25,23 @@ class BaseAdmin extends Controller
      */
     public function create()
     {
-        $this->successCode($this->form()->view());
+        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
     }
+
     /**
      * 保存新建的资源
      *
-     * @param  \think\Request  $request
+     * @param  \think\Request $request
      * @return \think\Response
      */
     public function save(Request $request)
     {
-        $res = $this->form()->save($request->post());
-        if($res){
-            $this->successCode([],200,'数据保存成功');
-        }else{
-            $this->errorCode(999,'数据保存失败');
+        $submitFromMethod = $request->post('submitFromMethod');
+        $res = $this->$submitFromMethod()->save($request->post());
+        if ($res) {
+            $this->successCode([], 200, '数据保存成功');
+        } else {
+            $this->errorCode(999, '数据保存失败');
         }
 
     }
@@ -46,50 +49,62 @@ class BaseAdmin extends Controller
     /**
      * 显示指定的资源
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \think\Response
      */
     public function read($id)
     {
         //
-       
+
     }
+
     /**
      * 显示编辑资源表单页.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \think\Response
      */
     public function edit($id)
     {
-        $this->successCode($this->form()->edit($id)->view());
+        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->edit($id)->view());
     }
+
     /**
      * 保存更新的资源
      *
-     * @param  \think\Request  $request
-     * @param  int  $id
+     * @param  \think\Request $request
+     * @param  int $id
      * @return \think\Response
      */
     public function update(Request $request, $id)
     {
-        $this->successCode($this->form()->update($id,$request->put()),200,'数据更新成功');
+        $submitFromMethod = $request->put('submitFromMethod');
+        $this->successCode($this->$submitFromMethod()->update($id, $request->put()), 200, '数据更新成功');
     }
 
     /**
      * 删除指定资源
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \think\Response
      */
     public function delete($id)
     {
         $res = $this->grid()->destroy($id);
-        if($res){
-            $this->successCode([],200,'删除成功');
-        }else{
-            $this->errorCode(999,'删除失败');
+        if ($res) {
+            $this->successCode([], 200, '删除成功');
+        } else {
+            $this->errorCode(999, '删除失败');
         }
 
+    }
+
+    public function view($build)
+    {
+        if(request()->method() == 'GET' ){
+            $this->successCode($build->view());
+        }else{
+            return $build;
+        }
     }
 }
