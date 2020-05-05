@@ -154,7 +154,7 @@ class NodeService extends Service
                         $nodeData = [
                             'label'=>$title.'添加页面',
                             'rule'=>$node.'/create.rest',
-                            'is_auth'=>$auth,
+                            'is_auth'=>false,
                             'method'=>'get',
                         ];
                         $data[] = $nodeData;
@@ -171,7 +171,7 @@ class NodeService extends Service
                         $nodeData = [
                             'label'=>$title.'修改页面',
                             'rule'=>$node.'/:id/edit.rest',
-                            'is_auth'=>$auth,
+                            'is_auth'=>false,
                             'method'=>'get',
                         ];
                         $data[] = $nodeData;
@@ -226,8 +226,8 @@ class NodeService extends Service
                             'mark'=>md5($node.$method),
                         ];
                     }
+                    $data[] = $nodeData;
                     if($auth){
-                        $data[] = $nodeData;
                         $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
                     }
 

@@ -87,9 +87,7 @@ class AdminService extends Service
 
             $node = preg_replace("/(.+)\/(.+)\/(.+)\.rest$/U","\\1/\\2/:id.rest",$node);
         }
-
         $permissions = $this->permissions();
-
         if(empty($method)){
             $rules = array_column($permissions, 'rule');
             if (in_array($node, $rules)) {
@@ -126,6 +124,7 @@ class AdminService extends Service
     {
         $nodes = NodeService::instance()->all();
         $permissions = $this->user()->permissions();
+
         $newNodes = [];
         foreach ($nodes as $key => $node) {
             if ($node['is_auth']) {
@@ -138,6 +137,7 @@ class AdminService extends Service
                 $newNodes[] = $nodes[$key];
             }
         }
+        
         return $newNodes;
     }
 
