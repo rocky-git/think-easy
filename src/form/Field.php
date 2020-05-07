@@ -27,6 +27,18 @@ class Field extends View
 
     //输入框inline
     protected $inline = '';
+    
+    //缺省默认值
+    public $defaultValue = '';
+    
+    //设置值
+    public $value = null;
+    
+    //创建验证规则
+    public $createRules = [];
+
+    //更新验证规则
+    public $updateRules = [];
     /**
      * Input constructor.
      * @param $field 字段
@@ -48,6 +60,26 @@ class Field extends View
         $this->setAttr('disabled', 'true');
         return $this;
     }
+
+    /**
+     * 缺省默认值
+     * @param $value 值 
+     * @return $this
+     */
+    public function default($value){
+        $this->defaultValue = $value;
+        return $this;
+    }
+
+    /**
+     * 设置值
+     * @param $value 值
+     * @return $this
+     */
+    public function value($value){
+        $this->value = $value;
+        return $this;
+    }
     /**
      * 必填
      * @return $this
@@ -65,7 +97,7 @@ class Field extends View
         $this->inline = "<el-col :span='3'>%s</el-col>";
         return $this;
     }
-
+    
     /**
      * 输入框占位提示文本
      */
@@ -83,5 +115,58 @@ class Field extends View
     {
         $this->md = "<el-col :span='{$num}'>%s</el-col>";
         return $this;
+    }
+    /**
+     * 表单新增更新验证规则
+     * @Author: rocky
+     * 2019/8/9 10:50
+     * @param $rule 验证规则
+     */
+    public function rule($rule)
+    {
+        $this->createRules = $rule;
+        $this->updateRules = $rule;
+        return $this;
+    }
+    /**
+     * 表单新增验证规则
+     * @Author: rocky
+     * 2019/8/9 10:50
+     * @param $rule 验证规则
+     */
+    public function createRule($rule)
+    {
+        $this->createRules = $rule;
+        return $this;
+    }
+
+    /**
+     * 表单更新验证规则
+     * @Author: rocky
+     * 2019/8/9 10:50
+     * @param $rule 验证规则
+     */
+    public function updateRule($rule)
+    {
+        $this->updateRules = $rule;
+        return $this;
+    }
+
+    /**
+     * 生成验证规则
+     * @param $rules
+     * @return array
+     */
+    public function paseRule($rules){
+        $ruleMsg = [];
+        $rule = [];
+        foreach ($rules as $key => $value) {
+            $ruleMsg[$this->field . '.' . $key] = $value;
+            $rule[]= $key;
+        }
+        $resRule = [
+            $this->field => $rule
+        ];
+        return [$resRule,$ruleMsg];
     }
 }

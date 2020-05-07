@@ -23,6 +23,7 @@ class AdminService extends Service
     public function menus()
     {
         $menus = MenuService::instance()->all();
+
         if ($this->id() != config('admin.admin_auth_id')) {
             $pids = array_column($menus, 'pid');
             foreach ($menus as $key => $menu) {
@@ -47,6 +48,7 @@ class AdminService extends Service
                 }
             }
         }
+
         return MenuService::instance()->treeMenus($menus);
     }
     protected function findMenuChildren($menu_id,$menuList=[]){

@@ -170,6 +170,9 @@ class Column extends View
         }else{
             $this->display = sprintf($this->scopeTemplaet,$this->display);
         }
+        if(empty($this->display) && !empty($this->field)){
+            $this->display = sprintf($this->scopeTemplaet,"<span v-if=\"{$this->rowField} == null || {$this->rowField} == ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
+        }
         list($attrStr,$dataStr) = $this->parseAttr();
         return "<el-table-column $attrStr>".$this->display."</el-table-column>";
     }

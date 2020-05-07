@@ -77,11 +77,13 @@ class MenuService extends Service
                 if(!empty($v['params'])){
                     $paramsArrs = explode('&',$v['params']);
                     foreach ($paramsArrs as $paramsArr){
-                        list($key,$value) = explode('=',$paramsArr);
-                        $params[] = [
-                            'key'=>$key,
-                            'value'=>$value
-                        ];
+                        if(strstr($paramsArr,'=') !== false){
+                            list($key,$value) = explode('=',$paramsArr);
+                            $params[] = [
+                                'key'=>$key,
+                                'value'=>$value
+                            ];
+                        }
                     }
                 }
                 $v['meta'] = ['title' => $v['name'], 'icon' => $v['icon'], 'id' => $v['id'], 'pid' => $v['pid'],'params'=>$params];

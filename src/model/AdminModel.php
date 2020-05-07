@@ -16,6 +16,9 @@ class AdminModel extends Model
         $this->table = config('admin.system_user_table');
         parent::__construct($data);
     }
+    protected function setPasswordAttr($val){
+        return password_hash($val,PASSWORD_DEFAULT);
+    }
     //权限
     public function permissions(){
         return SystemAuthNode::whereIn('auth',$this->roles()->column('id'))->select();

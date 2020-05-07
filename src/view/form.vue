@@ -27,10 +27,15 @@
         data(){
             return {
                 form:{$formData|raw},
+                validates:{$formValidate|raw},
                 {$formScriptVar|raw}
             }
         },
         methods:{
+            clearValidate(formName) {
+                this.$refs[formName].clearValidate();
+                this.validates[formName+'ErrorMsg'] = ''
+            },
             handleCheckChange(data){
                 let field = this.$refs.tree.$attrs.field
                 this.form[field] = this.$refs.tree.getCheckedNodes();
@@ -46,7 +51,6 @@
                     url = url +'/'+this.form.id+'.rest'
                     method = 'put'
                 }
-
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
                         this.$request({
@@ -54,13 +58,21 @@
                             method: method,
                             data:this.form
                         }).then(response=>{
-                            this.$notify({
-                                title: '操作完成',
-                                message: response.message,
-                                type: 'success',
-                                duration: 2000
-                            })
-                            this.$emit('update:dialogVisible', false)
+                            if(response.code == 200){
+                                this.$notify({
+                                    title: '操作完成',
+                                    message: response.message,
+                                    type: 'success',
+                                    duration: 2000
+                                })
+                                this.$emit('update:dialogVisible', false)
+                            }else if(response.code == 422){
+                                for(field in response.data){
+                                    this.validates[field+'ErrorShow'] = true
+                                    this.validates[field+'ErrorMsg'] = response.data[field]
+                                }
+
+                            }
                         })
                     } else {
                         return false;

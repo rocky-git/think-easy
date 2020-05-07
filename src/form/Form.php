@@ -9,7 +9,9 @@
 namespace thinkEasy\form;
 
 
+use think\exception\HttpResponseException;
 use think\facade\Request;
+use think\facade\Validate;
 use think\Model;
 use thinkEasy\View;
 
@@ -49,14 +51,30 @@ class Form extends View
 
     //表单附加参数
     protected $extraData = [];
-    
+
     //保存前回调
     protected $beforeSave = null;
-    
+
     //保存后回调
     protected $afterSave = null;
-    
+
     protected $data = ['empty' => 0];
+
+    //是否编辑表单
+    protected $isEdit = false;
+
+    //创建验证规则
+    protected $createRules = [
+        'rule' => [],
+        'msg' => [],
+    ];
+    //更新验证规则
+    protected $updateRules = [
+        'rule' => [],
+        'msg' => [],
+    ];
+    //表单验证双向绑定变量
+    protected $formValidate = [];
 
     public function __construct(Model $model)
     {
@@ -66,7 +84,7 @@ class Form extends View
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
-        if(request()->has('id')){
+        if (request()->has('id')) {
             $this->edit(request()->param('id'));
         }
 
@@ -113,6 +131,8 @@ class Form extends View
      */
     public function update($id, $data)
     {
+        $this->parseFormItem();
+        $this->checkRule($data);
         if (!is_null($this->beforeSave)) {
             $beforePost = call_user_func($this->beforeSave, $data, $this->data);
             if (is_array($beforePost)) {
@@ -128,22 +148,43 @@ class Form extends View
 
         return $res;
     }
-    //保存后回调
+
+    /**
+     * 保存后回调
+     * @param \Closure $closure
+     */
     public function saved(\Closure $closure)
     {
         $this->afterSave = $closure;
     }
 
-    //保存前回调
+    /**
+     * 保存前回调
+     * @param \Closure $closure
+     */
     public function saving(\Closure $closure)
     {
         $this->beforeSave = $closure;
     }
+
+    /**
+     * 获取模型当前数据
+     * @Author: rocky
+     * 2019/8/22 14:56
+     * @return array|mixed
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
     /**
      * 数据保存
      */
     public function save($data)
     {
+        $this->parseFormItem();
+        $this->checkRule($data);
         if (!is_null($this->beforeSave)) {
             $beforePost = call_user_func($this->beforeSave, $data, $this->data);
             if (is_array($beforePost)) {
@@ -168,7 +209,17 @@ class Form extends View
     public function edit($id)
     {
         $this->data = $this->model->find($id)->toArray();
+        $this->isEdit = true;
         return $this;
+    }
+
+    /**
+     * 当前表单是否编辑模式
+     * @return string 返回add或edit
+     */
+    public function isEdit()
+    {
+        return $this->isEdit;
     }
 
     /**
@@ -240,11 +291,22 @@ class Form extends View
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
                 }
-                if (empty($formItem->label)) {
-                    $formItemTmp = "<div>%s</div>";
-                } else {
-                    $formItemTmp = "<el-form-item label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s</el-form-item>";
+                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$formItem->field}ErrorMsg' :show-message='validates.{$formItem->field}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s</el-form-item>";
+                $this->formValidate["{$formItem->field}ErrorMsg"] = '';
+                $this->formValidate["{$formItem->field}ErrorShow"] = false;
+                //设置默认值
+                if (isset($this->data[$formItem->field]) && ($this->data[$formItem->field] == null || $this->data[$formItem->field] == '')) {
+                    $this->data[$formItem->field] = $formItem->defaultValue;
                 }
+                //设置固定值
+                if (!is_null($formItem->value)) {
+                    $this->data[$formItem->field] = $formItem->value;
+                }
+                //合并表单验证规则
+                list($rule, $msg) = $formItem->paseRule($formItem->createRules);
+                $this->setRules($rule, $msg, 1);
+                list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
+                $this->setRules($rule, $msg, 2);
                 $formItemTmp = sprintf($formItemTmp, $formItem->render());
                 $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
                 if (!empty($formItem->md)) {
@@ -259,6 +321,46 @@ class Form extends View
         return $formItemHtml;
     }
 
+    /**
+     * 设置表单验证规则
+     * @Author: rocky
+     * 2019/8/9 10:45
+     * @param $rule 验证规则
+     * @param $msg 验证提示
+     * @param int $type 1新增，2更新
+     */
+    public function setRules($rule, $msg, $type)
+    {
+        switch ($type) {
+            case 1:
+                $this->createRules['rule'] = array_merge($this->createRules['rule'], $rule);
+                $this->createRules['msg'] = array_merge($this->createRules['msg'], $msg);
+                break;
+            case 2:
+                $this->updateRules['rule'] = array_merge($this->updateRules['rule'], $rule);
+                $this->updateRules['msg'] = array_merge($this->updateRules['msg'], $msg);
+                break;
+        }
+    }
+
+    /**
+     * 验证表单规则
+     * @param $data
+     */
+    public function checkRule($data)
+    {
+        if ($this->isEdit) {
+            //更新
+            $validate = Validate::rule($this->updateRules['rule'])->message($this->updateRules['msg']);
+        } else {
+            //新增
+            $validate = Validate::rule($this->createRules['rule'])->message($this->createRules['msg']);
+        }
+        $result = $validate->batch(true)->check($data);
+        if (!$result) {
+            throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
+        }
+    }
     /**
      * 设置标题
      * @param $title
@@ -303,9 +405,10 @@ class Form extends View
         if (!empty($scriptStr)) {
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
-
-        $this->data = array_unique(array_merge($this->data, $this->extraData));
+        $this->data = array_merge($this->data, $this->extraData);
         $this->setVar('formData', json_encode($this->data, JSON_UNESCAPED_UNICODE));
+
+        $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('attrStr', $attrStr);
         $this->setVar('formItem', $formItem);
         $this->setVar('formScriptVar', $formScriptVar);

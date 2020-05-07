@@ -38,7 +38,7 @@ class BaseAdmin extends Controller
     {
         $submitFromMethod = $request->post('submitFromMethod');
         $res = $this->$submitFromMethod()->save($request->post());
-        if ($res) {
+        if ($res===true) {
             $this->successCode([], 200, '数据保存成功');
         } else {
             $this->errorCode(999, '数据保存失败');
@@ -79,7 +79,13 @@ class BaseAdmin extends Controller
     public function update(Request $request, $id)
     {
         $submitFromMethod = $request->put('submitFromMethod');
-        $this->successCode($this->$submitFromMethod()->update($id, $request->put()), 200, '数据更新成功');
+        $res = $this->$submitFromMethod()->update($id, $request->put());
+        if($res === true){
+            $this->successCode([], 200, '数据更新成功');
+        }else {
+            $this->errorCode(999, '数据保存失败');
+        }
+
     }
 
     /**
