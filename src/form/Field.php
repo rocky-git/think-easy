@@ -39,6 +39,10 @@ class Field extends View
 
     //更新验证规则
     public $updateRules = [];
+    
+    //提示帮助文本
+    public $helpText = '';
+    
     /**
      * Input constructor.
      * @param $field 字段
@@ -61,6 +65,15 @@ class Field extends View
         return $this;
     }
 
+    /**
+     * 提示帮助文本
+     * @param $text
+     * @return $this
+     */
+    public function help($text){
+        $this->helpText = $text;
+        return $this;
+    }
     /**
      * 缺省默认值
      * @param $value 值 
@@ -94,7 +107,7 @@ class Field extends View
      */
     public function inline()
     {
-        $this->inline = "<el-col :span='3'>%s</el-col>";
+        $this->inline = "<el-col :span='4'>%s</el-col>";
         return $this;
     }
     

@@ -9,9 +9,9 @@
 namespace thinkEasy\model;
 
 
-use think\Model;
 
-class SystemAuthNode extends Model
+
+class SystemAuthNode extends BaseModel
 {
 
 }

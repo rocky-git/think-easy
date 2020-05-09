@@ -18,7 +18,9 @@ class Input extends Field
     protected $suffixHtml = '';
     protected $prependHtml = '';
     protected $appendHtml = '';
-
+    protected $attrs = [
+        'show-password'
+    ];
 
 
     /**
@@ -160,7 +162,7 @@ class Input extends Field
      * 密码输入框
      */
     public function password(){
-        $this->setAttr('show-password','true');
+        $this->setAttr('show-password',true);
     }
     public function render()
     {

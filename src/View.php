@@ -65,7 +65,7 @@ abstract class View
                     $this->scriptVar[] = "{$var}:\"{$this->attrVars[$var]}\"";
                 }
             }else{
-                $this->attrArr[] = "{$attr}=\"{$value}\"" ;
+                $this->attrArr[] = "{$attr}='{$value}'" ;
             }
         }
         $attrStr = implode(' ',$this->attrArr);
@@ -93,6 +93,7 @@ abstract class View
         $var = Str::snake($var);
         $var = str_replace('_','-',$var);
         $class = basename(str_replace('\\', '/', lcfirst(get_class($this))));
+        $var =  str_replace(strtolower($class).':',':',$var);
         $var =  str_replace(strtolower($class).'-','',$var);
         $var =  str_replace($this->varMatk ,'',$var);
         return $var;

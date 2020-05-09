@@ -7,9 +7,9 @@
  */
 
 namespace thinkEasy\model;
-use think\Model;
 
-class AdminModel extends Model
+
+class AdminModel extends BaseModel
 {
     public function __construct(array $data = [])
     {

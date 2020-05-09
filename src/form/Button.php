@@ -13,6 +13,7 @@ use thinkEasy\View;
 
 class Button extends View
 {
+    
     /**
      * Button constructor.
      * @param $text 按钮文字
@@ -20,7 +21,7 @@ class Button extends View
      * @param string $size 尺寸 medium / small / mini
      * @param string $icon 图标
      */
-    public function __construct($text='',$type='',$size='small',$icon='',$plain=false)
+    public function create($text='',$type='',$size='small',$icon='',$plain=false)
     {
         $this->template  = 'button';
         $this->text  = $text;
@@ -28,11 +29,11 @@ class Button extends View
         $this->setAttr('size',$size);
         $this->setAttr('icon',$icon);
         $this->setAttr('text',$text);
+        //$this->setAttr('open-type','button');
         if($plain){
             $this->setAttr('plain','true');
         }
-
-
+        return $this;
     }
     //禁用状态
     public function disabled(){
@@ -62,13 +63,54 @@ class Button extends View
         }
         $this->setAttr('url',$url);
         $this->setAttr('open-type',$type);
+        return $this;
+    }
+
+
+    /**
+     * 更新数据
+     * @Author: rocky
+     * 2019/9/11 10:06
+     * @param $id 更新主键条件
+     * @param array $updateData 更新数据
+     * @param string $url
+     * @param $confirm 操作提示
+     */
+    public function save($id,$data,$url='',$confirm=''){
+        $this->setAttr('pk-id',$id);
+        $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
+        $this->setAttr('open-type','update');
+        $this->setAttr('url',$url);
+        $this->setAttr('confirm',$confirm);
+        return $this;
+    }
+
+    /**
+     * 删除数据
+     * @param $id 更新主键条件
+     * @param string $confirm 操作提示
+     * @param integer $mode 删除模式：0正常删除，1永久删除，2恢复数据（回收站）
+     * @return $this
+     */
+    public function delete($id,$confirm='',$mode=0){
+        $this->setAttr('pk-id',$id);
+        $this->setAttr('open-type','delete');
+        $this->setAttr('mode',$mode);
+        $this->setAttr('confirm',$confirm);
+        $this->setAttr(':tabledata.sync','tableData');
+        return $this;
     }
 //    public function hrefEdit($id,$controller,$module='admin',$type='open'){
 //        $url = "/$module/$controller/$id/edit.rest";
 //        $this->href($url);
 //    }
+    /**
+     * 返回html
+     * @return string
+     */
     public function render(){
         list($attrStr, $scriptVar) = $this->parseAttr();
+
         $html = "<eadmin-button {$attrStr}></eadmin-button>";
         return $html;
     }

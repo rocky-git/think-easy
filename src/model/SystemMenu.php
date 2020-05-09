@@ -9,9 +9,8 @@
 namespace thinkEasy\model;
 
 
-use think\Model;
 
-class SystemMenu extends Model
+class SystemMenu extends BaseModel
 {
     public static function onAfterInsert(Model $model)
     {

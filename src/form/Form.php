@@ -58,7 +58,9 @@ class Form extends View
     //保存后回调
     protected $afterSave = null;
 
-    protected $data = ['empty' => 0];
+    protected $data = [];
+
+    protected $formData = ['empty' => 0];
 
     //是否编辑表单
     protected $isEdit = false;
@@ -81,6 +83,7 @@ class Form extends View
         $this->model = $model;
         $this->template = 'form';
         $this->setAttr('label-width', '120px');
+
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
@@ -139,8 +142,7 @@ class Form extends View
                 $data = array_merge($data, $beforePost);
             }
         }
-        $this->model = $this->model->find($id);
-
+        $this->model = beforeDelfind($id);
         $res = $this->model->save($data);
         if (!is_null($this->afterSave)) {
             call_user_func_array($this->afterSave, [$data, $this->model]);
@@ -209,6 +211,7 @@ class Form extends View
     public function edit($id)
     {
         $this->data = $this->model->find($id)->toArray();
+        $this->formData[$this->model->getPk()] = $id;
         $this->isEdit = true;
         return $this;
     }
@@ -291,16 +294,24 @@ class Form extends View
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
                 }
-                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$formItem->field}ErrorMsg' :show-message='validates.{$formItem->field}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s</el-form-item>";
+                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$formItem->field}ErrorMsg' :show-message='validates.{$formItem->field}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span>{$formItem->helpText}</span></el-form-item>";
                 $this->formValidate["{$formItem->field}ErrorMsg"] = '';
                 $this->formValidate["{$formItem->field}ErrorShow"] = false;
                 //设置默认值
-                if (isset($this->data[$formItem->field]) && ($this->data[$formItem->field] == null || $this->data[$formItem->field] == '')) {
-                    $this->data[$formItem->field] = $formItem->defaultValue;
+
+                if ($this->isEdit) {
+                    if (isset($this->data[$formItem->field])) {
+                        $this->formData[$formItem->field] = $this->data[$formItem->field];
+                    }
+                    if (isset($this->data[$formItem->field]) && ($this->data[$formItem->field] == null || $this->data[$formItem->field] == '')) {
+                        $this->formData[$formItem->field] = $formItem->defaultValue;
+                    }
+                } else {
+                    $this->formData[$formItem->field] = $formItem->defaultValue;
                 }
                 //设置固定值
                 if (!is_null($formItem->value)) {
-                    $this->data[$formItem->field] = $formItem->value;
+                    $this->formData[$formItem->field] = $formItem->value;
                 }
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
@@ -361,6 +372,7 @@ class Form extends View
             throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
         }
     }
+
     /**
      * 设置标题
      * @param $title
@@ -405,9 +417,8 @@ class Form extends View
         if (!empty($scriptStr)) {
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
-        $this->data = array_merge($this->data, $this->extraData);
-        $this->setVar('formData', json_encode($this->data, JSON_UNESCAPED_UNICODE));
-
+        $this->formData = array_merge($this->formData, $this->extraData);
+        $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('attrStr', $attrStr);
         $this->setVar('formItem', $formItem);

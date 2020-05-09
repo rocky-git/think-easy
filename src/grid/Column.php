@@ -132,7 +132,12 @@ class Column extends View
      */
     public function setData($data){
         if (!is_null($this->displayClosure)) {
-            $res = call_user_func_array($this->displayClosure, [$data[$this->field], $data]);
+            if(isset($data[$this->field])){
+                $val = $data[$this->field];
+            }else{
+                $val = null;
+            }
+            $res = call_user_func_array($this->displayClosure, [$val, $data]);
             $this->cellVue.="<span v-if='data.id == {$data['id']}'>{$res}</span>";
         }
     }

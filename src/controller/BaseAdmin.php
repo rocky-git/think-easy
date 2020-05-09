@@ -68,7 +68,7 @@ class BaseAdmin extends Controller
     {
         $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->edit($id)->view());
     }
-
+   
     /**
      * 保存更新的资源
      *
@@ -78,9 +78,14 @@ class BaseAdmin extends Controller
      */
     public function update(Request $request, $id)
     {
-        $submitFromMethod = $request->put('submitFromMethod');
-        $res = $this->$submitFromMethod()->update($id, $request->put());
-        if($res === true){
+        if($id == 'batch'){
+            $ids = $request->put('ids');
+            $res = $this->grid()->update($ids, $request->put());
+        }else{
+            $submitFromMethod = $request->put('submitFromMethod');
+            $res = $this->$submitFromMethod()->update($id, $request->put()); 
+        }
+        if($res){
             $this->successCode([], 200, '数据更新成功');
         }else {
             $this->errorCode(999, '数据保存失败');

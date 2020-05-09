@@ -9,6 +9,7 @@
 namespace thinkEasy\grid;
 
 
+use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
@@ -19,6 +20,8 @@ class Grid extends View
     //当前模型
     protected $model;
 
+    //当前模型的数据库查询对象
+    protected $db;
     //列
     protected $columns = [];
 
@@ -49,12 +52,30 @@ class Grid extends View
     //树形上级id
     protected $treeParent = 'pid';
 
+    //软删除字段
+    protected $softDeleteField= 'delete_time';
+
+    //是否开启软删除
+    protected $isSotfDelete = false;
+
+    //删除回调
+    protected $beforeDel = null;
     public function __construct(Model $model)
     {
         $this->model = $model;
+        $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
         $this->actionColumn = new Actions('id','操作');
         $this->table = new Table($this->columns, []);
+        if(in_array($this->softDeleteField,$this->tableFields)){
+            $this->isSotfDelete = true;
+            if(request()->has('is_deleted')){
+                $this->db->whereNotNull($this->softDeleteField);
+            }else{
+                $this->db->whereNull($this->softDeleteField);
+            }
+            $this->table->setVar('is_deleted',true);
+        }
     }
 
     /**
@@ -66,11 +87,19 @@ class Grid extends View
     }
 
     /**
+     * 获取当前模型的数据库查询对象
+     * @return Model
+     */
+    public function model(){
+        return $this->db;
+    }
+    /**
      * 对话框表单
      */
     public function setFormDialog(){
         $this->table->setFormDialog('');
     }
+
     /**
      * 开启树形表格
      * @param string $pid 父级字段
@@ -142,7 +171,6 @@ class Grid extends View
     {
         $this->isPage = false;
     }
-
     /**
      * 设置列
      * @Author: rocky
@@ -184,7 +212,15 @@ class Grid extends View
         }
         $this->table->setColumn($this->columns);
     }
-
+    /**
+     * 更新数据
+     * @param $ids 更新条件id
+     * @param $data 更新数据
+     * @return Model
+     */
+    public function update($ids,$data){
+        return $this->model->whereIn($this->model->getPk(),$ids)->strict(false)->update($data);
+    }
     /**
      * 隐藏删除按钮
      */
@@ -192,19 +228,39 @@ class Grid extends View
     {
         $this->table->setVar('hideDeletesButton', true);
     }
+    //删除前回调
+    public function deling(\Closure $closure)
+    {
+        $this->beforeDel = $closure;
+    }
     /**
      * 删除数据
      */
     public function destroy($id){
+        $trueDelete = Request::delete('trueDelete');
         if($id == 'delete'){
             $ids = Request::delete('ids');
-            if($ids == 'true'){
-                return $this->model->where('1=1')->delete();
-            }
         }else{
             $ids = explode(',', $id);
         }
-        return $this->model->destroy($ids);
+        if($ids == 'true'){
+            $ids = true;
+        }
+        if (!is_null($this->beforeDel)) {
+            call_user_func($this->beforeDel, $ids);
+        }
+        if($ids === true){
+            if($this->isSotfDelete && !$trueDelete){
+                return $this->model->where('1=1')->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
+            }else{
+                return $this->model->whereNotNull($this->softDeleteField)->delete();
+            }
+        }
+        if($this->isSotfDelete && !$trueDelete){
+            return $this->model->whereIn($this->model->getPk(),$ids)->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
+        }else{
+            return $this->model->destroy($ids);
+        }
     }
     /**
      * 视图渲染
@@ -214,13 +270,33 @@ class Grid extends View
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
-            $count = $this->model->count();
+            $count = $this->db->count();
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
-            $this->data = $this->model->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select()->toArray();
+            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select()->toArray();
         } else {
-            $this->data = $this->model->select()->toArray();
+            $this->data = $this->db->select()->toArray();
         }
+        //软删除列
+        if($this->isSotfDelete){
+            if(request()->has('is_deleted')){
+                $this->db->whereNotNull($this->softDeleteField);
+                $this->column($this->softDeleteField,'删除时间');
+                $this->hideAction();
+                $this->column('action_delete','操作')->display(function ($val,$data){
+                    $button = Button::create('恢复数据','','small','el-icon-zoom-in')
+                        ->delete($data['id'],'此操作将恢复该数据, 是否继续?',2)->render();
+                    $button .= Button::create('永久删除','danger','small','el-icon-delete')
+                        ->delete($data['id'],'此操作将永久删除该数据, 是否继续?',1)->render();
+                    return $button;
+                });
+            }else{
+                $this->db->whereNull($this->softDeleteField);
+                $this->column($this->softDeleteField,'删除时间')->setAttr('v-if','deleteColumnShow');
+
+            }
+        }
+
         //解析列
         $this->parseColumn();
 
@@ -239,12 +315,12 @@ class Grid extends View
         $build_request_type = Request::get('build_request_type');
         switch ($build_request_type) {
             case 'page':
-                if (!$this->treeTable) {
-                    $this->data = $this->model->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+                if (!$this->treeTable && $this->isPage) {
+                    $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
                 }
                 $this->table->view();
                 $result['data'] =$this->data;
-                $result['total'] = $this->model->count();
+                $result['total'] = $this->db->count();
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
                 break;
