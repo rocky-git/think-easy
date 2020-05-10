@@ -56,27 +56,32 @@ class Grid extends View
     protected $treeParent = 'pid';
 
     //软删除字段
-    protected $softDeleteField= 'delete_time';
+    protected $softDeleteField = 'delete_time';
 
     //是否开启软删除
     protected $isSotfDelete = false;
 
     //删除前回调
     protected $beforeDel = null;
-
+    
+    //是否显示回收站
     protected $trashedShow = false;
+    
+    //工具栏
+    protected $toolsArr = [];
+
     public function __construct(Model $model)
     {
         $this->model = $model;
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
-        $this->actionColumn = new Actions('id','操作');
+        $this->actionColumn = new Actions('id', '操作');
         $this->table = new Table($this->columns, []);
-        if(in_array($this->softDeleteField,$this->tableFields)){
+        if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
-            if(request()->has('is_deleted')){
+            if (request()->has('is_deleted')) {
                 $this->db->whereNotNull($this->softDeleteField);
-            }else{
+            } else {
                 $this->db->whereNull($this->softDeleteField);
             }
             $this->trashed(true);
@@ -87,15 +92,18 @@ class Grid extends View
      * 是否显示回收站
      * @param $bool true显示，false隐藏
      */
-    public function trashed($bool){
+    public function trashed($bool)
+    {
         $this->trashedShow = $bool;
-        $this->table->setVar('trashed',$this->trashedShow);
+        $this->table->setVar('trashed', $this->trashedShow);
     }
+
     /**
      * 返回表格组件，可设置属性
      * @return Table
      */
-    public function table(){
+    public function table()
+    {
         return $this->table;
     }
 
@@ -103,13 +111,16 @@ class Grid extends View
      * 获取当前模型的数据库查询对象
      * @return Model
      */
-    public function model(){
+    public function model()
+    {
         return $this->db;
     }
+
     /**
      * 对话框表单
      */
-    public function setFormDialog(){
+    public function setFormDialog()
+    {
         $this->table->setFormDialog('');
     }
 
@@ -147,10 +158,12 @@ class Grid extends View
      * 设置标题
      * @param $title
      */
-    public function setTitle($title){
+    public function setTitle($title)
+    {
         $this->title = $title;
-        $this->table->setVar('title',$title);
+        $this->table->setVar('title', $title);
     }
+
     /**
      * 操作列定义
      * @param \Closure $closure
@@ -159,6 +172,7 @@ class Grid extends View
     {
         $this->actionColumn->setClosure($closure);
     }
+
     /**
      * 隐藏操作列
      */
@@ -166,6 +180,7 @@ class Grid extends View
     {
         $this->hideAction = true;
     }
+
     /**
      * 设置分页每页限制
      * @Author: rocky
@@ -184,6 +199,17 @@ class Grid extends View
     {
         $this->isPage = false;
     }
+
+    public function addTools($html)
+    {
+        if ($html instanceof \thinkEasy\form\Button) {
+            $this->toolsArr[] = $html->render();
+        } else {
+            $this->toolsArr[] = $html;
+        }
+        return $this;
+    }
+
     /**
      * 设置列
      * @Author: rocky
@@ -204,19 +230,21 @@ class Grid extends View
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
      * @return Column
      */
-    public function indexColumn($type='selection'){
-        $column = $this->column('','');
-        $column->setAttr('type',$type);
+    public function indexColumn($type = 'selection')
+    {
+        $column = $this->column('', '');
+        $column->setAttr('type', $type);
         return $column;
     }
+
     /**
      * 解析列
      */
     protected function parseColumn()
     {
         //是否隐藏操作列
-        if(!$this->hideAction){
-            array_push($this->columns,$this->actionColumn);
+        if (!$this->hideAction) {
+            array_push($this->columns, $this->actionColumn);
         }
         foreach ($this->data as $key => &$rows) {
             foreach ($this->columns as $column) {
@@ -224,16 +252,20 @@ class Grid extends View
             }
         }
         $this->table->setColumn($this->columns);
+        $this->table->setVar('toolbar', implode('', $this->toolsArr));
     }
+
     /**
      * 更新数据
      * @param $ids 更新条件id
      * @param $data 更新数据
      * @return Model
      */
-    public function update($ids,$data){
-        return $this->model->whereIn($this->model->getPk(),$ids)->strict(false)->update($data);
+    public function update($ids, $data)
+    {
+        return $this->model->whereIn($this->model->getPk(), $ids)->strict(false)->update($data);
     }
+
     /**
      * 隐藏删除按钮
      */
@@ -241,53 +273,56 @@ class Grid extends View
     {
         $this->table->setVar('hideDeletesButton', true);
     }
+
     //删除前回调
     public function deling(\Closure $closure)
     {
         $this->beforeDel = $closure;
     }
+
     /**
      * 删除数据
      */
-    public function destroy($id){
+    public function destroy($id)
+    {
         $trueDelete = Request::delete('trueDelete');
-        if($id == 'delete'){
+        if ($id == 'delete') {
             $ids = Request::delete('ids');
-        }else{
+        } else {
             $ids = explode(',', $id);
         }
-        if($ids == 'true'){
+        if ($ids == 'true') {
             $ids = true;
         }
         if (!is_null($this->beforeDel)) {
-            call_user_func($this->beforeDel, $ids,$trueDelete);
+            call_user_func($this->beforeDel, $ids, $trueDelete);
         }
         $res = false;
         Db::startTrans();
-        try{
-            if($ids === true){
-                if($this->isSotfDelete && !$trueDelete){
-                    $res = $this->model->where('1=1')->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
-                }else{
+        try {
+            if ($ids === true) {
+                if ($this->isSotfDelete && !$trueDelete) {
+                    $res = $this->model->where('1=1')->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
+                } else {
                     $deleteDatas = $this->model->whereNotNull($this->softDeleteField)->select();
                     $this->deleteRelationData($deleteDatas);
                     $res = $this->model->whereNotNull($this->softDeleteField)->delete();
                 }
-            }else{
-                if($this->isSotfDelete && !$trueDelete){
-                    $res = $this->model->whereIn($this->model->getPk(),$ids)->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
-                }else{
-                    if($ids === true){
+            } else {
+                if ($this->isSotfDelete && !$trueDelete) {
+                    $res = $this->model->whereIn($this->model->getPk(), $ids)->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
+                } else {
+                    if ($ids === true) {
                         $this->deleteRelationData(true);
-                    }else{
-                        $deleteDatas = $this->model->whereIn($this->model->getPk(),$ids)->select();
+                    } else {
+                        $deleteDatas = $this->model->whereIn($this->model->getPk(), $ids)->select();
                         $this->deleteRelationData($deleteDatas);
                     }
                     $res = $this->model->destroy($ids);
                 }
             }
             Db::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Db::rollback();
             $res = false;
         }
@@ -302,7 +337,8 @@ class Grid extends View
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function deleteRelationData($deleteDatas){
+    protected function deleteRelationData($deleteDatas)
+    {
         $reflection = new \ReflectionClass($this->model);
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
         $className = $reflection->getName();
@@ -313,26 +349,27 @@ class Grid extends View
                 $p = new \ReflectionMethod($method->class, $relation);
                 if ($p->getNumberOfParameters() == 0) {
                     if ($this->model->$relation() instanceof BelongsToMany) {
-                        if($deleteDatas === true){
+                        if ($deleteDatas === true) {
                             $deleteDatas = $this->model->select();
                         }
-                        foreach ($deleteDatas as $deleteData){
+                        foreach ($deleteDatas as $deleteData) {
                             $deleteData->$relation()->detach();
                         }
-                    }elseif ($this->model->$relation() instanceof HasOne){
-                        if($deleteDatas === true){
+                    } elseif ($this->model->$relation() instanceof HasOne) {
+                        if ($deleteDatas === true) {
                             $deleteDatas = $this->model->select();
                         }
-                        foreach ($deleteDatas as $deleteData){
-                           if(!is_null($deleteData->$relation)){
-                               $deleteData->$relation->delete();
-                           }
+                        foreach ($deleteDatas as $deleteData) {
+                            if (!is_null($deleteData->$relation)) {
+                                $deleteData->$relation->delete();
+                            }
                         }
                     }
                 }
             }
         }
     }
+
     /**
      * 视图渲染
      */
@@ -349,21 +386,21 @@ class Grid extends View
             $this->data = $this->db->select()->toArray();
         }
         //软删除列
-        if($this->isSotfDelete){
-            if(request()->has('is_deleted')){
+        if ($this->isSotfDelete) {
+            if (request()->has('is_deleted')) {
                 $this->db->whereNotNull($this->softDeleteField);
-                $this->column($this->softDeleteField,'删除时间');
+                $this->column($this->softDeleteField, '删除时间');
                 $this->hideAction();
-                $this->column('action_delete','操作')->display(function ($val,$data){
-                    $button = Button::create('恢复数据','','small','el-icon-zoom-in')
-                        ->delete($data['id'],'此操作将恢复该数据, 是否继续?',2)->render();
-                    $button .= Button::create('永久删除','danger','small','el-icon-delete')
-                        ->delete($data['id'],'此操作将永久删除该数据, 是否继续?',1)->render();
+                $this->column('action_delete', '操作')->display(function ($val, $data) {
+                    $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
+                        ->delete($data['id'], '此操作将恢复该数据, 是否继续?', 2)->render();
+                    $button .= Button::create('永久删除', 'danger', 'small', 'el-icon-delete')
+                        ->delete($data['id'], '此操作将永久删除该数据, 是否继续?', 1)->render();
                     return $button;
                 });
-            }else{
+            } else {
                 $this->db->whereNull($this->softDeleteField);
-                $this->column($this->softDeleteField,'删除时间')->setAttr('v-if','deleteColumnShow');
+                $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow');
 
             }
         }
@@ -389,7 +426,7 @@ class Grid extends View
                     $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
                 }
                 $this->table->view();
-                $result['data'] =$this->data;
+                $result['data'] = $this->data;
                 $result['total'] = $this->db->count();
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
@@ -397,7 +434,5 @@ class Grid extends View
             default:
                 return $this->table->view();
         }
-
-
     }
 }

@@ -145,13 +145,13 @@ class Column extends View
      */
     public function switch(array $active = [], array $inactive = [])
     {
-        $this->display(function ($val, $data) use($active,$inactive) {
+        $this->display(function ($val, $data) use ($active, $inactive) {
             $switch = new Switchs('switch', '');
             if (count($active) > 0 && count($inactive) > 0) {
                 $switch->state($active, $inactive);
             }
             $switch->setAttr('field', $this->field);
-            $switch->setAttr('values', $val);
+            $switch->setAttr(':values', 'data.'.$this->field);
             return $switch->render();
         });
         return $this;
@@ -177,7 +177,7 @@ class Column extends View
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :tableData="' . $tableDataScriptVar . '"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :table-data="' . $tableDataScriptVar . '"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();
@@ -214,7 +214,7 @@ class Column extends View
             $this->display = sprintf($this->scopeTemplaet, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {
-            $this->display = sprintf($this->scopeTemplaet, "<span v-if=\"{$this->rowField} == null || {$this->rowField} == ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
+            $this->display = sprintf($this->scopeTemplaet, "<span v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
         }
         list($attrStr, $dataStr) = $this->parseAttr();
         return "<el-table-column $attrStr>" . $this->display . "</el-table-column>";

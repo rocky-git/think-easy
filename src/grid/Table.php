@@ -99,7 +99,7 @@ class Table extends View
             } else {
                 $column = new Column($field, $label);
             }
-            $this->cellComponent[] = $column->getDisplay($i, 'tableData' . $this->varMatk);
+            $this->cellComponent[] = $column->getDisplay($i, 'tableData');
             $i++;
             $columnHtml .= $column->render();
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());

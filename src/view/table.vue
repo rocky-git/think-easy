@@ -8,11 +8,15 @@
             <!--{/if}-->
             <!--{/notempty}-->
             <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+            <!--{if isset($toolbar)}-->
+            {$toolbar|raw}
+            <!--{/if}-->
             <!--{if !isset($hideDeletesButton)}-->
             <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect()">删除选中</el-button>
             <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
             <!--{/if}-->
+
         </div>
         <!--{if isset($trashed) && $trashed===true}-->
         <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick">
@@ -53,6 +57,7 @@
                 isDialog :false,
                 selectButtonShow:false,
                 loading:false,
+                tableData:[],
                 plugDialog:null,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
@@ -93,9 +98,13 @@
                 this.activeTabsName = 'trashed'
                 this.requestPageData()
             }
+            this.tableData = this.{$tableDataScriptVar}
         },
         inject:['reload'],
         watch:{
+            tableData(val){
+                this.{$tableDataScriptVar} = val
+            },
             deleteColumnShow(val){
                 if(val){
                     this.deleteButtonText = '清空回收站'
@@ -231,7 +240,7 @@
                         }
                     }).then(res=>{
                         ids.forEach((id)=>{
-                            this.deleteTreeData(this.{$tableDataScriptVar},id)
+                            this.deleteTreeData(this.tableData,id)
                         })
                         this.$notify({
                             title: '操作完成',
@@ -260,10 +269,10 @@
                         }
                     }).then(res=>{
                         if(deleteIds == 'true'){
-                            this.{$tableDataScriptVar} = [];
+                            this.tableData= [];
                         }else{
                             deleteIds.forEach((delId)=>{
-                                this.deleteTreeData(this.{$tableDataScriptVar},delId)
+                                this.deleteTreeData(this.tableData,delId)
                             })
                         }
                         this.$notify({
@@ -313,7 +322,7 @@
                     params:requestParams
                 }).then(res=>{
                     this.loading = false
-                    this.{$tableDataScriptVar} = res.data.data
+                    this.tableData = res.data.data
                     this.total = res.data.total
                     res.data.cellComponent.forEach((cmponent,index)=>{
                         this.cellComponent[index] = () => new Promise(resolve => {

@@ -71,7 +71,7 @@ class Button extends View
      * @param string $url
      * @param $confirm 操作提示
      */
-    public function save($id,$data,$url='',$confirm=''){
+    public function save($id,array $data,$url='',$confirm=''){
         $this->setAttr('pk-id',$id);
         $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
         $this->setAttr('open-type','update');
@@ -81,6 +81,24 @@ class Button extends View
         return $this;
     }
 
+    /**
+     * 批量更新数据
+     * @Author: rocky
+     * 2019/9/11 10:06
+     * @param $id 更新主键条件
+     * @param array $updateData 更新数据
+     * @param string $url
+     * @param string $confirm 操作提示
+     */
+    public function saveAll(array $data,$url,$confirm=''){
+        $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
+        $this->setAttr('open-type','updateBatch');
+        $this->setAttr('url',$url);
+        $this->setAttr('confirm',$confirm);
+        $this->setAttr(':tabledata.sync','tableData');
+        $this->setAttr(':selectionData','selectionData');
+        return $this;
+    }
     /**
      * 删除数据
      * @param $id 更新主键条件
@@ -102,7 +120,6 @@ class Button extends View
      */
     public function render(){
         list($attrStr, $scriptVar) = $this->parseAttr();
-
         $html = "<eadmin-button {$attrStr}></eadmin-button>";
         return $html;
     }
