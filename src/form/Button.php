@@ -29,7 +29,6 @@ class Button extends View
         $this->setAttr('size',$size);
         $this->setAttr('icon',$icon);
         $this->setAttr('text',$text);
-        //$this->setAttr('open-type','button');
         if($plain){
             $this->setAttr('plain','true');
         }
@@ -58,15 +57,10 @@ class Button extends View
      * @param string $type 跳转类型
      */
     public function href($url,$type='open'){
-        if(empty($url)){
-            $url = request()->url();
-        }
         $this->setAttr('url',$url);
         $this->setAttr('open-type',$type);
         return $this;
     }
-
-
     /**
      * 更新数据
      * @Author: rocky
@@ -82,6 +76,7 @@ class Button extends View
         $this->setAttr('open-type','update');
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
+        $this->setAttr(':tabledata.sync','tableData');
         return $this;
     }
 
@@ -100,10 +95,6 @@ class Button extends View
         $this->setAttr(':tabledata.sync','tableData');
         return $this;
     }
-//    public function hrefEdit($id,$controller,$module='admin',$type='open'){
-//        $url = "/$module/$controller/$id/edit.rest";
-//        $this->href($url);
-//    }
     /**
      * 返回html
      * @return string

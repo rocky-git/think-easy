@@ -9,6 +9,8 @@
 namespace thinkEasy\grid;
 
 
+use think\facade\Db;
+use think\model\relation\BelongsToMany;
 use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
@@ -58,8 +60,10 @@ class Grid extends View
     //是否开启软删除
     protected $isSotfDelete = false;
 
-    //删除回调
+    //删除前回调
     protected $beforeDel = null;
+
+    protected $trashedShow = false;
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -74,10 +78,18 @@ class Grid extends View
             }else{
                 $this->db->whereNull($this->softDeleteField);
             }
-            $this->table->setVar('is_deleted',true);
+            $this->trashed(true);
         }
     }
 
+    /**
+     * 是否显示回收站
+     * @param $bool true显示，false隐藏
+     */
+    public function trashed($bool){
+        $this->trashedShow = $bool;
+        $this->table->setVar('trashed',$this->trashedShow);
+    }
     /**
      * 返回表格组件，可设置属性
      * @return Table
@@ -247,19 +259,71 @@ class Grid extends View
             $ids = true;
         }
         if (!is_null($this->beforeDel)) {
-            call_user_func($this->beforeDel, $ids);
+            call_user_func($this->beforeDel, $ids,$trueDelete);
         }
-        if($ids === true){
-            if($this->isSotfDelete && !$trueDelete){
-                return $this->model->where('1=1')->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
+        $res = false;
+        Db::startTrans();
+        try{
+            if($ids === true){
+                if($this->isSotfDelete && !$trueDelete){
+                    $res = $this->model->where('1=1')->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
+                }else{
+                    $deleteDatas = $this->model->whereNotNull($this->softDeleteField)->select();
+                    $this->deleteRelationData($deleteDatas);
+                    $res = $this->model->whereNotNull($this->softDeleteField)->delete();
+                }
             }else{
-                return $this->model->whereNotNull($this->softDeleteField)->delete();
+                if($this->isSotfDelete && !$trueDelete){
+                    $res = $this->model->whereIn($this->model->getPk(),$ids)->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
+                }else{
+                    if($ids === true){
+                        $this->deleteRelationData(true);
+                    }else{
+                        $deleteDatas = $this->model->whereIn($this->model->getPk(),$ids)->select();
+                        $this->deleteRelationData($deleteDatas);
+                    }
+                    $res = $this->model->destroy($ids);
+                }
             }
+            Db::commit();
+        }catch (\Exception $e){
+            halt($e->getMessage());
+            Db::rollback();
+            $res = false;
         }
-        if($this->isSotfDelete && !$trueDelete){
-            return $this->model->whereIn($this->model->getPk(),$ids)->update([$this->softDeleteField=>date('Y-m-d H:i:s')]);
-        }else{
-            return $this->model->destroy($ids);
+        return $res;
+    }
+
+    /**
+     * 删除关联数据
+     * @param $deleteDatas
+     * @throws \ReflectionException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    protected function deleteRelationData($deleteDatas){
+
+        $reflection = new \ReflectionClass($this->model);
+        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
+        $className = $reflection->getName();
+        $relatonMethod = [];
+
+        foreach ($methods as $method) {
+            if ($method->class == $className) {
+                $relation = $method->name;
+                $p = new \ReflectionMethod($method->class, $relation);
+                if ($p->getNumberOfParameters() == 0) {
+                    if ($this->model->$relation() instanceof BelongsToMany) {
+                        if($deleteDatas === true){
+                            $deleteDatas = $this->model->select();
+                        }
+                        foreach ($deleteDatas as $deleteData){
+                            $deleteData->$relation()->detach();
+                        }
+                    }
+                }
+            }
         }
     }
     /**
@@ -299,7 +363,6 @@ class Grid extends View
 
         //解析列
         $this->parseColumn();
-
         $this->table->setAttr('data', $this->data);
         //树形
         if ($this->treeTable) {

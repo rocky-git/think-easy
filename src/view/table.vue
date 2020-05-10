@@ -2,7 +2,7 @@
     <div>
         <div class="container">
             <!--{notempty name="title"}-->
-            <!--{if !isset($is_deleted)}-->
+            <!--{if !isset($trashed) || $trashed===false}-->
             <div>{$title}</div>
             <el-divider></el-divider>
             <!--{/if}-->
@@ -14,7 +14,7 @@
             <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
             <!--{/if}-->
         </div>
-        <!--{if isset($is_deleted)}-->
+        <!--{if isset($trashed) && $trashed===true}-->
         <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick">
             <el-tab-pane label="{$title|default='数据列表'}" name="data">
                 {$tableHtml|raw}
@@ -88,6 +88,11 @@
                     resolve(this.splitCode(cmponent))
                 })
             })
+            if(sessionStorage.getItem('deleteColumnShow')){
+                this.deleteColumnShow = true
+                this.activeTabsName = 'trashed'
+                this.requestPageData()
+            }
         },
         inject:['reload'],
         watch:{
@@ -114,13 +119,14 @@
             handleTabsClick(tab, event){
                 this.page = 1
                 if(this.activeTabsName == 'data'){
+                    sessionStorage.removeItem('deleteColumnShow')
                     this.deleteColumnShow = false
                 }else{
+                    sessionStorage.setItem('deleteColumnShow',1)
                     this.deleteColumnShow = true
 
                 }
                 this.requestPageData()
-
             },
             splitCode  (codeStr)  {
                 const script = this.getSource(codeStr, 'script').replace(/export default/, 'return ')
@@ -146,7 +152,6 @@
                 } else {
                     openingTag = openingTag[0]
                 }
-
                 return source.slice(source.indexOf(openingTag) + openingTag.length, source.lastIndexOf(`</${type}>`))
             },
             //对话框表单 type=1添加，type=2编辑
@@ -173,9 +178,7 @@
                         this.dialogVisible = true
 
                     })
-
                 }else{
-
                     this.$router.push(url)
                 }
             },
@@ -234,7 +237,7 @@
                             title: '操作完成',
                             message: '数据恢复成功',
                             type: 'success',
-                            duration: 2000
+                            duration: 1500
                         })
 
                     })
@@ -267,7 +270,7 @@
                             title: '操作完成',
                             message: res.message,
                             type: 'success',
-                            duration: 2000
+                            duration: 1500
                         })
 
                     })

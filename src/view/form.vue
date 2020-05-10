@@ -63,7 +63,7 @@
                                     title: '操作完成',
                                     message: response.message,
                                     type: 'success',
-                                    duration: 2000
+                                    duration: 1500
                                 })
                                 this.$emit('update:dialogVisible', false)
                             }else if(response.code == 422){
@@ -71,7 +71,6 @@
                                     this.validates[field+'ErrorShow'] = true
                                     this.validates[field+'ErrorMsg'] = response.data[field]
                                 }
-
                             }
                         })
                     } else {

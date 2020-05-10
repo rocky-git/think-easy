@@ -27,22 +27,22 @@ class Field extends View
 
     //输入框inline
     protected $inline = '';
-    
+
     //缺省默认值
     public $defaultValue = '';
-    
+
     //设置值
     public $value = null;
-    
+
     //创建验证规则
     public $createRules = [];
 
     //更新验证规则
     public $updateRules = [];
-    
+
     //提示帮助文本
     public $helpText = '';
-    
+
     /**
      * Input constructor.
      * @param $field 字段
@@ -56,6 +56,7 @@ class Field extends View
         $this->setAttr('v-model', 'form.' . $field);
         $this->setAttr('placeholder', '请输入' . $label);
     }
+
     /**
      * 禁用
      */
@@ -70,16 +71,19 @@ class Field extends View
      * @param $text
      * @return $this
      */
-    public function help($text){
+    public function help($text)
+    {
         $this->helpText = $text;
         return $this;
     }
+
     /**
      * 缺省默认值
-     * @param $value 值 
+     * @param $value 值
      * @return $this
      */
-    public function default($value){
+    public function default($value)
+    {
         $this->defaultValue = $value;
         return $this;
     }
@@ -89,10 +93,12 @@ class Field extends View
      * @param $value 值
      * @return $this
      */
-    public function value($value){
+    public function value($value)
+    {
         $this->value = $value;
         return $this;
     }
+
     /**
      * 必填
      * @return $this
@@ -102,6 +108,7 @@ class Field extends View
         $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label]], JSON_UNESCAPED_UNICODE);
         return $this;
     }
+
     /**
      * 输入框inline
      */
@@ -110,7 +117,7 @@ class Field extends View
         $this->inline = "<el-col :span='4'>%s</el-col>";
         return $this;
     }
-    
+
     /**
      * 输入框占位提示文本
      */
@@ -119,6 +126,7 @@ class Field extends View
         $this->setAttr('placeholder', $text);
         return $this;
     }
+
     /**
      * 占位栅格数，24栏占满
      * @param $num 数量
@@ -129,6 +137,7 @@ class Field extends View
         $this->md = "<el-col :span='{$num}'>%s</el-col>";
         return $this;
     }
+
     /**
      * 表单新增更新验证规则
      * @Author: rocky
@@ -141,6 +150,7 @@ class Field extends View
         $this->updateRules = $rule;
         return $this;
     }
+
     /**
      * 表单新增验证规则
      * @Author: rocky
@@ -170,16 +180,23 @@ class Field extends View
      * @param $rules
      * @return array
      */
-    public function paseRule($rules){
+    public function paseRule($rules)
+    {
         $ruleMsg = [];
         $rule = [];
         foreach ($rules as $key => $value) {
-            $ruleMsg[$this->field . '.' . $key] = $value;
-            $rule[]= $key;
+            if (strpos($key, ':') !== false) {
+                $msgKey = $this->field . '.' . substr($key, 0, strpos($key, ':'));
+            } else {
+                $msgKey = $this->field . '.' . $key;
+
+            }
+            $ruleMsg[$msgKey] = $value;
+            $rule[] = $key;
         }
         $resRule = [
             $this->field => $rule
         ];
-        return [$resRule,$ruleMsg];
+        return [$resRule, $ruleMsg];
     }
 }

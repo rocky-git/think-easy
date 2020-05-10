@@ -10,9 +10,11 @@ namespace thinkEasy\form;
 
 
 use think\exception\HttpResponseException;
+use think\facade\Db;
 use think\facade\Request;
 use think\facade\Validate;
 use think\Model;
+use think\model\relation\BelongsToMany;
 use thinkEasy\View;
 
 /**
@@ -78,9 +80,13 @@ class Form extends View
     //表单验证双向绑定变量
     protected $formValidate = [];
 
+    //表字段
+    protected $tableFields = [];
+
     public function __construct(Model $model)
     {
         $this->model = $model;
+        $this->tableFields = $this->model->getTableFields();
         $this->template = 'form';
         $this->setAttr('label-width', '120px');
 
@@ -134,23 +140,62 @@ class Form extends View
      */
     public function update($id, $data)
     {
+        $res =$this->autoSave($data,$id);
+        return $res;
+    }
+    /**
+     * 数据保存
+     */
+    public function save($data)
+    {
+        $res = $this->autoSave($data);
+        return $res;
+    }
+    protected function autoSave($data,$id=null){
+        $res = false;
         $this->parseFormItem();
         $this->checkRule($data);
+        //保存前回调
         if (!is_null($this->beforeSave)) {
             $beforePost = call_user_func($this->beforeSave, $data, $this->data);
             if (is_array($beforePost)) {
                 $data = array_merge($data, $beforePost);
             }
         }
-        $this->model = beforeDelfind($id);
-        $res = $this->model->save($data);
-        if (!is_null($this->afterSave)) {
-            call_user_func_array($this->afterSave, [$data, $this->model]);
+        Db::startTrans();
+        try {
+            $pk = $this->model->getPk();
+            if(!is_null($id)){
+                $this->model = $this->model->find($id);
+            }
+            $res =  $this->model->save($data);
+            foreach ($data as $field=>$value){
+                if(method_exists($this->model,$field)){
+                    //多对多关联保存
+                    if($this->model->$field() instanceof BelongsToMany){
+                        $relationData = $value;
+                        $this->model->$field()->detach();
+                        if (is_string($relationData)) {
+                            $relationData = explode(',', $relationData);
+                            $relationData = array_filter($relationData);
+                        }
+                        if (count($relationData) > 0) {
+                            $this->model->$field()->saveAll($relationData);
+                        }
+                    }
+                }
+            }
+            Db::commit();
+        }catch (\Exception $e){
+            Db::rollback();
+            $res = false;
         }
-
+        //保存回后调
+        if (!is_null($this->afterSave)) {
+            call_user_func_array($this->afterSave, [$data, $res]);
+        }
         return $res;
     }
-
     /**
      * 保存后回调
      * @param \Closure $closure
@@ -169,35 +214,37 @@ class Form extends View
         $this->beforeSave = $closure;
     }
 
+
+
     /**
      * 获取模型当前数据
      * @Author: rocky
      * 2019/8/22 14:56
      * @return array|mixed
      */
-    public function getData()
+    public function getData($field = null)
     {
-        return $this->data;
-    }
-
-    /**
-     * 数据保存
-     */
-    public function save($data)
-    {
-        $this->parseFormItem();
-        $this->checkRule($data);
-        if (!is_null($this->beforeSave)) {
-            $beforePost = call_user_func($this->beforeSave, $data, $this->data);
-            if (is_array($beforePost)) {
-                $data = array_merge($data, $beforePost);
+        if(is_null($field)){
+            return $this->data;
+        }else{
+            if(method_exists($this->model,$field)){
+                if($this->model->$field() instanceof BelongsToMany){
+                    $pk = $this->model->$field()->getPk();
+                    $relationData = $this->data->$field;
+                    if (is_null($relationData)) {
+                        $val = [];
+                    } else {
+                        $val = $relationData->column($pk);
+                    }
+                    return $val;
+                }
+            }else{
+                if(isset($this->data[$field])){
+                    return $this->data[$field];
+                }
             }
         }
-        $res = $this->model->save($data);
-        if (!is_null($this->afterSave)) {
-            call_user_func_array($this->afterSave, [$data, $res]);
-        }
-        return $res;
+        return null;
     }
 
     /**
@@ -210,7 +257,7 @@ class Form extends View
      */
     public function edit($id)
     {
-        $this->data = $this->model->find($id)->toArray();
+        $this->data = $this->model->find($id);
         $this->formData[$this->model->getPk()] = $id;
         $this->isEdit = true;
         return $this;
@@ -298,13 +345,12 @@ class Form extends View
                 $this->formValidate["{$formItem->field}ErrorMsg"] = '';
                 $this->formValidate["{$formItem->field}ErrorShow"] = false;
                 //设置默认值
-
                 if ($this->isEdit) {
-                    if (isset($this->data[$formItem->field])) {
-                        $this->formData[$formItem->field] = $this->data[$formItem->field];
-                    }
-                    if (isset($this->data[$formItem->field]) && ($this->data[$formItem->field] == null || $this->data[$formItem->field] == '')) {
+                    $fieldValue = $this->getData($formItem->field);
+                    if(is_null($fieldValue)){
                         $this->formData[$formItem->field] = $formItem->defaultValue;
+                    }else{
+                        $this->formData[$formItem->field] = $fieldValue ;
                     }
                 } else {
                     $this->formData[$formItem->field] = $formItem->defaultValue;
@@ -328,7 +374,6 @@ class Form extends View
 
             }
         }
-
         return $formItemHtml;
     }
 

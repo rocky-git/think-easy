@@ -15,6 +15,7 @@ class Dialog extends View
 {
     protected $attrs = [
         'title',
+        'modal-append-to-body'
     ];
     public function __construct($title,$content)
     {

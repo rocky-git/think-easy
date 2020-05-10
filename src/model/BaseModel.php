@@ -13,6 +13,6 @@ use think\Model;
 
 
 class BaseModel extends Model
-{   
-  
+{
+    protected $autoWriteTimestamp = 'datetime';
 }
