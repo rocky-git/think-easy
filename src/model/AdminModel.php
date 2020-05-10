@@ -9,6 +9,8 @@
 namespace thinkEasy\model;
 
 
+use app\admin\model\Test;
+
 class AdminModel extends BaseModel
 {
     public function __construct(array $data = [])

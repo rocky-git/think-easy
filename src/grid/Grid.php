@@ -11,6 +11,7 @@ namespace thinkEasy\grid;
 
 use think\facade\Db;
 use think\model\relation\BelongsToMany;
+use think\model\relation\HasOne;
 use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
@@ -287,7 +288,6 @@ class Grid extends View
             }
             Db::commit();
         }catch (\Exception $e){
-            halt($e->getMessage());
             Db::rollback();
             $res = false;
         }
@@ -303,12 +303,10 @@ class Grid extends View
      * @throws \think\db\exception\ModelNotFoundException
      */
     protected function deleteRelationData($deleteDatas){
-
         $reflection = new \ReflectionClass($this->model);
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
         $className = $reflection->getName();
         $relatonMethod = [];
-
         foreach ($methods as $method) {
             if ($method->class == $className) {
                 $relation = $method->name;
@@ -320,6 +318,15 @@ class Grid extends View
                         }
                         foreach ($deleteDatas as $deleteData){
                             $deleteData->$relation()->detach();
+                        }
+                    }elseif ($this->model->$relation() instanceof HasOne){
+                        if($deleteDatas === true){
+                            $deleteDatas = $this->model->select();
+                        }
+                        foreach ($deleteDatas as $deleteData){
+                           if(!is_null($deleteData->$relation)){
+                               $deleteData->$relation->delete();
+                           }
                         }
                     }
                 }
