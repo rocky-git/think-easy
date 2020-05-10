@@ -13,6 +13,13 @@
             tableData: Array,
             showEditId:Number,
         },
+        data(){
+          return {
+            form:{
+                switch:'{$switchValue|default="0"}',
+            },
+          }
+        },
         methods:{
             handleEdit(row,index){
                 this.$emit('update:showEditId', row.id)

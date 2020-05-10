@@ -23,16 +23,17 @@ class Button extends View
      */
     public function create($text='',$type='',$size='small',$icon='',$plain=false)
     {
-        $this->template  = 'button';
-        $this->text  = $text;
-        $this->setAttr('type',$type);
-        $this->setAttr('size',$size);
-        $this->setAttr('icon',$icon);
-        $this->setAttr('text',$text);
+        $button = new self();
+        $button->template  = 'button';
+        $button->text  = $text;
+        $button->setAttr('type',$type);
+        $button->setAttr('size',$size);
+        $button->setAttr('icon',$icon);
+        $button->setAttr('text',$text);
         if($plain){
-            $this->setAttr('plain','true');
+            $button->setAttr('plain','true');
         }
-        return $this;
+        return $button;
     }
     //禁用状态
     public function disabled(){

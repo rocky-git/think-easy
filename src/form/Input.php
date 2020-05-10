@@ -19,7 +19,9 @@ class Input extends Field
     protected $prependHtml = '';
     protected $appendHtml = '';
     protected $attrs = [
-        'show-password'
+        'show-password',
+        'disabled',
+        'readonly',
     ];
 
 
@@ -143,7 +145,7 @@ class Input extends Field
      */
     public function readonly()
     {
-        $this->setAttr('readonly', 'true');
+        $this->setAttr('readonly', true);
         return $this;
     }
 

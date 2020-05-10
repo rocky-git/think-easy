@@ -43,6 +43,7 @@ class Field extends View
     //提示帮助文本
     public $helpText = '';
 
+   
     /**
      * Input constructor.
      * @param $field 字段
@@ -62,7 +63,7 @@ class Field extends View
      */
     public function disabled()
     {
-        $this->setAttr('disabled', 'true');
+        $this->setAttr('disabled', true);
         return $this;
     }
 

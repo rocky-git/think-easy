@@ -126,7 +126,6 @@ class AdminService extends Service
     {
         $nodes = NodeService::instance()->all();
         $permissions = $this->user()->permissions();
-
         $newNodes = [];
         foreach ($nodes as $key => $node) {
             if ($node['is_auth']) {

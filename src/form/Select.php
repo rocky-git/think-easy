@@ -15,12 +15,16 @@ class Select extends Field
         'data',
         'clearable',
         'filterable',
+        'disabled',
+        'multiple',
+        'readonly',
     ];
     public function __construct($field, $label)
     {
         parent::__construct($field, $label);
         $this->setAttr('clearable',true);
         $this->setAttr('filterable',true);
+        $this->setAttr('placeholder', '请选择' . $label);
     }
 
     /**
@@ -105,7 +109,7 @@ class Select extends Field
      */
     public function multiple()
     {
-        $this->setAttr('multiple', 'true');
+        $this->setAttr('multiple', true);
         return $this;
     }
 

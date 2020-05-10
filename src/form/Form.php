@@ -25,6 +25,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Input password($field, $label) 密码输入框
  * @method \thinkEasy\form\Input number($field, $label) 数字输入框
  * @method \thinkEasy\form\Select select($field, $label) 下拉选择器
+ * @method \thinkEasy\form\Switchs switch($field, $label) switch开关
  * @method \thinkEasy\form\Tree tree($field, $label) 树形
  */
 class Form extends View
@@ -285,7 +286,8 @@ class Form extends View
 
         if ($name == 'text' || $name == 'textarea' || $name == 'number' || $name == 'password') {
             $class .= 'Input';
-
+        }elseif ($name == 'switch'){
+            $class .= 'Switchs';
         } else {
             $class .= ucfirst($name);
         }
