@@ -369,7 +369,9 @@ class Grid extends View
             }
         }
     }
-
+    protected function getDataArray(){
+        return $this->data->toArray();
+    }
     /**
      * 视图渲染
      */
@@ -381,9 +383,9 @@ class Grid extends View
             $count = $this->db->count();
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
-            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select()->toArray();
+            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
         } else {
-            $this->data = $this->db->select()->toArray();
+            $this->data = $this->db->select();
         }
         //软删除列
         if ($this->isSotfDelete) {
@@ -407,12 +409,12 @@ class Grid extends View
 
         //解析列
         $this->parseColumn();
-        $this->table->setAttr('data', $this->data);
+        $this->table->setAttr('data', $this->getDataArray());
         //树形
         if ($this->treeTable) {
-            $this->data = $this->tree($this->data);
+            $treeData = $this->tree($this->getDataArray());
             $this->table->setAttr('row-key', $this->model->getPk());
-            $this->table->setAttr('data', $this->data);
+            $this->table->setAttr('data', $treeData);
             $this->table->setAttr('default-expand-all', true);
             $this->table->setAttr('tree-props', [
                 'children' => 'children',

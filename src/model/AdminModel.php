@@ -9,6 +9,7 @@
 namespace thinkEasy\model;
 
 
+use app\admin\model\SystemUserAuth;
 use app\admin\model\Test;
 
 class AdminModel extends BaseModel
@@ -24,6 +25,9 @@ class AdminModel extends BaseModel
     //权限
     public function permissions(){
         return SystemAuthNode::whereIn('auth',$this->roles()->column('id'))->select();
+    }
+    public function test(){
+        return $this->hasOne(Test::class,'uid');
     }
     //角色组
     public function roles(){

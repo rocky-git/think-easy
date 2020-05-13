@@ -57,7 +57,10 @@ class Field extends View
         $this->setAttr('v-model', 'form.' . $field);
         $this->setAttr('placeholder', '请输入' . $label);
     }
-
+    public function getField(){
+        $fields = explode('.',$this->field);
+        return end($fields);
+    }
     /**
      * 禁用
      */

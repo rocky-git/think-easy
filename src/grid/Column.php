@@ -54,14 +54,18 @@ class Column extends View
     {
         if (!empty($field)) {
             $this->field = $field;
-            $this->rowField = "scope.row.{$this->field}";
+            $field = $this->getField($field);
+            $this->rowField = "scope.row.{$field}";
             $this->setAttr('prop', $field);
         }
         if (!empty($label)) {
             $this->setAttr('label', $label);
         }
     }
-
+    protected function getField($field){
+       $fields = explode('.',$field);
+       return end($fields);
+    }
     /**
      * 设置当内容过长被隐藏时显示
      * @return $this
@@ -163,17 +167,30 @@ class Column extends View
      */
     public function setData($data)
     {
+        $rowData = $data;
+        $val = $this->getValue($data);
+
+        if(strpos($this->field,'.')){
+            $this->cellVue .= "<span v-if='data.id == {$rowData['id']}'>{$val}</span>";
+        }
         if (!is_null($this->displayClosure)) {
-            if (isset($data[$this->field])) {
-                $val = $data[$this->field];
-            } else {
-                $val = null;
-            }
-            $res = call_user_func_array($this->displayClosure, [$val, $data]);
-            $this->cellVue .= "<span v-if='data.id == {$data['id']}'>{$res}</span>";
+            $res = call_user_func_array($this->displayClosure, [$val, $rowData]);
+            $this->cellVue .= "<span v-if='data.id == {$rowData['id']}'>{$res}</span>";
         }
     }
-
+    protected function getValue($data){
+        if(empty($this->field)){
+            return null;
+        }
+        foreach (explode('.', $this->field) as $field) {
+            if (isset($data[$field])) {
+                $data = $data[$field];
+            } else {
+                $data = null;
+            }
+        }
+        return $data;
+    }
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {

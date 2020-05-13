@@ -140,4 +140,5 @@ abstract class View
         }
         return \think\facade\View::display($content, array_merge($this->attrVars,$this->vars), ['strip_space' => false]);
     }
+    
 }
