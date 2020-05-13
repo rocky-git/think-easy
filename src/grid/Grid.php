@@ -63,7 +63,8 @@ class Grid extends View
 
     //删除前回调
     protected $beforeDel = null;
-    
+    //更新前回调
+    protected $beforeUpdate = null;
     //是否显示回收站
     protected $trashedShow = false;
     
@@ -263,6 +264,9 @@ class Grid extends View
      */
     public function update($ids, $data)
     {
+        if (!is_null($this->beforeUpdate)) {
+            call_user_func($this->beforeUpdate, $ids,$data);
+        }
         return $this->model->whereIn($this->model->getPk(), $ids)->strict(false)->update($data);
     }
 
@@ -273,7 +277,10 @@ class Grid extends View
     {
         $this->table->setVar('hideDeletesButton', true);
     }
-
+    //更新前回调
+    public function updateing(\Closure $closure){
+        $this->beforeUpdate = $closure;
+    }
     //删除前回调
     public function deling(\Closure $closure)
     {
