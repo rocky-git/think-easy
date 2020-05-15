@@ -370,7 +370,6 @@ class Form extends View
 
     protected function setData($field, $val)
     {
-        $fieldData = [];
         if (strpos($field, '.')) {
             list($relation, $field) = explode('.', $field);
             $this->formData[$relation][$field] = $val;

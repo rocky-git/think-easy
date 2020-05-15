@@ -83,7 +83,9 @@ class Table extends View
     {
         $this->headers = $cloumns;
     }
-
+    public function setScriptArr($scriptArr){
+        $this->scriptArr = array_merge($this->scriptArr, $scriptArr);
+    }
     /**
      * 返回视图
      * @return string
@@ -109,6 +111,7 @@ class Table extends View
         if (!empty($columnScriptVar)) {
             $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
         }
+        
         $tableHtml = '<el-table @selection-change="handleSelect" ' . $attrStr . '>' . $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);

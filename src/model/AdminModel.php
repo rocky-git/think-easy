@@ -22,6 +22,9 @@ class AdminModel extends BaseModel
     protected function setPasswordAttr($val){
         return password_hash($val,PASSWORD_DEFAULT);
     }
+    public function test(){
+        return $this->hasOne(Test::class,'uid');
+    }
     //权限
     public function permissions(){
         return SystemAuthNode::whereIn('auth',$this->roles()->column('id'))->select();

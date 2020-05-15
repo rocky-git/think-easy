@@ -70,7 +70,6 @@
                                 for(field in response.data){
                                     val = response.data[field]
                                     field = field.replace('.','_')
-                                    console.log(field)
                                     this.validates[field+'ErrorShow'] = true
                                     this.validates[field+'ErrorMsg'] = val
                                 }

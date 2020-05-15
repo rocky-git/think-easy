@@ -1,22 +1,42 @@
 <template>
     <div>
+
         <div class="container">
             <!--{notempty name="title"}-->
-            <!--{if !isset($trashed) || $trashed===false}-->
-            <div>{$title}</div>
+                <!--{if !isset($trashed) || $trashed===false}-->
+                <div>{$title}</div>
             <el-divider></el-divider>
-            <!--{/if}-->
+                <!--{/if}-->
             <!--{/notempty}-->
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
-            <!--{if isset($toolbar)}-->
-            {$toolbar|raw}
-            <!--{/if}-->
-            <!--{if !isset($hideDeletesButton)}-->
-            <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect()">删除选中</el-button>
-            <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-            <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
-            <!--{/if}-->
-
+            <!--{notempty name="$filter"}-->
+            <div class="filter-container" >
+                <el-divider content-position="left">筛选</el-divider>
+                <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
+                {$filter|raw|default=''}
+                    <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+                        搜索
+                    </el-button>
+                    <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
+                        重置
+                    </el-button>
+                </el-form>
+            </div>
+            <!--{/notempty}-->
+            <el-row style="margin-top: 5px">
+                <el-col :span="24">
+                <!--{if !isset($hideAddButton)}-->
+                <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                <!--{/if}-->
+                <!--{if isset($toolbar)}-->
+                {$toolbar|raw}
+                <!--{/if}-->
+                <!--{if !isset($hideDeletesButton)}-->
+                <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect()">删除选中</el-button>
+                <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                <!--{/if}-->
+                </el-col>
+             </el-row>
         </div>
         <!--{if isset($trashed) && $trashed===true}-->
         <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick">
@@ -50,6 +70,7 @@
     export default {
         data(){
             return {
+                form:{},
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
                 showEditId:0,
@@ -74,7 +95,6 @@
             /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
-
             let i = 10
             if(this.size < 10){
                 i=this.size
@@ -125,6 +145,18 @@
             },
         },
         methods: {
+            //重置筛选表单
+            filterReset(){
+                this.$refs['form'].resetFields();
+            },
+            clearValidate(formName) {
+
+            },
+            //查询过滤
+            handleFilter(){
+                this.page = 1
+                this.requestPageData()
+            },
             handleTabsClick(tab, event){
                 this.page = 1
                 if(this.activeTabsName == 'data'){
@@ -316,6 +348,8 @@
                 if(this.deleteColumnShow){
                     requestParams = Object.assign(requestParams,{'is_deleted':true})
                 }
+                requestParams = Object.assign(requestParams,this.form)
+                requestParams = Object.assign(requestParams,this.$route.query)
                 this.$request({
                     url: url,
                     method: 'get',
@@ -343,6 +377,7 @@
 
     .container {
         background: #fff;
+        position: relative;
         padding: 20px 16px;
     }
 </style>

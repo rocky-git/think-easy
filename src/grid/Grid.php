@@ -67,10 +67,10 @@ class Grid extends View
     protected $beforeUpdate = null;
     //是否显示回收站
     protected $trashedShow = false;
-    
     //工具栏
     protected $toolsArr = [];
-
+    //查询过滤
+    protected $filter = null;
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -269,7 +269,13 @@ class Grid extends View
         }
         return $this->model->whereIn($this->model->getPk(), $ids)->strict(false)->update($data);
     }
-
+    /**
+     * 隐藏添加按钮
+     */
+    public function hideAddButton()
+    {
+        $this->table->setVar('hideAddButton', true);
+    }
     /**
      * 隐藏删除按钮
      */
@@ -287,6 +293,17 @@ class Grid extends View
         $this->beforeDel = $closure;
     }
 
+    /**
+     * 查询过滤
+     * @param $callback
+     */
+    public function filter($callback)
+    {
+        if ($callback instanceof \Closure) {
+            $this->filter = new Filter($this->db);
+            call_user_func($callback, $this->filter);
+        }
+    }
     /**
      * 删除数据
      */
@@ -417,6 +434,11 @@ class Grid extends View
         //解析列
         $this->parseColumn();
         $this->table->setAttr('data', $this->getDataArray());
+        //查询过滤
+        if (!is_null($this->filter)) {
+            $this->table->setVar('filter', $this->filter->render());
+            $this->table->setScriptArr($this->filter->scriptArr);
+        }
         //树形
         if ($this->treeTable) {
             $treeData = $this->tree($this->getDataArray());
