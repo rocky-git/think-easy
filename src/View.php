@@ -94,9 +94,11 @@ abstract class View
         $var = Str::snake($var);
         $var = str_replace('_','-',$var);
         $class = basename(str_replace('\\', '/', lcfirst(get_class($this))));
-        $var =  str_replace(strtolower($class).':',':',$var);
-        $var =  str_replace(strtolower($class).'@','@',$var);
-        $var =  str_replace(strtolower($class).'-','',$var);
+        $class = Str::snake($class);
+        $class = str_replace('_','-',strtolower($class));
+        $var =  str_replace($class.':',':',$var);
+        $var =  str_replace($class.'@','@',$var);
+        $var =  str_replace($class.'-','',$var);
         $var =  str_replace($this->varMatk ,'',$var);
         return $var;
     }

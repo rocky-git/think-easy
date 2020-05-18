@@ -170,6 +170,102 @@ class Filter extends View
         $this->formItem($field.'__between_end', '-')->placeholder("请输入$label");
         return $this;
     }
+
+    /**
+     * 日期筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function date($field, $label){
+        $this->paseFilter('eq', $field);
+        $this->formItem($field, $label,'DateTime');
+        return $this;
+    }
+    /**
+     * 时间筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function time($field, $label){
+        $this->paseFilter('eq', $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType('time');
+        return $formItem;
+    }
+    /**
+     * 日期时间筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function datetime($field, $label){
+        $this->paseFilter('eq', $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType('datetime');
+        return $formItem;
+    }
+    /**
+     * 日期时间范围筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function datetimeRange($field, $label){
+        $this->paseFilter('dateBetween', $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType('datetime')->range();
+        return $formItem;
+    }
+    /**
+     * 日期范围筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function dateRange($field, $label){
+        $this->paseFilter('dateBetween', $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType('date')->range();
+        return $formItem;
+    }
+    /**
+     * 时间范围筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function timeRange($field, $label){
+        $this->paseFilter('dateBetween', $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType('time')->range();
+        return $formItem;
+    }
+    /**
+     * 年日期筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function year($field, $label){
+        $this->paseFilter(__FUNCTION__, $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType(__FUNCTION__);
+        return $formItem;
+    }
+    /**
+     * 月日期筛选
+     * @param $field 字段
+     * @param $label 标签
+     * @return \thinkEasy\form\DateTime
+     */
+    public function month($field, $label){
+        $this->paseFilter(__FUNCTION__, $field);
+        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem->setType(__FUNCTION__);
+        return $formItem;
+    }
     /**
      * NOT区间查询
      * @param $field 字段
@@ -256,6 +352,16 @@ class Filter extends View
         if (isset($data[$field]) && $data[$field] !== '') {
             if (in_array($dbField, $this->tableFields)) {
                 switch ($method) {
+                    case 'year':
+                        $this->db->whereYear($dbField,$data[$field]);
+                        break;
+                    case 'month':
+                        $this->db->whereMonth($dbField,$data[$field]);
+                        break;
+                    case 'dateBetween':
+                        list($startTime,$endTime) = $data[$field];
+                        $this->db->whereBetweenTime($dbField,$startTime,$endTime);
+                        break;
                     case 'between':
                          $betweenStart = $data[$field];
                          $field = str_replace('__between_start','__between_end',$field);

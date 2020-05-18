@@ -29,6 +29,7 @@ class AdminModel extends BaseModel
     public function permissions(){
         return SystemAuthNode::whereIn('auth',$this->roles()->column('id'))->select();
     }
+
     //角色组
     public function roles(){
         return $this->belongsToMany('system_auth','system_user_auth','role_id','user_id');

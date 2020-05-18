@@ -30,6 +30,12 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Select select($field, $label) 下拉选择器
  * @method \thinkEasy\form\Switchs switch ($field, $label) switch开关
  * @method \thinkEasy\form\Tree tree($field, $label) 树形
+ * @method \thinkEasy\form\DateTime dateTime($field, $label) 日期时间
+ * @method \thinkEasy\form\DateTime date($field, $label) 日期
+ * @method \thinkEasy\form\DateTime dates($field, $label) 多选日期
+ * @method \thinkEasy\form\DateTime time($field, $label) 时间
+ * @method \thinkEasy\form\DateTime year($field, $label) 年
+ * @method \thinkEasy\form\DateTime month($field, $label) 月
  */
 class Form extends View
 {
@@ -43,6 +49,7 @@ class Form extends View
         'status-icon',
         'validate-on-rule-change',
         'disabled',
+        'unlink-panels',
     ];
     //表单元素组件
     protected $formItem = [];
@@ -271,19 +278,39 @@ class Form extends View
 
         if ($name == 'text' || $name == 'textarea' || $name == 'number' || $name == 'password') {
             $class .= 'Input';
-        } elseif ($name == 'switch') {
+        }elseif ($name == 'datetime' || $name == 'date' || $name == 'time' || $name == 'year' || $name == 'month') {
+            $class .= 'DateTime';
+        }elseif ($name == 'switch') {
             $class .= 'Switchs';
         } else {
             $class .= ucfirst($name);
         }
         $formItem = new $class($field, $label);
-
-        if ($name == 'number') {
-            $formItem->setAttr('type', 'number');
-        } elseif ($name == 'password') {
-            $formItem->password();
-        } elseif ($name == 'textarea') {
-            $formItem->setAttr('type', 'textarea');
+        switch ($name){
+            case 'number':
+                $formItem->setAttr('type', 'number');
+                break;
+            case 'password':
+                $formItem->password();
+                break;
+            case 'textarea':
+                $formItem->setAttr('type', 'textarea');
+                break;
+            case 'dateTime':
+                $formItem->setType('datetime');
+                break;
+            case 'time':
+                $formItem->setType('time');
+                break;
+            case 'year':
+                $formItem->setType('year');
+                break;
+            case 'month':
+                $formItem->setType('month');
+                break;
+            case 'dates':
+                $formItem->setType('dates');
+                break;
         }
         $this->formItem[] = $formItem;
         return $formItem;
