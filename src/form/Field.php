@@ -15,7 +15,8 @@ class Field extends View
 {
     //字段
     public $field = '';
-
+    
+    protected $fields = [];
     //标签
     public $label = '';
 
@@ -49,9 +50,11 @@ class Field extends View
      * @param $field 字段
      * @param $label 标签
      */
-    public function __construct($field, $label)
+    public function __construct($field, $label,$arguments=[])
     {
         $this->field = $field;
+        $this->fields =  $arguments;
+        array_unshift( $this->fields ,$this->field);
         $this->label = $label;
         $this->rule = json_encode([], JSON_UNESCAPED_UNICODE);
         $this->setAttr('v-model', 'form.' . $field);
@@ -60,6 +63,9 @@ class Field extends View
     public function getField(){
         $fields = explode('.',$this->field);
         return end($fields);
+    }
+    public function getFileds(){
+        return $this->fields;
     }
     /**
      * 禁用

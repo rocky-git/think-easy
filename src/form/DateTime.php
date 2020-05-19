@@ -22,9 +22,9 @@ class DateTime extends Field
     ];
     protected $type = 'date';
     protected $html = '<el-date-picker %s></el-date-picker>';
-    public function __construct($field, $label)
+    public function __construct($field, $label,$arguments = [])
     {
-        parent::__construct($field, $label);
+        parent::__construct($field, $label,$arguments);
         $this->setAttr('placeholder', '请选择' . $label);
         $this->setAttr('editable', false);
         $this->setAttr('value-format', 'yyyy-MM-dd');

@@ -24,6 +24,7 @@ use thinkEasy\View;
  * Class Form
  * @package thinkEasy\form
  * @method \thinkEasy\form\Input text($field, $label) 文本输入框
+ * @method \thinkEasy\form\Input hidden($field) 隐藏输入框
  * @method \thinkEasy\form\Input textarea($field, $label) 多行文本输入框
  * @method \thinkEasy\form\Input password($field, $label) 密码输入框
  * @method \thinkEasy\form\Input number($field, $label) 数字输入框
@@ -31,11 +32,15 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Switchs switch ($field, $label) switch开关
  * @method \thinkEasy\form\Tree tree($field, $label) 树形
  * @method \thinkEasy\form\DateTime dateTime($field, $label) 日期时间
+ * @method \thinkEasy\form\DateTime dateTimeRange($startFiled,$endField, $label) 日期时间范围时间
+ * @method \thinkEasy\form\DateTime dateRange($startFiled,$endField, $label) 日期范围时间
+ * @method \thinkEasy\form\DateTime timeRange($startFiled,$endField, $label) 日期范围时间
  * @method \thinkEasy\form\DateTime date($field, $label) 日期
  * @method \thinkEasy\form\DateTime dates($field, $label) 多选日期
  * @method \thinkEasy\form\DateTime time($field, $label) 时间
  * @method \thinkEasy\form\DateTime year($field, $label) 年
  * @method \thinkEasy\form\DateTime month($field, $label) 月
+ * @method \thinkEasy\form\Checkbox checkbox($field, $label) 多选框
  */
 class Form extends View
 {
@@ -94,6 +99,7 @@ class Form extends View
     //表字段
     protected $tableFields = [];
 
+    protected $saveData = [];
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -110,10 +116,7 @@ class Form extends View
 
     }
 
-    public function __call($name, $arguments)
-    {
-        return $this->formItem($name, $arguments[0], $arguments[1]);
-    }
+
 
 
     /**
@@ -167,13 +170,14 @@ class Form extends View
     protected function autoSave($data, $id = null)
     {
         $res = false;
+        $this->saveData = $data;
         $this->parseFormItem();
-        $this->checkRule($data);
+        $this->checkRule($this->saveData);
         //保存前回调
         if (!is_null($this->beforeSave)) {
-            $beforePost = call_user_func($this->beforeSave, $data, $this->data);
+            $beforePost = call_user_func($this->beforeSave, $this->saveData, $this->data);
             if (is_array($beforePost)) {
-                $data = array_merge($data, $beforePost);
+                $this->saveData = array_merge($this->saveData, $beforePost);
             }
         }
         Db::startTrans();
@@ -183,8 +187,8 @@ class Form extends View
                 $this->data = $this->model->find($id);
                 $this->model = $this->model->find($id);
             }
-            $res = $this->model->save($data);
-            foreach ($data as $field => $value) {
+            $res = $this->model->save($this->saveData);
+            foreach ($this->saveData as $field => $value) {
                 if (method_exists($this->model, $field)) {
                     //多对多关联保存
                     if ($this->model->$field() instanceof BelongsToMany) {
@@ -198,7 +202,7 @@ class Form extends View
                             $this->model->$field()->saveAll($relationData);
                         }
                     } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo) {
-                        $relationData = $data[$field];
+                        $relationData = $this->saveData[$field];
                         if (is_null($id) || empty($this->data->$field)) {
                             $this->model->$field()->save($relationData);
                         } else {
@@ -212,11 +216,10 @@ class Form extends View
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-            halt($e->getMessage());
         }
         //保存回后调
         if (!is_null($this->afterSave)) {
-            call_user_func_array($this->afterSave, [$data, $res]);
+            call_user_func_array($this->afterSave, [$this->saveData, $res]);
         }
         return $res;
     }
@@ -272,20 +275,38 @@ class Form extends View
      * @param $label 标签
      * @return mixed
      */
-    protected function formItem($name, $field, $label)
+    protected function formItem($name, $field, $arguments)
     {
+        $label = array_pop($arguments);
         $class = "thinkEasy\\form\\";
-
-        if ($name == 'text' || $name == 'textarea' || $name == 'number' || $name == 'password') {
+        $inputs = [
+            'text',
+            'textarea',
+            'number',
+            'password',
+            'hidden',
+        ];
+        $dates = [
+            'date',
+            'dates',
+            'time',
+            'year',
+            'month',
+            'datetime',
+            'datetimeRange',
+            'dateRange',
+            'timeRange',
+        ];
+        if (in_array($name,$inputs)) {
             $class .= 'Input';
-        }elseif ($name == 'datetime' || $name == 'date' || $name == 'time' || $name == 'year' || $name == 'month') {
+        }elseif (in_array($name,$dates)) {
             $class .= 'DateTime';
         }elseif ($name == 'switch') {
             $class .= 'Switchs';
         } else {
             $class .= ucfirst($name);
         }
-        $formItem = new $class($field, $label);
+        $formItem = new $class($field, $label,$arguments);
         switch ($name){
             case 'number':
                 $formItem->setAttr('type', 'number');
@@ -293,11 +314,22 @@ class Form extends View
             case 'password':
                 $formItem->password();
                 break;
+            case 'hidden':
+                $formItem->hidden();
+                break;
             case 'textarea':
                 $formItem->setAttr('type', 'textarea');
                 break;
             case 'dateTime':
                 $formItem->setType('datetime');
+            case 'datetimeRange':
+                $formItem->setType('datetime')->range();;
+                break;
+            case 'dateRange':
+                $formItem->setType('date')->range();;
+                break;
+            case 'timeRange':
+                $formItem->setType('time')->range();;
                 break;
             case 'time':
                 $formItem->setType('time');
@@ -382,7 +414,23 @@ class Form extends View
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                $formItemTmp = sprintf($formItemTmp, $formItem->render());
+                $render =  $formItem->render();
+                if(isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])){
+                    $itemSaveValues = $this->saveData[$formItem->field];
+                    $itemFields = $formItem->getFileds();
+                    if(count($itemFields) > 1){
+                        foreach ($itemFields as $key=>$itemField){
+                            if(isset($itemSaveValues[$key])){
+                                $this->saveData[$itemField] = $itemSaveValues[$key];
+                            }
+                        }
+                    }
+                }
+                if($formItem instanceof Input && $formItem->isHidden()){
+                    $formItemTmp = $render;
+                }else{
+                    $formItemTmp = sprintf($formItemTmp, $render);
+                }
                 $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
                 if (!empty($formItem->md)) {
                     $formItemHtml .= sprintf($formItem->md, $formItemTmp);
@@ -536,5 +584,10 @@ class Form extends View
             $this->setVar('title', '');
         }
         return $this->render();
+    }
+    public function __call($name, $arguments)
+    {
+
+        return $this->formItem($name, $arguments[0], array_slice($arguments, 1));
     }
 }

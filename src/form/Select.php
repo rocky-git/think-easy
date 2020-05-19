@@ -19,11 +19,12 @@ class Select extends Field
         'multiple',
         'readonly',
     ];
-    public function __construct($field, $label)
+
+    public function __construct($field, $label, $arguments = [])
     {
-        parent::__construct($field, $label);
-        $this->setAttr('clearable',true);
-        $this->setAttr('filterable',true);
+        parent::__construct($field, $label, $arguments);
+        $this->setAttr('clearable', true);
+        $this->setAttr('filterable', true);
         $this->setAttr('placeholder', '请选择' . $label);
     }
 
@@ -31,16 +32,19 @@ class Select extends Field
      * 设置宽度
      * @param string $num
      */
-    public function width($num = '100%'){
-        $this->setAttr('style','width:'.$num);
+    public function width($num = '100%')
+    {
+        $this->setAttr('style', 'width:' . $num);
         return $this;
     }
+
     /**
      * 设置分组选项数据
      * @param array $datas
      * @return $this
      */
-    public function groupOptions(array $datas){
+    public function groupOptions(array $datas)
+    {
         /* 格式
 
          $datas = [
@@ -77,20 +81,22 @@ class Select extends Field
       <span v-html='item.label'></span>
     </el-option>
     </el-option-group>";
-        $this->setAttr('data',$datas);
+        $this->setAttr('data', $datas);
         return $this;
 
     }
+
     /**
      * 设置选项数据
      * @param array $datas
      */
-    public function options(array $datas){
+    public function options(array $datas)
+    {
         $options = [];
-        foreach ($datas as $value=>$label){
+        foreach ($datas as $value => $label) {
             $options[] = [
-              'value'=>$value,
-              'label'=>$label,
+                'value' => $value,
+                'label' => $label,
             ];
         }
         $this->optionHtml = "<el-option
@@ -100,10 +106,11 @@ class Select extends Field
       :value='item.value'>
       <span v-html='item.label'></span>
     </el-option>";
-        $this->setAttr('data',$options);
+        $this->setAttr('data', $options);
         return $this;
 
     }
+
     /**
      * 多选
      */
@@ -113,7 +120,8 @@ class Select extends Field
         return $this;
     }
 
-    public function render(){
+    public function render()
+    {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         $html = "<el-select {$attrStr}>
     {$this->optionHtml}

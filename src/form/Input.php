@@ -23,8 +23,18 @@ class Input extends Field
         'disabled',
         'readonly',
     ];
-
-
+    protected $hidden = false;
+    /**
+     * 隐藏域
+     */
+    public function hidden(){
+        $this->setAttr('type', 'hidden');
+        $this->hidden = true;
+        return $this;
+    }
+    public function isHidden(){
+        return $this->hidden;
+    }
     /**
      * 输入框头部图标
      * @param $icon

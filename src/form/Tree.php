@@ -24,13 +24,14 @@ class Tree extends Field
         'default-expand-all',
         'default-checked-keys'
     ];
-    public function __construct($field, $label)
+
+    public function __construct($field, $label, $arguments = [])
     {
-        parent::__construct($field, $label);
+        parent::__construct($field, $label, $arguments);
         $this->template = 'tree';
-        $this->setAttr('default-expand-all',true);
-        $this->setAttr('show-checkbox',true);
-        $this->setAttr('field',$field);
+        $this->setAttr('default-expand-all', true);
+        $this->setAttr('show-checkbox', true);
+        $this->setAttr('field', $field);
         $this->setAttr('props', [
             'children' => 'children',
             'label' => 'label',
@@ -42,23 +43,28 @@ class Tree extends Field
      * @param $fieldKey 选中对比字段
      * @param array $data 选中数据
      */
-    public function setChecked($fieldKey,$data = []){
-        $this->setAttr('node-key',$fieldKey);
-        $this->setAttr('default-checked-keys',$data);
+    public function setChecked($fieldKey, $data = [])
+    {
+        $this->setAttr('node-key', $fieldKey);
+        $this->setAttr('default-checked-keys', $data);
         return $this;
     }
+
     /**
      * 设置树形数据
      * @param $data
      */
-    public function data($data){
+    public function data($data)
+    {
         $this->setAttr('data', $data);
         return $this;
     }
+
     /**
      * 横行排版
      */
-    public function horizontal(){
+    public function horizontal()
+    {
         $this->styleHorizontal = '.el-tree-node__content{
         margin-bottom:10px;
     }
@@ -70,12 +76,15 @@ class Tree extends Field
         float:left;
 
     }';
-        $this->setVar('styleHorizontal',$this->styleHorizontal);
+        $this->setVar('styleHorizontal', $this->styleHorizontal);
         return $this;
     }
-    public function styleHorizontal(){
+
+    public function styleHorizontal()
+    {
         return $this->styleHorizontal;
     }
+
     /**
      * 返回视图
      * @return string
@@ -83,7 +92,7 @@ class Tree extends Field
     public function render()
     {
         list($attrStr, $scriptVar) = $this->parseAttr();
-        $this->html = sprintf($this->html,$attrStr);
+        $this->html = sprintf($this->html, $attrStr);
         return $this->html;
     }
 }
