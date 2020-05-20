@@ -41,6 +41,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\DateTime year($field, $label) 年
  * @method \thinkEasy\form\DateTime month($field, $label) 月
  * @method \thinkEasy\form\Checkbox checkbox($field, $label) 多选框
+ * @method \thinkEasy\form\File file($field, $label) 文件上传
  */
 class Form extends View
 {
