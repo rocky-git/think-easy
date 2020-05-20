@@ -39,9 +39,9 @@ trait  ApiJson
      * @param $msg
      * @return \think\response\Json
      */
-    public function errorCode($code = 999, $msg = '')
+    public function errorCode($code = 999, $msg = '',$http_code=200)
     {
-        $response =  $this->responseJsonData([], $code, $msg);
+        $response =  $this->responseJsonData([], $code, $msg,$http_code);
         throw new HttpResponseException($response);
     }
 
