@@ -25,9 +25,9 @@ class AdminServiceRegister extends Service
             $chunk = $this->app->request->post('chunkNumber');
             $res = FileService::instance()->chunkUpload($file, $filename, $chunk, $chunks);
             if (!$res) {
-                $this->errorCode(999, '上传过程出错了', 404);
+                return json(['code'=>999,'message'=>'上传过程出错了'],404);
             } elseif ($res !== true) {
-                $this->successCode($res);
+                return json(['code'=>200,'data'=>$res],200);
             }
         });
     }

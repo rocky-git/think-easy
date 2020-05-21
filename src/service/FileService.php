@@ -29,13 +29,13 @@ class FileService extends Service
         $name =  md5_file($file->getRealPath()) . '.' . $extend;
         $names = str_split(md5($filename), 16);
         if ($totalChunks == $chunkNumber) {
-            $file->move("upload/{$names[0]}", "{$names[1]}{$chunk}", true, false);
+            $file->move("upload/{$names[0]}", "{$names[1]}{$chunkNumber}", true, false);
             set_time_limit(0);
             $put_filename = "upload/{$name}";
             if (file_exists($put_filename)) {
                 unlink($put_filename);
             }
-            for ($i = 1; $i <= $chunks; $i++) {
+            for ($i = 1; $i <= $totalChunks; $i++) {
                 $filenameChunk = "upload/{$names[0]}/" . "{$names[1]}{$i}";
                 $fileData = file_get_contents($filenameChunk);
                 file_exists(dirname($put_filename)) || mkdir(dirname($put_filename), 0755, true);
@@ -49,7 +49,7 @@ class FileService extends Service
                 return false;
             }
         } else {
-            $info = $file->move("upload/{$names[0]}", "{$names[1]}{$chunk}", true, false);
+            $info = $file->move("upload/{$names[0]}", "{$names[1]}{$chunkNumber}", true, false);
             if($info){
                 return true;
             }else{
