@@ -12,25 +12,23 @@ namespace thinkEasy\service;
 use think\facade\Filesystem;
 use thinkEasy\Service;
 
-class UploadService extends Service
+class FileService extends Service
 {
+
     /**
      * 本地分片上传
-     * @Author: rocky
-     * 2019/9/17 18:47
      * @param $file
-     * @return \think\response\Json
-     * @throws \OSS\Core\OssException
-     * @throws \think\Exception
+     * @param $filename
+     * @param $chunkNumber
+     * @param $totalChunks
+     * @return bool|string
      */
-    public function chunkUpload($file)
+    public function chunkUpload($file,$filename,$chunkNumber,$totalChunks)
     {
-        $extend = strtolower(pathinfo($this->app->request->post('filename'), PATHINFO_EXTENSION));
+        $extend = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         $name =  md5_file($file->getRealPath()) . '.' . $extend;
-        $names = str_split(md5($this->app->request->post('filename')), 16);
-        $chunks = $this->app->request->post('totalChunks');
-        $chunk = $this->app->request->post('chunkNumber');
-        if ($chunks == $chunk) {
+        $names = str_split(md5($filename), 16);
+        if ($totalChunks == $chunkNumber) {
             $file->move("upload/{$names[0]}", "{$names[1]}{$chunk}", true, false);
             set_time_limit(0);
             $put_filename = "upload/{$name}";
