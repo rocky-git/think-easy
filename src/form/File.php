@@ -22,20 +22,21 @@ class File extends Field
      * @param $uptype local,qiniu,oss
      */
     public function disk($diskType){
-        $config = config('admin.upload.'.$diskType);
+        $config = config('filesystem.disks.'.$diskType);
         $uptype = $config['type'];
         $accessKey = '';
         $accessKeySecret = '';
         $this->setAttr('up-type',$uptype);
         if($uptype == 'qiniu'){
             $this->setAttr('access-key',$config['accessKey']);
-            $this->setAttr('access-key-secret',$config['accessKeySecret']);
+            $this->setAttr('secret-key',$config['secretKey']);
             $this->setAttr('bucket',$config['bucket']);
         }elseif ($uptype == 'oss'){
             $this->setAttr('access-key',$config['accessKey']);
-            $this->setAttr('access-key-secret',$config['accessKeySecret']);
+            $this->setAttr('secret-key',$config['secretKey']);
             $this->setAttr('bucket',$config['bucket']);
-            $this->setAttr('region',$config['region']);
+            $this->setAttr('endpoint',$config['endpoint']);
+            
         }
     }
     public function render()
