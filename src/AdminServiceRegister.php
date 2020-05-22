@@ -23,7 +23,14 @@ class AdminServiceRegister extends Service
             $filename = $this->app->request->post('filename');
             $chunks = $this->app->request->post('totalChunks');
             $chunk = $this->app->request->post('chunkNumber');
-            $res = FileService::instance()->chunkUpload($file, $filename, $chunk, $chunks);
+            $saveDir = $this->app->request->post('saveDir','/');
+            $isUniqidmd5 = $this->app->request->post('isUniqidmd5',false);
+            if($isUniqidmd5 == 'true'){
+                $isUniqidmd5 = true;
+            }else{
+                $isUniqidmd5 = false;
+            }
+            $res = FileService::instance()->chunkUpload($file, $filename, $chunk, $chunks,$saveDir,$isUniqidmd5);
             if (!$res) {
                 return json(['code'=>999,'message'=>'上传过程出错了'],404);
             } elseif ($res !== true) {
@@ -31,7 +38,6 @@ class AdminServiceRegister extends Service
             }
         });
     }
-
     public function boot()
     {
 

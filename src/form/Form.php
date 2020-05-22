@@ -42,6 +42,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\DateTime month($field, $label) 月
  * @method \thinkEasy\form\Checkbox checkbox($field, $label) 多选框
  * @method \thinkEasy\form\File file($field, $label) 文件上传
+ * @method \thinkEasy\form\File image($field, $label) 图片上传
  */
 class Form extends View
 {
@@ -304,11 +305,16 @@ class Form extends View
             $class .= 'DateTime';
         }elseif ($name == 'switch') {
             $class .= 'Switchs';
+        } elseif ($name == 'image') {
+            $class .= 'File';
         } else {
             $class .= ucfirst($name);
         }
         $formItem = new $class($field, $label,$arguments);
         switch ($name){
+            case 'image':
+                $formItem->displayType('image')->isUniqidmd5();
+                break;
             case 'number':
                 $formItem->setAttr('type', 'number');
                 break;

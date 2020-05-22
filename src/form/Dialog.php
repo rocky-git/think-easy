@@ -15,11 +15,13 @@ class Dialog extends View
 {
     protected $attrs = [
         'title',
-        'modal-append-to-body'
+        'modal-append-to-body',
+        'close-on-click-modal',
     ];
     public function __construct($title,$content)
     {
         $this->setAttr('title',$title);
+        $this->setAttr('close-on-click-modal',false);
         $this->content = $content;
     }
     public function getVisibleVar(){
