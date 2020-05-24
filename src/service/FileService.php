@@ -16,63 +16,169 @@ use thinkEasy\Service;
 class FileService extends Service
 {
 
+    protected $totalSizeCacheKey;
+    public $upType = 'local';
+
     /**
      * 本地分片上传
      * @param $file 文件对象
      * @param $filename 文件名
      * @param $chunkNumber 分块编号
      * @param $totalChunks 总块数量
+     * @param $chunkSize 分片大小
+     * @param $totalSize 总文件大小
      * @param $saveDir 指定保存目录
      * @param $isUniqidmd5 是否唯一文件名
+     * @param $upType disk
      * @return bool|string
      */
-    public function chunkUpload($file,$filename,$chunkNumber,$totalChunks,$saveDir,bool $isUniqidmd5)
+    public function chunkUpload($file, $filename, $chunkNumber, $totalChunks, $chunkSize, $totalSize, $saveDir, bool $isUniqidmd5, $upType = 'local')
     {
+        $this->upType = $upType;
         $names = str_split(md5($filename), 16);
         $chunkSaveDir = $names[0];
-        if($totalChunks == 1){
-            //分片总数量1直接保存
-            if(substr($saveDir,-1) == '/'){
-                $saveDir = substr($saveDir, 0, -1);
-            }
-            if($isUniqidmd5){
-                $saveName = Filesystem::disk('local')->putFile($saveDir,$file,'uniqid');
-                $fileNamerule = 'uniqid';
-            }else{
-                $saveName = Filesystem::disk('local')->putFileAs($saveDir,$file,$filename);
-            }
-            return $this->url($saveName);
-        }else{
-            $chunkName = $names[1].$chunkNumber;
-            //写分片文件
-            $res = Filesystem::disk('local')->putFileAs($chunkSaveDir,$file,$chunkName);
-            if(Cache::has($filename)){
-                $cacheChunk = unserialize(Cache::get($filename));
-            }else{
-                $cacheChunk = [];
-            }
-            //判断分片数量是否和总数量一致,一致就合并分片文件
-            $uploadedChunkNum = count($cacheChunk);
-            if($uploadedChunkNum == $totalChunks){
-                Cache::delete($filename);
-                return $this->merge($chunkSaveDir,$filename,$totalChunks,$saveDir,$isUniqidmd5);
-            }
-            if($res === false){
-                return false;
-            }else{
-                //写入成功记录分片数量
-                if(Cache::has($filename)){
-                    $cacheChunk =  unserialize(Cache::get($filename));
-                    array_push($cacheChunk,$chunkName);
-                    $cacheChunk = array_filter($cacheChunk);
-                    Cache::set($filename,serialize($cacheChunk),3600*3);
-                }else{
-                    $cacheChunk = [];
-                    array_push($cacheChunk,$chunkName);
-                    Cache::set($filename,serialize($cacheChunk),3600*3);
+        if (is_null($file)) {
+            if ($totalChunks == 1) {
+                if (Filesystem::disk($upType)->has($saveDir . $filename)) {
+                    if ($this->upType == 'safe'){
+                        return $saveDir .$filename;
+                    }else{
+                        return $this->url($saveDir . $filename);
+                    }
+                } else {
+                    return false;
                 }
-                return true;
+            } elseif ($isUniqidmd5 == false) {
+                if (Filesystem::disk($upType)->has($saveDir . $filename)) {
+                    halt($filename);
+                    if ($this->upType == 'safe'){
+                        return $saveDir .$filename;
+                    }else{
+                        return $this->url($saveDir . $filename);
+                    }
+                } else {
+                    return $this->checkChunkExtis($filename, $chunkSaveDir, $chunkNumber, $chunkSize, $totalSize);
+                }
+            } else {
+                return $this->checkChunkExtis($filename, $chunkSaveDir, $chunkNumber, $chunkSize, $totalSize);
             }
+        } else {
+            if ($totalChunks == 1) {
+                //分片总数量1直接保存
+                if (substr($saveDir, -1) == '/') {
+                    $saveDir = substr($saveDir, 0, -1);
+                }
+                if ($isUniqidmd5) {
+                    return $this->upload($file,null, $saveDir);
+                } else {
+                    return $this->upload($file, $filename,$saveDir);
+                }
+            } else {
+
+                $this->totalSizeCacheKey = md5($filename . 'totalSize');
+
+                $chunkName = $names[1] . $chunkNumber;
+                //写分片文件
+                $res = Filesystem::disk($this->upType)->putFileAs($chunkSaveDir, $file, $chunkName);
+
+                //判断分片数量是否和总数量一致,一致就合并分片文件
+
+                if ($this->getChunkDircounts($chunkSaveDir) == $totalChunks) {
+                    if (!Cache::has(md5($filename))) {
+                        Cache::set(md5($filename), 1, 10);
+                        $url = $this->merge($chunkSaveDir, $filename, $totalChunks, $saveDir, $isUniqidmd5);
+                        Cache::delete(md5($filename));
+                        return $url;
+                    }
+                    return true;
+                }
+                if ($res === false) {
+                    return false;
+                } else {
+
+                    if (Cache::has($this->totalSizeCacheKey)) {
+                        $totalSizeCache = Cache::get($this->totalSizeCacheKey);
+                        if ($totalSizeCache != $totalSize) {
+                            Cache::set($this->totalSizeCacheKey, $totalSize, 3600 * 3);
+                        }
+                    } else {
+                        Cache::set($this->totalSizeCacheKey, $totalSize, 3600 * 3);
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+
+    /**
+     * 上传文件
+     * @param $file 文件对象
+     * @param $fileName 文件名
+     * @param $saveDir 保存目录
+     * @return  bool|string
+     */
+    public function upload($file, $fileName = null,$saveDir = 'editor')
+    {
+        if(empty($fileName)){
+            $saveName = Filesystem::disk($this->upType)->putFile($saveDir, $file, 'uniqid');
+        }else{
+            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $fileName);
+        }
+        if ($this->upType == 'safe' && $saveName) {
+            return $saveDir.$saveName;
+        } elseif ($saveName) {
+            return $this->url($saveName);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 获取目录下文件数量
+     * @param $chunkSaveDir
+     * @return int
+     */
+    protected function getChunkDircounts($chunkSaveDir)
+    {
+        $dir = Filesystem::disk($this->upType)->path('');
+        $chunkSaveDir = $dir . $chunkSaveDir;
+        $handle = opendir($chunkSaveDir);
+        $i = 0;
+        while (false !== $file = (readdir($handle))) {
+            if ($file !== '.' && $file != '..') {
+                $i++;
+            }
+        }
+        closedir($handle);
+        return $i;
+    }
+
+    /**
+     * 判断文件分片是否存在实现秒传
+     * @param $filename 文件名
+     * @param $chunkSaveDir 分片保存目录
+     * @param $chunkNumber 第几片
+     * @param $chunkSize 分片大小
+     * @param $totalChunks 总大小
+     * @return bool
+     */
+    protected function checkChunkExtis($filename, $chunkSaveDir, $chunkNumber, $chunkSize, $totalSize)
+    {
+        $this->totalSizeCacheKey = md5($filename . 'totalSize');
+        if (Cache::has($this->totalSizeCacheKey)) {
+            $totalSizeCache = Cache::get($this->totalSizeCacheKey);
+            if ($totalSizeCache != $totalSize) {
+                return false;
+            }
+        }
+        $dir = Filesystem::disk($this->upType)->path('');
+        $names = str_split(md5($filename), 16);
+        $chunkSaveDir = $dir . $chunkSaveDir;
+        $filenameChunk = $chunkSaveDir . DIRECTORY_SEPARATOR . $names[1] . $chunkNumber;
+        if (file_exists($filenameChunk) && filesize($filenameChunk) == $chunkSize) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -81,10 +187,12 @@ class FileService extends Service
      * @param $name 文件名
      * @return string
      */
-    public function url($name){
-        $config = Filesystem::disk('local')->getConfig();
-        return $this->app->request->domain().$config->get('url').DIRECTORY_SEPARATOR.$name;
+    public function url($name)
+    {
+        $config = Filesystem::disk($this->upType)->getConfig();
+        return $this->app->request->domain() . $config->get('url') . DIRECTORY_SEPARATOR . $name;
     }
+
     /**
      * 合并分片文件
      * @param $chunkSaveDir 分片保存目录
@@ -94,32 +202,33 @@ class FileService extends Service
      * @param $isUniqidmd5 是否唯一文件名
      * @return bool|string
      */
-    protected function merge($chunkSaveDir,$filename,$totalChunks,$saveDir,$isUniqidmd5){
+    protected function merge($chunkSaveDir, $filename, $totalChunks, $saveDir, $isUniqidmd5)
+    {
         set_time_limit(0);
-        $dir =  Filesystem::disk('local')->path('');
-        $chunkSaveDir = $dir.$chunkSaveDir;
+        $dir = Filesystem::disk($this->upType)->path('');
+        $chunkSaveDir = $dir . $chunkSaveDir;
         $extend = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if($isUniqidmd5 == 'true'){
-            $saveName = $saveDir.md5(uniqid().$filename) . '.' . $extend;
-        }else{
-            $saveName = $saveDir.$filename;
+        if ($isUniqidmd5 == 'true') {
+            $saveName = $saveDir . md5(uniqid() . $filename) . '.' . $extend;
+        } else {
+            $saveName = $saveDir . $filename;
         }
-        $put_filename =  $dir.DIRECTORY_SEPARATOR.$saveName;
+        $put_filename = $dir . DIRECTORY_SEPARATOR . $saveName;
         if (file_exists($put_filename)) {
             unlink($put_filename);
         }
         $names = str_split(md5($filename), 16);
         for ($i = 1; $i <= $totalChunks; $i++) {
-            $filenameChunk = $chunkSaveDir.DIRECTORY_SEPARATOR.$names[1].$i;
+            $filenameChunk = $chunkSaveDir . DIRECTORY_SEPARATOR . $names[1] . $i;
             $fileData = file_get_contents($filenameChunk);
             file_exists(dirname($put_filename)) || mkdir(dirname($put_filename), 0755, true);
             $res = file_put_contents($put_filename, $fileData, FILE_APPEND);
         }
         array_map('unlink', glob("{$chunkSaveDir}/*"));
         rmdir($chunkSaveDir);
-        if($res){
+        if ($res) {
             return $this->url($saveName);
-        }else{
+        } else {
             return false;
         }
     }

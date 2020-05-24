@@ -79,7 +79,6 @@ class AdminService extends Service
         }
         $method = strtolower($method);
         $node = strtolower($node);
-
         $ext = pathinfo($node, PATHINFO_EXTENSION);
         if(strpos($node,'edit.rest')){
             $node = preg_replace("/(.+)\/(.+)\/(.+)\/edit\.rest$/U","\\1/\\2/:id/edit.rest",$node);
@@ -98,9 +97,11 @@ class AdminService extends Service
                 return false;
             }
         }else{
-           
             foreach ($permissions as $permission){
                 if($permission['rule'] == $node && ($permission['method'] == $method || $permission['method'] == 'any')){
+                    if($permission['is_login']){
+                        TokenService::instance()->auth();
+                    }
                     return true;
                 }
             }
@@ -125,7 +126,11 @@ class AdminService extends Service
     public function permissions()
     {
         $nodes = NodeService::instance()->all();
-        $permissions = $this->user()->permissions();
+        if($this->user()){
+            $permissions = $this->user()->permissions();
+        }else{
+            $permissions = [];
+        }
         $newNodes = [];
         foreach ($nodes as $key => $node) {
             if ($node['is_auth']) {

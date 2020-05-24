@@ -154,7 +154,7 @@ class Field extends View
      * 2019/8/9 10:50
      * @param $rule 验证规则
      */
-    public function rule($rule)
+    public function rule(array $rule)
     {
         $this->createRules = $rule;
         $this->updateRules = $rule;
@@ -167,7 +167,7 @@ class Field extends View
      * 2019/8/9 10:50
      * @param $rule 验证规则
      */
-    public function createRule($rule)
+    public function createRule(array $rule)
     {
         $this->createRules = $rule;
         return $this;
@@ -179,7 +179,7 @@ class Field extends View
      * 2019/8/9 10:50
      * @param $rule 验证规则
      */
-    public function updateRule($rule)
+    public function updateRule(array $rule)
     {
         $this->updateRules = $rule;
         return $this;

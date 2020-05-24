@@ -1,0 +1,54 @@
+<?php
+
+namespace {%namespace%};
+
+use thinkEasy\controller\BaseAdmin;
+use thinkEasy\form\Form;
+use thinkEasy\grid\Actions;
+use thinkEasy\grid\Filter;
+use thinkEasy\grid\Grid;
+use {%model_namespace%};
+class {%className%} extends BaseAdmin
+{
+    /**
+     * 列表
+     * @auth true
+     * @login true
+     * @return string
+     */
+    protected function grid()
+    {
+        $grid = new Grid(new {%model%});
+{%grid%}
+        $grid->actions(function (Actions $action){
+        	 $action->hideDetail();
+        });
+         return $grid;
+    }
+
+    /**
+     * 详情
+     * @auth true
+     * @login true
+     * @return string
+     */
+    protected function detail()
+    {
+        $detail = new Detail(new {%model%});
+{%detail%}
+        return $detail;
+    }
+
+    /**
+     * 表单
+     * @auth true
+     * @login true
+     * @return string
+     */
+    protected function form()
+    {
+        $form = new Form(new {%model%});
+{%form%}
+         return $form;
+    }
+}

@@ -18,6 +18,7 @@ use think\Model;
 use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasOne;
+use thinkEasy\model\SystemConfig;
 use thinkEasy\View;
 
 /**
@@ -43,6 +44,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Checkbox checkbox($field, $label) 多选框
  * @method \thinkEasy\form\File file($field, $label) 文件上传
  * @method \thinkEasy\form\File image($field, $label) 图片上传
+ * @method \thinkEasy\form\Editor editor($field, $label) 富文本编辑器
  */
 class Form extends View
 {
@@ -102,13 +104,14 @@ class Form extends View
     protected $tableFields = [];
 
     protected $saveData = [];
-    public function __construct(Model $model)
+    public function __construct($model = null)
     {
-        $this->model = $model;
-        $this->tableFields = $this->model->getTableFields();
+        if($model instanceof Model){
+            $this->model = $model;
+            $this->tableFields = $this->model->getTableFields();
+        }
         $this->template = 'form';
         $this->setAttr('label-width', '120px');
-
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
@@ -184,36 +187,55 @@ class Form extends View
         }
         Db::startTrans();
         try {
-            $pk = $this->model->getPk();
-            if (!is_null($id)) {
-                $this->data = $this->model->find($id);
-                $this->model = $this->model->find($id);
-            }
-            $res = $this->model->save($this->saveData);
-            foreach ($this->saveData as $field => $value) {
-                if (method_exists($this->model, $field)) {
-                    //多对多关联保存
-                    if ($this->model->$field() instanceof BelongsToMany) {
-                        $relationData = $value;
-                        $this->model->$field()->detach();
-                        if (is_string($relationData)) {
-                            $relationData = explode(',', $relationData);
-                            $relationData = array_filter($relationData);
-                        }
-                        if (count($relationData) > 0) {
-                            $this->model->$field()->saveAll($relationData);
-                        }
-                    } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo) {
-                        $relationData = $this->saveData[$field];
-                        if (is_null($id) || empty($this->data->$field)) {
-                            $this->model->$field()->save($relationData);
-                        } else {
-                            $this->data->$field->save($relationData);
-                        }
+            if(is_null($this->model)){
+                foreach ($this->saveData as  $name => $value){
+                    if($name == 'empty' || $name == 'submitFromMethod'){
+                        continue;
+                    }
+                    $sysconfig = SystemConfig::where('name',$name)->find();
+                    if($sysconfig){
+                        $sysconfig->value = $value;
+                        $res = $sysconfig->save();
+                    }else{
+                        $res = SystemConfig::create([
+                           'name'=>$name,
+                           'value'=>$value,
+                        ]);
+                    }
+                }
+            }else{
+                $pk = $this->model->getPk();
+                if (!is_null($id)) {
+                    $this->data = $this->model->find($id);
+                    $this->model = $this->model->find($id);
+                }
+                $res = $this->model->save($this->saveData);
+                foreach ($this->saveData as $field => $value) {
+                    if (method_exists($this->model, $field)) {
+                        //多对多关联保存
+                        if ($this->model->$field() instanceof BelongsToMany) {
+                            $relationData = $value;
+                            $this->model->$field()->detach();
+                            if (is_string($relationData)) {
+                                $relationData = explode(',', $relationData);
+                                $relationData = array_filter($relationData);
+                            }
+                            if (count($relationData) > 0) {
+                                $this->model->$field()->saveAll($relationData);
+                            }
+                        } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo) {
+                            $relationData = $this->saveData[$field];
+                            if (is_null($id) || empty($this->data->$field)) {
+                                $this->model->$field()->save($relationData);
+                            } else {
+                                $this->data->$field->save($relationData);
+                            }
 
+                        }
                     }
                 }
             }
+
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
@@ -313,7 +335,7 @@ class Form extends View
         $formItem = new $class($field, $label,$arguments);
         switch ($name){
             case 'image':
-                $formItem->displayType('image')->isUniqidmd5();
+                $formItem->displayType('image')->imageExt()->isUniqidmd5();
                 break;
             case 'number':
                 $formItem->setAttr('type', 'number');
@@ -399,7 +421,7 @@ class Form extends View
                 $this->formValidate["{$valdateField}ErrorMsg"] = '';
                 $this->formValidate["{$valdateField}ErrorShow"] = false;
 
-                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span>{$formItem->helpText}</span></el-form-item>";
+                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
 
                 //设置默认值
                 if ($this->isEdit) {
@@ -452,11 +474,15 @@ class Form extends View
 
     protected function setData($field, $val)
     {
-        if (strpos($field, '.')) {
-            list($relation, $field) = explode('.', $field);
-            $this->formData[$relation][$field] = $val;
-        } else {
-            $this->formData[$field] = $val;
+        if($this->model instanceof Model){
+            if (strpos($field, '.')) {
+                list($relation, $field) = explode('.', $field);
+                $this->formData[$relation][$field] = $val;
+            } else {
+                $this->formData[$field] = $val;
+            }
+        }else{
+            $this->formData[$field] =  SystemConfig::where('name',$field)->value('value');
         }
     }
 

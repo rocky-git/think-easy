@@ -19,6 +19,7 @@ class File extends Field
     {
         parent::__construct($field, $label, $arguments);
         $this->setAttr('url',request()->domain().'/eadmin/upload');
+        $this->disk(config('admin.uploadDisks'));
     }
 
     /**
@@ -42,6 +43,10 @@ class File extends Field
         $this->setAttr('display-type',$type);
         return $this;
     }
+    public function imageExt(){
+        $this->setAttr('accept','image/*');
+        return $this;
+    }
     /**
      * 限制上传类型
      * @param $vals
@@ -55,6 +60,7 @@ class File extends Field
         },$vals);
         $accept = implode(',',$vals);
         $this->setAttr('accept',$accept);
+        return $this;
     }
     /**
      * 多文件上传
@@ -77,7 +83,7 @@ class File extends Field
     /**
      * 指定保存目录
      */
-    public function dir($path){
+    public function saveDir($path){
         if(substr($path,-1) != '/'){
             $path.='/';
         }
@@ -93,14 +99,12 @@ class File extends Field
         $uptype = $config['type'];
         $accessKey = '';
         $accessKeySecret = '';
-        $this->setAttr('up-type',$uptype);
+        $this->setAttr('up-type',$diskType);
         if($uptype == 'qiniu'){
-            $this->setAttr('access-key',$config['accessKey']);
-            $this->setAttr('secret-key',$config['secretKey']);
             $this->setAttr('bucket',$config['bucket']);
+            $this->setAttr('domain',$config['domain']);
             Filesystem::disk('qiniu')->addPlugin(new UploadToken());
             $this->setAttr('uploadToken',Filesystem::disk('qiniu')->getUploadToken(null,3600*3));
-            $this->setAttr('domain',$config['domain']);
         }elseif ($uptype == 'oss'){
             $this->setAttr('access-key',$config['accessKey']);
             $this->setAttr('secret-key',$config['secretKey']);

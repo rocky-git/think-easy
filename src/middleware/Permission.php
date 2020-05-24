@@ -19,13 +19,9 @@ class Permission
     public function handle(Request $request, \Closure $next)
     {
         $node = app('http')->getName() . '/' . $request->pathinfo();
-        if ($node != 'admin/login') {
-            //验证登陆状态
-            TokenService::instance()->auth();
-            //验证权限
-            if (!AdminService::instance()->check($node,$request->method())) {
-                abort(200,  '没有访问该操作的权限！');
-            }
+        //验证权限
+        if (!AdminService::instance()->check($node,$request->method())) {
+            abort(200,  '没有访问该操作的权限！');
         }
         return $next($request);
     }

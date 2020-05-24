@@ -154,7 +154,15 @@ class Grid extends View
         }
         return $tree;
     }
-
+    //头像昵称列
+    public function userInfo($headimg = 'headimg', $nickname = 'nickname', $label = '会员信息')
+    {
+        $column = $this->column($headimg, $label);
+        return $column->display(function ($val, $data) use($column,$nickname){
+            $nicknameValue = $column->getValue($data,$nickname);
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit'></el-image><br>{$nicknameValue}";
+        })->align('center');
+    }
     /**
      * 设置标题
      * @param $title
@@ -248,7 +256,7 @@ class Grid extends View
             array_push($this->columns, $this->actionColumn);
         }
         foreach ($this->data as $key => &$rows) {
-            foreach ($this->columns as $column) {
+            foreach ($this->columns as $column){
                 $column->setData($rows);
             }
         }
@@ -267,7 +275,7 @@ class Grid extends View
         if (!is_null($this->beforeUpdate)) {
             call_user_func($this->beforeUpdate, $ids,$data);
         }
-        return $this->model->whereIn($this->model->getPk(), $ids)->strict(false)->update($data);
+        return $this->model->update($data,[[$this->model->getPk(),'in', $ids]]);
     }
     /**
      * 隐藏添加按钮

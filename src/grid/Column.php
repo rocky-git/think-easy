@@ -162,6 +162,19 @@ class Column extends View
     }
 
     /**
+     * 显示图片
+     * @param int $width 宽度
+     * @param int $height 高度
+     * @param int $radius 圆角
+     * @return $this
+     */
+    public function image($width=80,$height=80,$radius=5){
+        $this->display(function ($val, $data) use($width,$height,$radius) {
+            return "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$val}' fit='fit'></el-image>";
+        });
+        return $this;
+    }
+    /**
      * 设置数据
      * @param $data
      */
@@ -178,13 +191,25 @@ class Column extends View
             $this->cellVue .= "<span v-if='data.id == {$rowData['id']}'>{$res}</span>";
         }
     }
-    protected function getValue($data){
-        if(empty($this->field)){
+
+    /**
+     * 获取数据
+     * @param $data 行数据
+     * @param null $field 字段
+     * @return |null
+     */
+    public function getValue($data,$field=null){
+        if(is_null($field)){
+            $dataField = $this->field;
+        }else{
+            $dataField = $field;
+        }
+        if(empty($dataField)){
             return null;
         }
-        foreach (explode('.', $this->field) as $field) {
-            if (isset($data[$field])) {
-                $data = $data[$field];
+        foreach (explode('.', $dataField) as $f) {
+            if (isset($data[$f])) {
+                $data = $data[$f];
             } else {
                 $data = null;
             }

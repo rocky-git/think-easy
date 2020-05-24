@@ -106,11 +106,11 @@ class MenuService extends Service
             //资源路由
             foreach ($routers as $router) {
                 $createRouter = $router;
-                $createRouter['path'] = $createRouter['path'] . '/create';
+                $createRouter['path'] = $createRouter['path'] . '/create\.rest';
                 $createRouter['name'] = $createRouter['name'] . '$create';
                 $createRouter['meta']['id'] = -1;
                 $editRouter = $router;
-                $editRouter['path'] = $editRouter['path'] . '/:id/edit';
+                $editRouter['path'] = $editRouter['path'] . '/:id/edit\.rest';
                 $editRouter['name'] = $editRouter['name'] . '$edit';
                 $editRouter['meta']['id'] = -1;
                 $resourceRouter[] = $router;

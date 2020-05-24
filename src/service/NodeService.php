@@ -60,12 +60,15 @@ class NodeService extends Service
 
         if(count($commentsLine) > 0){
             $auth = false;
+            $login = false;
             $title = array_shift($commentsLine);
             $method = 'any';
             foreach ($commentsLine as $line){
                 $line = trim($line);
                 if(preg_match('/@auth\s*true/i',$line) && $auth == false){
                     $auth  = true;
+                }elseif(preg_match('/@login\s*true/i',$line) && $login == false){
+                    $login  = true;
                 }elseif (preg_match('/@method\s(.*)/i',$line,$methods) && $method == 'any'){
                     $method = $methods[1];
                 }
@@ -74,7 +77,7 @@ class NodeService extends Service
         }else{
            return false;
         }
-        return [trim($title),$auth,$method];
+        return [trim($title),$auth,$login,$method];
 
     }
     /**
@@ -101,7 +104,6 @@ class NodeService extends Service
                 $title = array_shift($res);
             }
             $this->treeArr[$moduleName]['children'][$key] = [
-
                     'label'=>$title,
                     'children'=>[]
                 
@@ -119,15 +121,17 @@ class NodeService extends Service
                                 'label'=>$node,
                                 'rule'=>$node,
                                 'is_auth'=>$auth,
+                                'is_login'=>$login,
                                 'method'=>'get',
                             ];
 
                         }else{
-                            list($title,$auth) = $res;
+                            list($title,$auth,$login) = $res;
                             $nodeData = [
                                 'label'=>$title,
                                 'rule'=>$node,
                                 'is_auth'=>$auth,
+                                'is_login'=>$login,
                                 'method'=>'get',
                             ];
                         }
@@ -140,12 +144,13 @@ class NodeService extends Service
                             $title = '';
 
                         }else{
-                            list($title,$auth) = $res;
+                            list($title,$auth,$login) = $res;
                         }
                         $nodeData = [
                             'label'=>$title.'添加',
                             'rule'=>$node.'.rest',
                             'is_auth'=>$auth,
+                            'is_login'=>$login,
                             'method'=>'post',
                         ];
                         $data[] = $nodeData;
@@ -155,6 +160,7 @@ class NodeService extends Service
                             'label'=>$title.'添加页面',
                             'rule'=>$node.'/create.rest',
                             'is_auth'=>false,
+                            'is_login'=>$login,
                             'method'=>'get',
                         ];
                         $data[] = $nodeData;
@@ -163,6 +169,7 @@ class NodeService extends Service
                             'label'=>$title.'修改',
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
+                            'is_login'=>$login,
                             'method'=>'put',
                         ];
                         $data[] = $nodeData;
@@ -172,6 +179,7 @@ class NodeService extends Service
                             'label'=>$title.'修改页面',
                             'rule'=>$node.'/:id/edit.rest',
                             'is_auth'=>false,
+                            'is_login'=>$login,
                             'method'=>'get',
                         ];
                         $data[] = $nodeData;
@@ -180,6 +188,7 @@ class NodeService extends Service
                             'label'=>'删除权限',
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
+                            'is_login'=>$login,
                             'method'=>'delete',
                         ];
                         $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
@@ -191,12 +200,13 @@ class NodeService extends Service
                             $title = '详情';
                             $auth = false;
                         }else{
-                            list($title,$auth) = $res;
+                            list($title,$auth,$login) = $res;
                         }
                         $nodeData = [
                             'label'=>$title,
                             'rule'=>$node.'/:id.rest',
                             'is_auth'=>$auth,
+                            'is_login'=>$login,
                             'method'=>'get',
                         ];
                         $nodeData['mark'] = md5($nodeData['rule'].$nodeData['method']);
@@ -213,15 +223,17 @@ class NodeService extends Service
                             'label'=>$node,
                             'rule'=>$node,
                             'is_auth'=>false,
+                            'is_login'=>$login,
                             'method'=>'any',
                             'mark'=>md5($node.'any'),
                         ];
                     }else{
-                        list($title,$auth,$method) = $res;
+                        list($title,$auth,$login,$method) = $res;
                         $nodeData = [
                             'label'=>$title,
                             'rule'=>$node,
                             'is_auth'=>$auth,
+                            'is_login'=>$login,
                             'method'=>$method,
                             'mark'=>md5($node.$method),
                         ];
