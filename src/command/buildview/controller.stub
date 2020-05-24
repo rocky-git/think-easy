@@ -19,6 +19,7 @@ class {%className%} extends BaseAdmin
     protected function grid()
     {
         $grid = new Grid(new {%model%});
+        $grid->indexColumn();
 {%grid%}
         $grid->actions(function (Actions $action){
         	 $action->hideDetail();
