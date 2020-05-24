@@ -450,6 +450,7 @@ class Grid extends View
         //树形
         if ($this->treeTable) {
             $treeData = $this->tree($this->getDataArray());
+            $this->data = $treeData;
             $this->table->setAttr('row-key', $this->model->getPk());
             $this->table->setAttr('data', $treeData);
             $this->table->setAttr('default-expand-all', true);
