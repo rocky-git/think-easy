@@ -516,6 +516,7 @@ EOF;
         //解析列
         $this->parseColumn();
         $this->table->setAttr('data', $this->getDataArray());
+        $this->table->setAttr('row-key', $this->model->getPk());
         //查询过滤
         if (!is_null($this->filter)) {
             $this->table->setVar('filter', $this->filter->render());
@@ -525,7 +526,7 @@ EOF;
         if ($this->treeTable) {
             $treeData = $this->tree($this->getDataArray());
             $this->data = $treeData;
-            $this->table->setAttr('row-key', $this->model->getPk());
+
             $this->table->setAttr('data', $treeData);
             $this->table->setAttr('default-expand-all', true);
             $this->table->setAttr('tree-props', [

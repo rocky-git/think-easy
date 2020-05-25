@@ -144,7 +144,6 @@
                 }
             },
             showEditId(val){
-                console.log(val)
                 if(val != 0){
                     this.showDialog('编辑',2)
                 }
@@ -160,8 +159,9 @@
                     onEnd: evt => {
                         var newIndex = evt.newIndex;
                         var oldIndex = evt.oldIndex;
-                        const oldValue = this.tableData[oldIndex]
-                        const newValue = this.tableData[newIndex]
+                        var oldItem = this.tableData[oldIndex]
+                        const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
+                        this.tableData.splice(evt.newIndex, 0, targetRow)
                         if(newIndex != oldIndex){
                             if(evt.newIndex < evt.oldIndex){
                                 sortable_type = 1;
@@ -177,24 +177,19 @@
                                     sortable_data:this.tableData
                                 }
                             }).then(res=>{
-
-                                this.tableData[newIndex] = oldValue
-                                this.tableData[oldIndex] = newValue
                                 this.$notify({
                                     title: '操作完成',
                                     message: '排序完成',
                                     type: 'success',
                                     duration: 1500
                                 })
+                            }).catch(res=>{
+                                const targetRow = this.tableData.splice(evt.newIndex, 1)[0]
+                                this.tableData.splice(evt.oldIndex, 0, targetRow)
                             })
                         }
                     }
                 })
-            },
-            //数组元素交换位置
-            swapArray(arr, index1, index2) {
-                arr[index1] = arr.splice(index2, 1, arr[index1])[0];
-                return arr;
             },
             //重置筛选表单
             filterReset(){
@@ -414,7 +409,6 @@
                             resolve(this.splitCode(cmponent))
                         })
                     })
-
                 }).catch(res=>{
                     this.loading = false
                 })
