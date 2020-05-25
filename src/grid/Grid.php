@@ -71,6 +71,8 @@ class Grid extends View
     protected $toolsArr = [];
     //查询过滤
     protected $filter = null;
+    //排序字段
+    protected $sortField = null;
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -89,6 +91,24 @@ class Grid extends View
         }
     }
 
+    /**
+     * 开启排序
+     * @param $field 排序字段
+     */
+    public function sort($field = 'sort'){
+        $this->sortField = $field;
+        $this->column($field,'排序')->display(function ($val,$data){
+            $html = <<<EOF
+<div style="text-align:center;">
+<el-tooltip  effect="dark" content="置顶" placement="right-start"><i @click="sortTop(index)" class="el-icon-caret-top" style="cursor: pointer"></i></el-tooltip>
+<el-tooltip effect="dark" content="拖动排序" placement="right-start"><i class="el-icon-rank sortHandel" style="font-weight:bold;cursor: grab"></i></el-tooltip>
+<el-tooltip  effect="dark" content="置底" placement="right-start"><i @click="sortBottom(index)" class="el-icon-caret-bottom" style="cursor: pointer"></i></el-tooltip>
+</div>
+EOF;
+
+            return $html;
+        })->width(50)->align('center');
+    }
     /**
      * 是否显示回收站
      * @param $bool true显示，false隐藏
@@ -246,6 +266,7 @@ class Grid extends View
         return $column;
     }
 
+
     /**
      * 解析列
      */
@@ -275,7 +296,60 @@ class Grid extends View
         if (!is_null($this->beforeUpdate)) {
             call_user_func($this->beforeUpdate, $ids,$data);
         }
-        return $this->model->update($data,[[$this->model->getPk(),'in', $ids]]);
+        $action = $data['action'];
+        if($action == 'buldview_drag_sort') {
+            $count = $this->model->count($this->sortField);
+            $distinctCount = $this->model->count("distinct {$this->sortField}");
+            $sortable_datas = $data['sortable_data'];
+            //排序
+            if ($count == $distinctCount) {
+
+                $sortable_type = $data['sortable_type'];
+                if ($sortable_type == 1) {
+                    $sortable_data = $sortable_datas[1];
+                } else {
+                    $sortable_data = end($sortable_datas);
+
+                }
+                $sortStart = $sortable_data[$this->sortField];
+                $updateData = [];
+                foreach ($sortable_datas as $key => $val) {
+                    $updateData[$key][$this->model->getPk()] = $val[$this->model->getPk()];
+                    $updateData[$key][$this->sortField] = $sortStart;
+                    $sortStart++;
+                }
+                return $res = $this->model->saveAll($updateData);
+            } else {
+                $sortData = $this->model->field("{$this->model->getPk()},{$this->sortField}")->select();
+                $pks = $sortData->column($this->model->getPk());
+                $sortable_type = $data['sortable_type'];
+                if($sortable_type == 1){
+                    $start_data = reset($sortable_datas);
+                    $end_data =  $sortable_datas[1];
+                }else{
+                    $start_data = end($sortable_datas);
+                    $end_data =  prev($sortable_datas);
+                }
+                $start_key = array_search($start_data[$this->model->getPk()],$pks);
+                $end_key = array_search($end_data[$this->model->getPk()],$pks);
+                $sortData = $pks[$start_key];
+                unset($pks[$start_key]);
+
+                array_splice($pks,$end_key,0,$sortData);
+                $i=1;
+                $updateData = [];
+                foreach ($pks as $key=>$val){
+                    $updateData[$key][$this->model->getPk()] = $val;
+                    $updateData[$key][$this->sortField] = $i;
+                    $i++;
+                }
+
+                $res = $this->model->saveAll($updateData);
+            }
+        }else{
+            return $this->model->update($data,[[$this->model->getPk(),'in', $ids]]);
+        }
+
     }
     /**
      * 隐藏添加按钮
@@ -467,7 +541,7 @@ class Grid extends View
                 }
                 $this->table->view();
                 $result['data'] = $this->data;
-                $result['total'] = $this->db->count();
+                $result['total'] = $this->db->removeOption('page')->removeOption('limit')->count();
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
                 break;

@@ -70,6 +70,7 @@
     export default {
         data(){
             return {
+                sortable:null,
                 form:{},
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
@@ -118,7 +119,11 @@
                 this.activeTabsName = 'trashed'
                 this.requestPageData()
             }
+            this.$nextTick(() => {
+                this.setSort()
+            })
             this.tableData = this.{$tableDataScriptVar}
+
         },
         inject:['reload'],
         watch:{
@@ -139,12 +144,58 @@
                 }
             },
             showEditId(val){
+                console.log(val)
                 if(val != 0){
                     this.showDialog('编辑',2)
                 }
             },
         },
         methods: {
+            //拖拽排序
+            setSort(){
+                const el = this.$refs.dragTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]
+                this.sortable = this.$sortable.create(el, {
+                    handle:'.sortHandel',
+                    ghostClass: 'sortable-ghost', // Class name for the drop placeholder,
+                    onEnd: evt => {
+                        var newIndex = evt.newIndex;
+                        var oldIndex = evt.oldIndex;
+                        const oldValue = this.tableData[oldIndex]
+                        const newValue = this.tableData[newIndex]
+                        if(newIndex != oldIndex){
+                            if(evt.newIndex < evt.oldIndex){
+                                sortable_type = 1;
+                            }else{
+                                sortable_type = 2;
+                            }
+                            this.$request({
+                                url: this.$route.path +'/batch.rest',
+                                method: 'put',
+                                data:{
+                                    sortable_type:sortable_type,
+                                    action:'buldview_drag_sort',
+                                    sortable_data:this.tableData
+                                }
+                            }).then(res=>{
+
+                                this.tableData[newIndex] = oldValue
+                                this.tableData[oldIndex] = newValue
+                                this.$notify({
+                                    title: '操作完成',
+                                    message: '排序完成',
+                                    type: 'success',
+                                    duration: 1500
+                                })
+                            })
+                        }
+                    }
+                })
+            },
+            //数组元素交换位置
+            swapArray(arr, index1, index2) {
+                arr[index1] = arr.splice(index2, 1, arr[index1])[0];
+                return arr;
+            },
             //重置筛选表单
             filterReset(){
                 this.$refs['form'].resetFields();
@@ -374,7 +425,11 @@
 </script>
 
 <style scoped>
-
+    .sortable-ghost{
+        opacity: .8;
+        color: #fff!important;
+        background: #2d8cf0!important;
+    }
     .container {
         background: #fff;
         position: relative;

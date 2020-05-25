@@ -12,6 +12,7 @@
             },
             tableData: Array,
             showEditId:Number,
+            page:Number,
         },
         data(){
           return {
@@ -21,6 +22,27 @@
           }
         },
         methods:{
+            //排序置顶
+            sortTop(index){
+                if(this.page ==1){
+                    const oldValue = this.tableData[0]
+                    const newValue = this.tableData[index]
+                    this.$set(this.tableData,index,oldValue)
+                    this.$set(this.tableData,0,newValue)
+                }else{
+                    this.tableData.splice(index,1)
+                }
+                this.$emit('update:tableData', this.tableData)
+            },
+            //排序置底
+            sortBottom(index){
+                if(this.page ==1){
+                    const oldValue = this.tableData[0]
+                    const newValue = this.tableData[index]
+                    this.tableData[newIndex] = oldValue
+                    this.tableData[oldIndex] = newValue
+                }
+            },
             handleEdit(row,index){
                 this.$emit('update:showEditId', row.id)
             },

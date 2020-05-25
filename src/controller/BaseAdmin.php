@@ -31,14 +31,14 @@ class BaseAdmin extends Controller
     /**
      * 保存新建的资源
      *
-     * @param  \think\Request $request
+     * @param \think\Request $request
      * @return \think\Response
      */
     public function save(Request $request)
     {
         $submitFromMethod = $request->post('submitFromMethod');
         $res = $this->$submitFromMethod()->save($request->post());
-        if ($res!==false) {
+        if ($res !== false) {
             $this->successCode([], 200, '数据保存成功');
         } else {
             $this->errorCode(999, '数据保存失败');
@@ -49,7 +49,7 @@ class BaseAdmin extends Controller
     /**
      * 显示指定的资源
      *
-     * @param  int $id
+     * @param int $id
      * @return \think\Response
      */
     public function read($id)
@@ -61,33 +61,34 @@ class BaseAdmin extends Controller
     /**
      * 显示编辑资源表单页.
      *
-     * @param  int $id
+     * @param int $id
      * @return \think\Response
      */
     public function edit($id)
     {
         $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->edit($id)->view());
     }
-   
+
     /**
      * 保存更新的资源
      *
-     * @param  \think\Request $request
-     * @param  int $id
+     * @param \think\Request $request
+     * @param int $id
      * @return \think\Response
      */
     public function update(Request $request, $id)
     {
-        if($id == 'batch'){
+
+        if ($id == 'batch') {
             $ids = $request->put('ids');
             $res = $this->grid()->update($ids, $request->put());
-        }else{
+        } else {
             $submitFromMethod = $request->put('submitFromMethod');
-            $res = $this->$submitFromMethod()->update($id, $request->put()); 
+            $res = $this->$submitFromMethod()->update($id, $request->put());
         }
-        if($res !== false){
+        if ($res !== false) {
             $this->successCode([], 200, '数据更新成功');
-        }else {
+        } else {
             $this->errorCode(999, '数据保存失败');
         }
 
@@ -96,7 +97,7 @@ class BaseAdmin extends Controller
     /**
      * 删除指定资源
      *
-     * @param  int $id
+     * @param int $id
      * @return \think\Response
      */
     public function delete($id)
@@ -112,9 +113,9 @@ class BaseAdmin extends Controller
 
     public function view($build)
     {
-        if(request()->method() == 'GET' ){
+        if (request()->method() == 'GET') {
             $this->successCode($build->view());
-        }else{
+        } else {
             return $build;
         }
     }

@@ -52,6 +52,7 @@ class Table extends View
         $this->template = 'table';
         $this->headers = $headers;
         $this->setAttr('data', $data);
+        $this->setAttr('ref','dragTable');
         $this->setAttr('v-loading', 'loading');
 
     }
@@ -111,7 +112,7 @@ class Table extends View
         if (!empty($columnScriptVar)) {
             $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
         }
-        
+
         $tableHtml = '<el-table @selection-change="handleSelect" ' . $attrStr . '>' . $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);
