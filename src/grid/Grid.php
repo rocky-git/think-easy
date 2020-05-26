@@ -100,9 +100,9 @@ class Grid extends View
         $this->column($field,'排序')->display(function ($val,$data){
             $html = <<<EOF
 <div style="text-align:center;">
-<el-tooltip  effect="dark" content="置顶" placement="right-start"><i @click="sortTop(index)" class="el-icon-caret-top" style="cursor: pointer"></i></el-tooltip>
+<el-tooltip  effect="dark" content="置顶" placement="right-start"><i @click="sortTop(index,data)" class="el-icon-caret-top" style="cursor: pointer"></i></el-tooltip>
 <el-tooltip effect="dark" content="拖动排序" placement="right-start"><i class="el-icon-rank sortHandel" style="font-weight:bold;cursor: grab"></i></el-tooltip>
-<el-tooltip  effect="dark" content="置底" placement="right-start"><i @click="sortBottom(index)" class="el-icon-caret-bottom" style="cursor: pointer"></i></el-tooltip>
+<el-tooltip  effect="dark" content="置底" placement="right-start"><i @click="sortBottom(index,data)" class="el-icon-caret-bottom" style="cursor: pointer"></i></el-tooltip>
 </div>
 EOF;
 
@@ -298,58 +298,19 @@ EOF;
         }
         $action = $data['action'];
         if($action == 'buldview_drag_sort') {
-            $count = $this->model->count($this->sortField);
-            $distinctCount = $this->model->count("distinct {$this->sortField}");
-            $sortable_datas = $data['sortable_data'];
-            //排序
-            if ($count == $distinctCount) {
-
-                $sortable_type = $data['sortable_type'];
-                if ($sortable_type == 1) {
-                    $sortable_data = $sortable_datas[1];
-                } else {
-                    $sortable_data = end($sortable_datas);
-
-                }
-                $sortStart = $sortable_data[$this->sortField];
-                $updateData = [];
-                foreach ($sortable_datas as $key => $val) {
-                    $updateData[$key][$this->model->getPk()] = $val[$this->model->getPk()];
-                    $updateData[$key][$this->sortField] = $sortStart;
-                    $sortStart++;
-                }
-                return $res = $this->model->saveAll($updateData);
-            } else {
-                $sortData = $this->model->field("{$this->model->getPk()},{$this->sortField}")->select();
-                $pks = $sortData->column($this->model->getPk());
-                $sortable_type = $data['sortable_type'];
-                if($sortable_type == 1){
-                    $start_data = reset($sortable_datas);
-                    $end_data =  $sortable_datas[1];
-                }else{
-                    $start_data = end($sortable_datas);
-                    $end_data =  prev($sortable_datas);
-                }
-                $start_key = array_search($start_data[$this->model->getPk()],$pks);
-                $end_key = array_search($end_data[$this->model->getPk()],$pks);
-                $sortData = $pks[$start_key];
-                unset($pks[$start_key]);
-
-                array_splice($pks,$end_key,0,$sortData);
-                $i=1;
-                $updateData = [];
-                foreach ($pks as $key=>$val){
-                    $updateData[$key][$this->model->getPk()] = $val;
-                    $updateData[$key][$this->sortField] = $i;
-                    $i++;
-                }
-
-                $res = $this->model->saveAll($updateData);
-            }
+            $sortable_data = $data['sortable_data'];
+            $field = "id,(@rownum := @rownum+1),case when @rownum = {$sortable_data['sort']} then @rownum := @rownum+1 else @rownum := @rownum end AS rownum";
+            $sortSql = $this->model->table("(SELECT @rownum := -1) r,".$this->model->getTable())
+                ->fieldRaw($field)
+                ->removeOption('order')
+                ->order($this->sortField)
+                ->where('id','<>',$sortable_data['id'])
+                ->buildSql();
+            $this->model->where($this->model->getPk(),$sortable_data['id'])->update([$this->sortField=>$sortable_data['sort']]);
+            $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
         }else{
             return $this->model->update($data,[[$this->model->getPk(),'in', $ids]]);
         }
-
     }
     /**
      * 隐藏添加按钮

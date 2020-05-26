@@ -13,6 +13,8 @@
             tableData: Array,
             showEditId:Number,
             page:Number,
+            total:Number,
+            size:Number,
         },
         data(){
           return {
@@ -23,25 +25,67 @@
         },
         methods:{
             //排序置顶
-            sortTop(index){
-                if(this.page ==1){
-                    const oldValue = this.tableData[0]
-                    const newValue = this.tableData[index]
-                    this.$set(this.tableData,index,oldValue)
-                    this.$set(this.tableData,0,newValue)
-                }else{
-                    this.tableData.splice(index,1)
-                }
-                this.$emit('update:tableData', this.tableData)
+            sortTop(index,data){
+                this.$request({
+                    url: this.$route.path +'/batch.rest',
+                    method: 'put',
+                    data:{
+                        action:'buldview_drag_sort',
+                        sortable_data:{
+                            id:data.id,
+                            sort: 0
+                        }
+                    }
+                }).then(res=>{
+                    let title
+                    if(this.page ==1){
+                        const targetRow = this.tableData.splice(index, 1)[0]
+                        this.tableData.splice(0, 0, targetRow)
+                        title = '置顶完成'
+                    }else{
+                        this.tableData.splice(index,1)
+                        title = '已置顶到第一页'
+                    }
+                    this.$emit('update:tableData', this.tableData)
+                    this.$notify({
+                        title: '操作完成',
+                        message: title,
+                        type: 'success',
+                        duration: 1500
+                    })
+                })
+
             },
             //排序置底
-            sortBottom(index){
-                if(this.page ==1){
-                    const oldValue = this.tableData[0]
-                    const newValue = this.tableData[index]
-                    this.tableData[newIndex] = oldValue
-                    this.tableData[oldIndex] = newValue
-                }
+            sortBottom(index,data){
+                this.$request({
+                    url: this.$route.path +'/batch.rest',
+                    method: 'put',
+                    data:{
+                        action:'buldview_drag_sort',
+                        sortable_data:{
+                            id:data.id,
+                            sort: this.total-1
+                        }
+                    }
+                }).then(res=>{
+                    let title
+                    if(this.page == Math.ceil(this.total / this.size)){
+                        const targetRow = this.tableData.splice(index, 1)[0]
+                        this.tableData.push(targetRow)
+                        title = '置底完成'
+                    }else{
+                        this.tableData.splice(index,1)
+                        title = '已置底到最后一页'
+                    }
+                    this.$emit('update:tableData', this.tableData)
+                    this.$notify({
+                        title: '排序完成',
+                        message: title,
+                        type: 'success',
+                        duration: 1500
+                    })
+                })
             },
             handleEdit(row,index){
                 this.$emit('update:showEditId', row.id)

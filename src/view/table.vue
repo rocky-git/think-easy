@@ -160,21 +160,19 @@
                         var newIndex = evt.newIndex;
                         var oldIndex = evt.oldIndex;
                         var oldItem = this.tableData[oldIndex]
+                        var startPage = (this.page-1) * this.size
                         const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
                         this.tableData.splice(evt.newIndex, 0, targetRow)
-                        if(newIndex != oldIndex){
-                            if(evt.newIndex < evt.oldIndex){
-                                sortable_type = 1;
-                            }else{
-                                sortable_type = 2;
-                            }
+                        if(evt.newIndex != evt.oldIndex){
                             this.$request({
                                 url: this.$route.path +'/batch.rest',
                                 method: 'put',
                                 data:{
-                                    sortable_type:sortable_type,
                                     action:'buldview_drag_sort',
-                                    sortable_data:this.tableData
+                                    sortable_data:{
+                                        id:oldItem.id,
+                                        sort: startPage +newIndex
+                                    }
                                 }
                             }).then(res=>{
                                 this.$notify({
@@ -191,6 +189,7 @@
                     }
                 })
             },
+
             //重置筛选表单
             filterReset(){
                 this.$refs['form'].resetFields();

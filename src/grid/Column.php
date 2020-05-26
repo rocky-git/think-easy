@@ -219,7 +219,7 @@ class Column extends View
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :page="page" :tableData.sync="tableData"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :page="page" :size="size" :total="total" :tableData.sync="tableData"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();

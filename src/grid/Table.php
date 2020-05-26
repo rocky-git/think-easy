@@ -94,7 +94,6 @@ class Table extends View
     public function view()
     {
         $columnHtml = '';
-
         $i = 0;
         foreach ($this->headers as $field => $label) {
             if ($label instanceof Column) {
