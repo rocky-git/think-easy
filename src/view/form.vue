@@ -43,7 +43,8 @@
             onSubmit(formName){
                 let url,method
                 let urlArr = this.$route.path.split('/')
-                url = urlArr[1]+'/'+ urlArr[2]
+                //url = urlArr[1]+'/'+ urlArr[2]
+                url = '{$submitUrl}'
                 if(this.form.id == undefined){
                     url = url+'.rest'
                     method = 'post'

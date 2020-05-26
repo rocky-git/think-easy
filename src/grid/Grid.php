@@ -73,6 +73,7 @@ class Grid extends View
     protected $filter = null;
     //排序字段
     protected $sortField = null;
+
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -95,9 +96,11 @@ class Grid extends View
      * 开启排序
      * @param $field 排序字段
      */
-    public function sort($field = 'sort'){
+    public function sort($field = 'sort')
+    {
         $this->sortField = $field;
-        $this->column($field,'排序')->display(function ($val,$data){
+        $this->model()->order($field);
+        $this->column($field, '排序')->display(function ($val, $data) {
             $html = <<<EOF
 <div style="text-align:center;">
 <el-tooltip  effect="dark" content="置顶" placement="right-start"><i @click="sortTop(index,data)" class="el-icon-caret-top" style="cursor: pointer"></i></el-tooltip>
@@ -105,10 +108,10 @@ class Grid extends View
 <el-tooltip  effect="dark" content="置底" placement="right-start"><i @click="sortBottom(index,data)" class="el-icon-caret-bottom" style="cursor: pointer"></i></el-tooltip>
 </div>
 EOF;
-
             return $html;
         })->width(50)->align('center');
     }
+
     /**
      * 是否显示回收站
      * @param $bool true显示，false隐藏
@@ -174,15 +177,17 @@ EOF;
         }
         return $tree;
     }
+
     //头像昵称列
     public function userInfo($headimg = 'headimg', $nickname = 'nickname', $label = '会员信息')
     {
         $column = $this->column($headimg, $label);
-        return $column->display(function ($val, $data) use($column,$nickname){
-            $nicknameValue = $column->getValue($data,$nickname);
+        return $column->display(function ($val, $data) use ($column, $nickname) {
+            $nicknameValue = $column->getValue($data, $nickname);
             return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit'></el-image><br>{$nicknameValue}";
         })->align('center');
     }
+
     /**
      * 设置标题
      * @param $title
@@ -276,9 +281,15 @@ EOF;
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
         }
-        foreach ($this->data as $key => &$rows) {
-            foreach ($this->columns as $column){
-                $column->setData($rows);
+        if (count($this->data) > 0) {
+            foreach ($this->data as $key => &$rows) {
+                foreach ($this->columns as $column) {
+                    $column->setData($rows);
+                }
+            }
+        } else {
+            foreach ($this->columns as $column) {
+                $column->setData([]);
             }
         }
         $this->table->setColumn($this->columns);
@@ -294,24 +305,25 @@ EOF;
     public function update($ids, $data)
     {
         if (!is_null($this->beforeUpdate)) {
-            call_user_func($this->beforeUpdate, $ids,$data);
+            call_user_func($this->beforeUpdate, $ids, $data);
         }
-        $action = $data['action'];
-        if($action == 'buldview_drag_sort') {
+        $action = isset($data['action']) ? $data['action'] : '';
+        if ($action == 'buldview_drag_sort') {
             $sortable_data = $data['sortable_data'];
             $field = "id,(@rownum := @rownum+1),case when @rownum = {$sortable_data['sort']} then @rownum := @rownum+1 else @rownum := @rownum end AS rownum";
-            $sortSql = $this->model->table("(SELECT @rownum := -1) r,".$this->model->getTable())
+            $sortSql = $this->model->table("(SELECT @rownum := -1) r," . $this->model->getTable())
                 ->fieldRaw($field)
                 ->removeOption('order')
                 ->order($this->sortField)
-                ->where('id','<>',$sortable_data['id'])
+                ->where('id', '<>', $sortable_data['id'])
                 ->buildSql();
-            $this->model->where($this->model->getPk(),$sortable_data['id'])->update([$this->sortField=>$sortable_data['sort']]);
+            $this->model->where($this->model->getPk(), $sortable_data['id'])->update([$this->sortField => $sortable_data['sort']]);
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
-        }else{
-            return $this->model->update($data,[[$this->model->getPk(),'in', $ids]]);
+        } else {
+            return $this->model->update($data, [[$this->model->getPk(), 'in', $ids]]);
         }
     }
+
     /**
      * 隐藏添加按钮
      */
@@ -319,6 +331,7 @@ EOF;
     {
         $this->table->setVar('hideAddButton', true);
     }
+
     /**
      * 隐藏删除按钮
      */
@@ -326,10 +339,13 @@ EOF;
     {
         $this->table->setVar('hideDeletesButton', true);
     }
+
     //更新前回调
-    public function updateing(\Closure $closure){
+    public function updateing(\Closure $closure)
+    {
         $this->beforeUpdate = $closure;
     }
+
     //删除前回调
     public function deling(\Closure $closure)
     {
@@ -347,6 +363,7 @@ EOF;
             call_user_func($callback, $this->filter);
         }
     }
+
     /**
      * 删除数据
      */
@@ -369,23 +386,29 @@ EOF;
         try {
             if ($ids === true) {
                 if ($this->isSotfDelete && !$trueDelete) {
-                    $res = $this->model->where('1=1')->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
+                    $res = $this->db->where('1=1')->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
                 } else {
-                    $deleteDatas = $this->model->whereNotNull($this->softDeleteField)->select();
-                    $this->deleteRelationData($deleteDatas);
-                    $res = $this->model->whereNotNull($this->softDeleteField)->delete();
+                    if (in_array($this->softDeleteField, $this->tableFields)) {
+                        $deleteDatas = $this->db->whereNotNull($this->softDeleteField)->select();
+                        $this->deleteRelationData($deleteDatas);
+                        $res = $this->db->whereNotNull($this->softDeleteField)->delete();
+                    } else {
+                        $deleteDatas = $this->model->select();
+                        $this->deleteRelationData($deleteDatas);
+                        $res = $this->db->where('1=1')->delete();
+                    }
                 }
             } else {
                 if ($this->isSotfDelete && !$trueDelete) {
-                    $res = $this->model->whereIn($this->model->getPk(), $ids)->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
+                    $res = $this->db->whereIn($this->model->getPk(), $ids)->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
                 } else {
                     if ($ids === true) {
                         $this->deleteRelationData(true);
                     } else {
-                        $deleteDatas = $this->model->whereIn($this->model->getPk(), $ids)->select();
+                        $deleteDatas = $this->db->whereIn($this->model->getPk(), $ids)->select();
                         $this->deleteRelationData($deleteDatas);
                     }
-                    $res = $this->model->destroy($ids);
+                    $res = $this->db->delete($ids);
                 }
             }
             Db::commit();
@@ -393,6 +416,7 @@ EOF;
             Db::rollback();
             $res = false;
         }
+
         return $res;
     }
 
@@ -436,9 +460,12 @@ EOF;
             }
         }
     }
-    protected function getDataArray(){
+
+    protected function getDataArray()
+    {
         return $this->data->toArray();
     }
+
     /**
      * 视图渲染
      */

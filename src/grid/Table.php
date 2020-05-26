@@ -106,6 +106,7 @@ class Table extends View
             $columnHtml .= $column->render();
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
         }
+        
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {

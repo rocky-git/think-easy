@@ -265,7 +265,7 @@ class Form extends View
     {
         $this->beforeSave = $closure;
     }
-    
+
 
     /**
      * 数据编辑
@@ -416,7 +416,7 @@ class Form extends View
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
                 }
-                
+
                 $valdateField = str_replace('.','_',$formItem->field);
                 $this->formValidate["{$valdateField}ErrorMsg"] = '';
                 $this->formValidate["{$valdateField}ErrorShow"] = false;
@@ -612,6 +612,9 @@ class Form extends View
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('attrStr', $attrStr);
         $this->setVar('formItem', $formItem);
+        $submitUrl = app('http')->getName() . '/' . request()->controller();
+        $submitUrl = str_replace('.rest','',$submitUrl);
+        $this->setVar('submitUrl',$submitUrl);
         $this->setVar('formScriptVar', $formScriptVar);
         if (Request::has('build_dialog')) {
             $this->setVar('title', '');

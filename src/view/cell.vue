@@ -48,7 +48,7 @@
                     }
                     this.$emit('update:tableData', this.tableData)
                     this.$notify({
-                        title: '操作完成',
+                        title: '排序完成',
                         message: title,
                         type: 'success',
                         duration: 1500

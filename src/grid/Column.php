@@ -62,10 +62,13 @@ class Column extends View
             $this->setAttr('label', $label);
         }
     }
-    protected function getField($field){
-       $fields = explode('.',$field);
-       return end($fields);
+
+    protected function getField($field)
+    {
+        $fields = explode('.', $field);
+        return end($fields);
     }
+
     /**
      * 设置当内容过长被隐藏时显示
      * @return $this
@@ -155,7 +158,7 @@ class Column extends View
                 $switch->state($active, $inactive);
             }
             $switch->setAttr('field', $this->field);
-            $switch->setAttr(':values', 'data.'.$this->field);
+            $switch->setAttr(':values', 'data.' . $this->field);
             return $switch->render();
         });
         return $this;
@@ -168,12 +171,14 @@ class Column extends View
      * @param int $radius 圆角
      * @return $this
      */
-    public function image($width=80,$height=80,$radius=5){
-        $this->display(function ($val, $data) use($width,$height,$radius) {
+    public function image($width = 80, $height = 80, $radius = 5)
+    {
+        $this->display(function ($val, $data) use ($width, $height, $radius) {
             return "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$val}' fit='fit'></el-image>";
         });
         return $this;
     }
+
     /**
      * 设置数据
      * @param $data
@@ -182,29 +187,37 @@ class Column extends View
     {
         $rowData = $data;
         $val = $this->getValue($data);
-
-        if(strpos($this->field,'.')){
-            $this->cellVue .= "<span v-if='data.id == {$rowData['id']}'>{$val}</span>";
+        if (isset($rowData['id'])) {
+            $id = $rowData['id'];
+        } else {
+            $id = 0;
+        }
+        if (strpos($this->field, '.')) {
+            $this->cellVue .= "<span v-if='data.id == {$id}'>{$val}</span>";
         }
         if (!is_null($this->displayClosure)) {
-            $res = call_user_func_array($this->displayClosure, [$val, $rowData]);
-            $this->cellVue .= "<span v-if='data.id == {$rowData['id']}'>{$res}</span>";
+            if(empty($rowData)){
+                $res = '';
+            }else{
+                $res = call_user_func_array($this->displayClosure, [$val, $rowData]);
+            }
+            $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
     }
-
     /**
      * 获取数据
      * @param $data 行数据
      * @param null $field 字段
      * @return |null
      */
-    public function getValue($data,$field=null){
-        if(is_null($field)){
+    public function getValue($data, $field = null)
+    {
+        if (is_null($field)) {
             $dataField = $this->field;
-        }else{
+        } else {
             $dataField = $field;
         }
-        if(empty($dataField)){
+        if (empty($dataField)) {
             return null;
         }
         foreach (explode('.', $dataField) as $f) {
@@ -216,10 +229,11 @@ class Column extends View
         }
         return $data;
     }
+
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :page="page" :size="size" :total="total" :tableData.sync="tableData"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :page="page" :size="size" :total="total" :tableData.sync="' . $tableDataScriptVar . '"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();

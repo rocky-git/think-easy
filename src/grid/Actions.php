@@ -93,7 +93,9 @@ class Actions extends Column
     public function setData($data)
     {
         if (!is_null($this->closure)) {
-            call_user_func_array($this->closure, [$this, $data]);
+            if(!empty($data)){
+                call_user_func_array($this->closure, [$this, $data]);
+            }
         }
         $html = '';
         if (!$this->hideDetailButton) {
