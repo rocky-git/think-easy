@@ -18,10 +18,14 @@ class Permission
 {
     public function handle(Request $request, \Closure $next)
     {
-        $node = app('http')->getName() . '/' . $request->pathinfo();
+        $pathinfo = $request->pathinfo();
+        if (empty($pathinfo) || $pathinfo == 'apiBaseUrl') {
+            return $next($request);
+        }
+        $node = app('http')->getName() . '/' . $pathinfo;
         //验证权限
-        if (!AdminService::instance()->check($node,$request->method())) {
-            abort(200,  '没有访问该操作的权限！');
+        if (!AdminService::instance()->check($node, $request->method())) {
+            abort(200, '没有访问该操作的权限！');
         }
         return $next($request);
     }
