@@ -9,6 +9,7 @@
 namespace thinkEasy;
 
 
+use think\facade\Db;
 use think\Service;
 use thinkEasy\middleware\Permission;
 use thinkEasy\service\FileService;
@@ -61,6 +62,38 @@ class AdminServiceRegister extends Service
             }
 
         });
+
+        if (!function_exists('sysconf')) {
+            /**
+             * 配置系统参数
+             * @param string $name 参数名称
+             * @param boolean $value 无值为获取
+             * @return string|boolean
+             * @throws \think\Exception
+             * @throws \think\exception\PDOException
+             */
+            function sysconf($name, $value = null)
+            {
+                if(is_null($value)){
+                    $value =  Db::name('SystemConfig')->where('name',$name)->value('value');
+                    if(is_null($value)){
+                        return '';
+                    }else{
+                        return $value;
+                    }
+                }else{
+                    $sysconfig = Db::name('SystemConfig')->where('name',$name)->find();
+                    if($sysconfig){
+                        return Db::name('SystemConfig')->where('name',$name)->update(['value'=>$value]);
+                    }else{
+                        return Db::name('SystemConfig')->insert([
+                            'name'=>$name,
+                            'value'=>$value,
+                        ]);
+                    }
+                }
+            }
+        }
     }
     public function boot()
     {

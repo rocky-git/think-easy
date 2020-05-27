@@ -56,6 +56,7 @@ class Form extends View
         'show-message',
         'inline-message',
         'status-icon',
+        'label-position',
         'validate-on-rule-change',
         'disabled',
         'unlink-panels',
@@ -111,7 +112,7 @@ class Form extends View
             $this->tableFields = $this->model->getTableFields();
         }
         $this->template = 'form';
-        $this->setAttr('label-width', '120px');
+        $this->labelPosition('right');
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
@@ -120,7 +121,6 @@ class Form extends View
         }
 
     }
-
 
 
 
@@ -148,6 +148,15 @@ class Form extends View
         return $this;
     }
 
+    /**
+     * 对齐方式
+     * @param $position top,left,right
+     * @param int $width 宽度
+     */
+    public function labelPosition($position,$width=120){
+        $this->setAttr('label-width', $width.'px');
+        $this->setAttr('label-position',$position);
+    }
     /**
      * 更新数据
      * @param $id  主键id
