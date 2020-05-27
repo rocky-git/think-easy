@@ -384,6 +384,7 @@ EOF;
         $res = false;
         Db::startTrans();
         try {
+            $this->db->removeWhereField($this->softDeleteField);
             if ($ids === true) {
                 if ($this->isSotfDelete && !$trueDelete) {
                     $res = $this->db->where('1=1')->update([$this->softDeleteField => date('Y-m-d H:i:s')]);

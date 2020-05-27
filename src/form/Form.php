@@ -422,17 +422,20 @@ class Form extends View
                 $this->formValidate["{$valdateField}ErrorShow"] = false;
 
                 $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-
+                $fieldValue = $this->getData($formItem->field);
                 //设置默认值
                 if ($this->isEdit) {
-                    $fieldValue = $this->getData($formItem->field);
                     if (is_null($fieldValue)) {
                         $this->setData($formItem->field, $formItem->defaultValue);
                     } else {
                         $this->setData($formItem->field, $fieldValue);
                     }
                 } else {
-                    $this->setData($formItem->field, $formItem->defaultValue);
+                    if(is_array($fieldValue)){
+                        $this->setData($formItem->field, $fieldValue);
+                    }else{
+                        $this->setData($formItem->field, $formItem->defaultValue);
+                    }
                 }
                 //设置固定值
                 if (!is_null($formItem->value)) {
@@ -479,6 +482,7 @@ class Form extends View
                 list($relation, $field) = explode('.', $field);
                 $this->formData[$relation][$field] = $val;
             } else {
+
                 $this->formData[$field] = $val;
             }
         }else{
@@ -500,7 +504,11 @@ class Form extends View
             if (method_exists($this->model, $field)) {
                 if ($this->model->$field() instanceof BelongsToMany) {
                     $pk = $this->model->$field()->getPk();
-                    $relationData = $this->data->$field;
+                    if(empty($this->data->$field)){
+                        $relationData = null;
+                    }else{
+                        $relationData = $this->data->$field;
+                    }
                     if (is_null($relationData)) {
                         $val = [];
                     } else {
@@ -608,6 +616,7 @@ class Form extends View
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
         $this->formData = array_merge($this->formData, $this->extraData);
+
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('attrStr', $attrStr);
