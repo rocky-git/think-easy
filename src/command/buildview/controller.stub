@@ -5,6 +5,7 @@ namespace {%namespace%};
 use thinkEasy\controller\BaseAdmin;
 use thinkEasy\form\Form;
 use thinkEasy\grid\Actions;
+use thinkEasy\grid\Detail;
 use thinkEasy\grid\Filter;
 use thinkEasy\grid\Grid;
 use {%model_namespace%};

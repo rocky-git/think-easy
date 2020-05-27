@@ -34,6 +34,8 @@ class Column extends View
     //字段
     protected $field = '';
 
+    public $label = '';
+
     //组件行字段
     protected $rowField = '';
 
@@ -47,11 +49,14 @@ class Column extends View
     protected $tag = '';
     //自定义闭包
     protected $displayClosure = null;
-    //
-    protected $cellVue;
 
+    protected $cellVue;
+    //占位栅格数
+    protected $md = 24;
     public function __construct($field = '', $label = '')
     {
+
+        $this->label = $label;
         if (!empty($field)) {
             $this->field = $field;
             $field = $this->getField($field);
@@ -174,7 +179,16 @@ class Column extends View
     public function image($width = 80, $height = 80, $radius = 5)
     {
         $this->display(function ($val, $data) use ($width, $height, $radius) {
-            return "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$val}' fit='fit'></el-image>";
+            if(is_string($val)){
+                $images = explode(',',$val);
+            }elseif (is_array($val)){
+                $images = $val;
+            }
+            $html = '';
+            foreach ($images as $image){
+                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit'></el-image>&nbsp;";
+            }
+            return $html;
         });
         return $this;
     }
@@ -233,7 +247,7 @@ class Column extends View
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :page="page" :size="size" :total="total" :tableData.sync="' . $tableDataScriptVar . '"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :tableData.sync="' . $tableDataScriptVar . '"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();
@@ -241,9 +255,58 @@ class Column extends View
             $this->cellVue = $cell->render();
         }
         return $this->cellVue;
-
     }
+    public function getDetailDisplay($key)
+    {
 
+        if (!empty($this->cellVue)) {
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="data"></component>';
+            $cell = new Cell();
+            $cell->setVar('cell', $this->cellVue);
+            list($attrStr, $scriptVar) = $cell->parseAttr();
+            $cell->setVar('scriptVar', $scriptVar);
+            $this->cellVue = $cell->render();
+        }
+        return $this->cellVue;
+    }
+    /**
+     * 占位栅格数，24栏占满
+     * @param $num 数量
+     * @return $this
+     */
+    public function md($num = 3)
+    {
+        $this->md = $num;
+        return $this;
+    }
+    public function detailRender()
+    {
+        $label = "<span style='margin-left:20px;font-weight: bold;font-size: 14px;'>{$this->label}:</span>&nbsp;";
+        $this->rowField = 'data.'.$this->field;
+        if (!empty($this->tag)) {
+            $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
+        } elseif (count($this->usings) > 0) {
+            $html = '';
+            foreach ($this->usings as $key => $value) {
+                if (is_string($key)) {
+                    $html .= "<span style='font-size: 14px;' v-if=\"{$this->rowField} == '{$key}'\">%s</span>";
+                } else {
+                    $html .= "<span style='font-size: 14px;' v-if='{$this->rowField} == {$key}'>%s</span>";
+                }
+                if (isset($this->tagColor[$key])) {
+                    $this->tag($this->tagColor[$key], $this->tagTheme);
+                    $value = sprintf($this->tag, $value);
+                }
+                $html = sprintf($html, $value);
+            }
+            $this->display = $html;
+        } elseif (empty($this->display) && !empty($this->field)) {
+            $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
+        }
+        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;height:50px;line-height: 50px;'>".$label.$this->display."</el-col>";
+        list($attrStr, $dataStr) = $this->parseAttr();
+        return $this->display;
+    }
     public function render()
     {
         if (empty($this->display)) {

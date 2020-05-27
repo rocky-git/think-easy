@@ -54,7 +54,7 @@ class BaseAdmin extends Controller
      */
     public function read($id)
     {
-        //
+        $this->successCode($this->detail()->detailData($id)->view());
 
     }
 

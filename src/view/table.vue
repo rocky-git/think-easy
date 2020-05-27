@@ -75,6 +75,7 @@
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
                 showEditId:0,
+                showDetailId:0,
                 dialogVisible:false,
                 isDialog :false,
                 selectButtonShow:false,
@@ -140,12 +141,18 @@
             dialogVisible(val){
                 if(!val){
                     this.showEditId=0
+                    this.showDetailId = 0
                     this.requestPageData()
                 }
             },
             showEditId(val){
                 if(val != 0){
                     this.showDialog('编辑',2)
+                }
+            },
+            showDetailId(val){
+                if(val != 0){
+                    this.showDialog('详情',3)
                 }
             },
         },
@@ -240,13 +247,15 @@
                 }
                 return source.slice(source.indexOf(openingTag) + openingTag.length, source.lastIndexOf(`</${type}>`))
             },
-            //对话框表单 type=1添加，type=2编辑
+            //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
                 let url
                 if(type == 1){
                     url = this.$route.path+'/create.rest'
                 }else if(type == 2){
                     url = this.$route.path+'/'+this.showEditId+'/edit.rest'
+                }else if(type == 3){
+                    url = this.$route.path+'/'+this.showDetailId+'.rest'
                 }
                 if(this.isDialog){
                     this.$request({

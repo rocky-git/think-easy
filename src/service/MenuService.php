@@ -113,9 +113,15 @@ class MenuService extends Service
                 $editRouter['path'] = $editRouter['path'] . '/:id/edit\.rest';
                 $editRouter['name'] = $editRouter['name'] . '$edit';
                 $editRouter['meta']['id'] = -1;
+                $detailRouter = $router;
+                $detailRouter['path'] = $detailRouter['path'] . '/:id\.rest';
+                $detailRouter['name'] = $detailRouter['name'] . '$detail';
+                $detailRouter['meta']['id'] = -1;
+
                 $resourceRouter[] = $router;
                 $resourceRouter[] = $createRouter;
                 $resourceRouter[] = $editRouter;
+                $resourceRouter[] = $detailRouter;
             }
             //追加节点方法到路由
             foreach (NodeService::instance()->all() as $node) {

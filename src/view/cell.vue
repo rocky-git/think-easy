@@ -1,17 +1,13 @@
 <template><span>{$cell|raw}</span></template>
 <script>
     export default {
+        name:"cell",
         props:{
-            data:{
-                type: Object,
-                required: true
-            },
-            index:{
-                type: Number,
-                required: true
-            },
+            data:Object,
+            index:Number,
             tableData: Array,
             showEditId:Number,
+            showDetailId:Number,
             page:Number,
             total:Number,
             size:Number,
@@ -86,6 +82,9 @@
                         duration: 1500
                     })
                 })
+            },
+            handleDetail(row,index){
+                this.$emit('update:showDetailId', row.id)
             },
             handleEdit(row,index){
                 this.$emit('update:showEditId', row.id)
