@@ -150,7 +150,6 @@ abstract class View
         $var = lcfirst($class) . Str::studly($varName) . $this->varMatk;
         return $var;
     }
-
     /**
      * 设置属性变量
      * @param $name

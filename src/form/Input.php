@@ -179,7 +179,7 @@ class Input extends Field
     public function render()
     {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
-        $input = "<el-input @blur=\"clearValidate('{$this->field}')\" {$attrStr}>%s</el-input>";
+        $input = "<el-input {$attrStr}>%s</el-input>";
         if (!empty($this->inline)) {
             $input = sprintf($this->inline, $input);
         }

@@ -32,8 +32,28 @@
             }
         },
         methods:{
+            handleUp (relation,index) { // 上移
+                const len = this.form[relation][index - 1]
+                this.$set(this.form[relation], index - 1, this.form[relation][index])
+                this.$set(this.form[relation], index, len)
+            },
+            handleDown (relation,index) { // 下移
+                const len = this.form[relation][index + 1]
+                this.$set(this.form[relation], index + 1, this.form[relation][index])
+                this.$set(this.form[relation], index, len)
+            },
+            addManyData(relation,manyData){
+                this.form[relation].push(JSON.parse(decodeURIComponent(manyData)))
+            },
+            removeManyData(relation,index){
+                this.form[relation].splice(index, 1)
+            },
             clearValidate(formName) {
                 this.$refs[formName].clearValidate();
+                this.validates[formName+'ErrorMsg'] = ''
+            },
+            clearValidateArr(formName,index){
+                this.$refs[formName][index].clearValidate();
                 this.validates[formName+'ErrorMsg'] = ''
             },
             handleCheckChange(data){

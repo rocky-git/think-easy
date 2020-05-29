@@ -17,6 +17,7 @@ use think\helper\Str;
 use think\Model;
 use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
+use think\model\relation\HasMany;
 use think\model\relation\HasOne;
 use thinkEasy\model\SystemConfig;
 use thinkEasy\View;
@@ -33,9 +34,9 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Switchs switch ($field, $label) switch开关
  * @method \thinkEasy\form\Tree tree($field, $label) 树形
  * @method \thinkEasy\form\DateTime dateTime($field, $label) 日期时间
- * @method \thinkEasy\form\DateTime dateTimeRange($startFiled,$endField, $label) 日期时间范围时间
- * @method \thinkEasy\form\DateTime dateRange($startFiled,$endField, $label) 日期范围时间
- * @method \thinkEasy\form\DateTime timeRange($startFiled,$endField, $label) 日期范围时间
+ * @method \thinkEasy\form\DateTime dateTimeRange($startFiled, $endField, $label) 日期时间范围时间
+ * @method \thinkEasy\form\DateTime dateRange($startFiled, $endField, $label) 日期范围时间
+ * @method \thinkEasy\form\DateTime timeRange($startFiled, $endField, $label) 日期范围时间
  * @method \thinkEasy\form\DateTime date($field, $label) 日期
  * @method \thinkEasy\form\DateTime dates($field, $label) 多选日期
  * @method \thinkEasy\form\DateTime time($field, $label) 时间
@@ -105,9 +106,13 @@ class Form extends View
     protected $tableFields = [];
 
     protected $saveData = [];
+
+    protected $hasManyRelation = null;
+    protected $hasManyRowData = [];
+    protected $hasManyIndex = 0;
     public function __construct($model = null)
     {
-        if($model instanceof Model){
+        if ($model instanceof Model) {
             $this->model = $model;
             $this->tableFields = $this->model->getTableFields();
         }
@@ -122,7 +127,24 @@ class Form extends View
 
     }
 
-
+    /**
+     * 一对多
+     * @param $label 标签
+     * @param $relationMethod 关联方法
+     * @param \Closure $closure
+     */
+    public function hasMany($label, $relationMethod, \Closure $closure)
+    {
+        if (method_exists($this->model, $relationMethod)) {
+            if ($this->model->$relationMethod() instanceof HasMany) {
+                array_push($this->formItem, ['type' => 'hasMany', 'label' => $label, 'relationMethod' => $relationMethod, 'closure' => $closure]);
+            } else {
+                abort(500, '关联方法不是一对多');
+            }
+        } else {
+            abort(500, '无效关联方法');
+        }
+    }
 
     /**
      * 表单选项卡标签页
@@ -153,10 +175,12 @@ class Form extends View
      * @param $position top,left,right
      * @param int $width 宽度
      */
-    public function labelPosition($position,$width=120){
-        $this->setAttr('label-width', $width.'px');
-        $this->setAttr('label-position',$position);
+    public function labelPosition($position, $width = 120)
+    {
+        $this->setAttr('label-width', $width . 'px');
+        $this->setAttr('label-position', $position);
     }
+
     /**
      * 更新数据
      * @param $id  主键id
@@ -196,23 +220,23 @@ class Form extends View
         }
         Db::startTrans();
         try {
-            if(is_null($this->model)){
-                foreach ($this->saveData as  $name => $value){
-                    if($name == 'empty' || $name == 'submitFromMethod'){
+            if (is_null($this->model)) {
+                foreach ($this->saveData as $name => $value) {
+                    if ($name == 'empty' || $name == 'submitFromMethod') {
                         continue;
                     }
-                    $sysconfig = SystemConfig::where('name',$name)->find();
-                    if($sysconfig){
+                    $sysconfig = SystemConfig::where('name', $name)->find();
+                    if ($sysconfig) {
                         $sysconfig->value = $value;
                         $res = $sysconfig->save();
-                    }else{
+                    } else {
                         $res = SystemConfig::create([
-                           'name'=>$name,
-                           'value'=>$value,
+                            'name' => $name,
+                            'value' => $value,
                         ]);
                     }
                 }
-            }else{
+            } else {
                 $pk = $this->model->getPk();
                 if (!is_null($id)) {
                     $this->data = $this->model->find($id);
@@ -240,6 +264,16 @@ class Form extends View
                                 $this->data->$field->save($relationData);
                             }
 
+                        }elseif ($this->model->$field() instanceof HasMany){
+                            $realtionUpdateIds = array_column($value,'id');
+                            $deleteIds = $this->data->$field->column('id');
+                            if (is_array($realtionUpdateIds)) {
+                                $deleteIds = array_diff($deleteIds, $realtionUpdateIds);
+                            }
+                            if (count($deleteIds) > 0) {
+                                $this->model->$field()->whereIn('id', $deleteIds)->delete();
+                            }
+                            $this->model->$field()->saveAll($value);
                         }
                     }
                 }
@@ -330,19 +364,19 @@ class Form extends View
             'dateRange',
             'timeRange',
         ];
-        if (in_array($name,$inputs)) {
+        if (in_array($name, $inputs)) {
             $class .= 'Input';
-        }elseif (in_array($name,$dates)) {
+        } elseif (in_array($name, $dates)) {
             $class .= 'DateTime';
-        }elseif ($name == 'switch') {
+        } elseif ($name == 'switch') {
             $class .= 'Switchs';
         } elseif ($name == 'image') {
             $class .= 'File';
         } else {
             $class .= ucfirst($name);
         }
-        $formItem = new $class($field, $label,$arguments);
-        switch ($name){
+        $formItem = new $class($field, $label, $arguments);
+        switch ($name) {
             case 'image':
                 $formItem->displayType('image')->imageExt()->isUniqidmd5();
                 break;
@@ -393,12 +427,29 @@ class Form extends View
      */
     protected function parseFormItem($formItemHtml = '')
     {
+
         foreach ($this->formItem as $key => $formItem) {
             if (is_array($formItem)) {
                 $formItemArr = array_slice($this->formItem, $key + 1);
                 $this->formItem = [];
                 call_user_func_array($formItem['closure'], [$this]);
                 switch ($formItem['type']) {
+                    case 'hasMany':
+                        $this->hasManyRelation = $formItem['relationMethod'];
+                        $manyData = $this->getData($this->hasManyRelation);
+                        $formItemHtml = "<div v-for='(manyItem,index) in form.{$this->hasManyRelation}' :key='index'>";
+                        $formItemHtml .= "<el-divider content-position='left'>{$formItem['label']}</el-divider>";
+                        $formItemHtml = $this->parseFormItem($formItemHtml);
+                        $encodeManyData  = urlencode(json_encode($this->hasManyRowData,JSON_UNESCAPED_UNICODE));
+                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',index)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',index)\" v-show='form.{$this->hasManyRelation}.length > 1 && index > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && index < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',index)\">下移</el-button></el-form-item>";
+                        $formItemHtml .= "</div><el-divider></el-divider>";
+                        if(is_null($manyData)){
+                            $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
+                        }else{
+                            $this->formData[$this->hasManyRelation] = $manyData;
+                        }
+                        $this->hasManyRelation = null;
+                        break;
                     case 'layout':
                         $this->layout = true;
                         $formItemHtml = "<el-row>{$formItemHtml}</el-row>";
@@ -425,51 +476,78 @@ class Form extends View
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
                 }
-
-                $valdateField = str_replace('.','_',$formItem->field);
-                $this->formValidate["{$valdateField}ErrorMsg"] = '';
-                $this->formValidate["{$valdateField}ErrorShow"] = false;
-
-                $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-                $fieldValue = $this->getData($formItem->field);
-                //设置默认值
-                if ($this->isEdit) {
-                    if (is_null($fieldValue)) {
-                        $this->setData($formItem->field, $formItem->defaultValue);
+                if(is_null( $this->hasManyRelation )){
+                    $valdateField = str_replace('.', '_', $formItem->field);
+                    $this->formValidate["{$valdateField}ErrorMsg"] = '';
+                    $this->formValidate["{$valdateField}ErrorShow"] = false;
+                    $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $fieldValue = $this->getData($formItem->field);
+                    //设置默认值
+                    if ($this->isEdit) {
+                        if (is_null($fieldValue)) {
+                            $this->setData($formItem->field, $formItem->defaultValue);
+                        } else {
+                            $this->setData($formItem->field, $fieldValue);
+                        }
                     } else {
-                        $this->setData($formItem->field, $fieldValue);
+                        if (is_array($fieldValue)) {
+                            $this->setData($formItem->field, $fieldValue);
+                        } else {
+                            $this->setData($formItem->field, $formItem->defaultValue);
+                        }
                     }
-                } else {
-                    if(is_array($fieldValue)){
-                        $this->setData($formItem->field, $fieldValue);
-                    }else{
-                        $this->setData($formItem->field, $formItem->defaultValue);
+                    //设置固定值
+                    if (!is_null($formItem->value)) {
+                        $this->setData($formItem->field, $formItem->value);
                     }
-                }
-                //设置固定值
-                if (!is_null($formItem->value)) {
-                    $this->setData($formItem->field, $formItem->value);
+                }else{
+                    $field = $formItem->field;
+                    $formItem->setAttr('@blur',"clearValidateArr(\"{$formItem->field}\",index)");
+                    $formItem->setAttr('v-model', 'manyItem.'.$formItem->field);
+                    $valdateField = str_replace('.', '_', $formItem->field);
+                    $this->formValidate["{$valdateField}ErrorMsg"] = '';
+                    $this->formValidate["{$valdateField}ErrorShow"] = false;
+                    $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + index + '.{$formItem->field}'\" :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $fieldValue = isset($this->hasManyRowData[$formItem->field])?$this->hasManyRowData[$formItem->field]:'';
+                    //设置默认值
+                    if ($this->isEdit) {
+                        if (is_null($fieldValue)) {
+                            $this->hasManyRowData[$field] = $formItem->defaultValue;
+                        } else {
+                            $this->hasManyRowData[$field] = $fieldValue;
+                        }
+                    } else {
+                        if (is_array($fieldValue)) {
+                            $this->hasManyRowData[$field] = $fieldValue;
+                        } else {
+                            $this->hasManyRowData[$field] = $formItem->defaultValue;
+                        }
+                    }
+                    //设置固定值
+                    if (!is_null($formItem->value)) {
+                        $this->hasManyRowData[$field] = $formItem->value;
+                    }
                 }
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                $render =  $formItem->render();
-                if(isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])){
+                $render = $formItem->render();
+                if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $itemSaveValues = $this->saveData[$formItem->field];
                     $itemFields = $formItem->getFileds();
-                    if(count($itemFields) > 1){
-                        foreach ($itemFields as $key=>$itemField){
-                            if(isset($itemSaveValues[$key])){
+                    if (count($itemFields) > 1) {
+                        foreach ($itemFields as $key => $itemField) {
+                            if (isset($itemSaveValues[$key])) {
                                 $this->saveData[$itemField] = $itemSaveValues[$key];
                             }
                         }
                     }
                 }
-                if($formItem instanceof Input && $formItem->isHidden()){
+                if ($formItem instanceof Input && $formItem->isHidden()) {
                     $formItemTmp = $render;
-                }else{
+                } else {
                     $formItemTmp = sprintf($formItemTmp, $render);
                 }
                 $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
@@ -486,7 +564,7 @@ class Form extends View
 
     protected function setData($field, $val)
     {
-        if($this->model instanceof Model){
+        if ($this->model instanceof Model) {
             if (strpos($field, '.')) {
                 list($relation, $field) = explode('.', $field);
                 $this->formData[$relation][$field] = $val;
@@ -494,8 +572,8 @@ class Form extends View
 
                 $this->formData[$field] = $val;
             }
-        }else{
-            $this->formData[$field] =  SystemConfig::where('name',$field)->value('value');
+        } else {
+            $this->formData[$field] = SystemConfig::where('name', $field)->value('value');
         }
     }
 
@@ -507,15 +585,16 @@ class Form extends View
      */
     public function getData($field = null)
     {
+
         if (is_null($field)) {
             return $this->data;
         } else {
             if (method_exists($this->model, $field)) {
                 if ($this->model->$field() instanceof BelongsToMany) {
                     $pk = $this->model->$field()->getPk();
-                    if(empty($this->data->$field)){
+                    if (empty($this->data->$field)) {
                         $relationData = null;
-                    }else{
+                    } else {
                         $relationData = $this->data->$field;
                     }
                     if (is_null($relationData)) {
@@ -525,17 +604,16 @@ class Form extends View
                     }
                     return $val;
                 }
-            } else {
-                $data = $this->data;
-                foreach (explode('.', $field) as $f) {
-                    if (isset($data[$f])) {
-                        $data = $data[$f];
-                    } else {
-                        $data = null;
-                    }
-                }
-                return $data;
             }
+            $data = $this->data;
+            foreach (explode('.', $field) as $f) {
+                if (isset($data[$f])) {
+                    $data = $data[$f];
+                } else {
+                    $data = null;
+                }
+            }
+            return $data;
         }
     }
 
@@ -631,14 +709,15 @@ class Form extends View
         $this->setVar('attrStr', $attrStr);
         $this->setVar('formItem', $formItem);
         $submitUrl = app('http')->getName() . '/' . request()->controller();
-        $submitUrl = str_replace('.rest','',$submitUrl);
-        $this->setVar('submitUrl',$submitUrl);
+        $submitUrl = str_replace('.rest', '', $submitUrl);
+        $this->setVar('submitUrl', $submitUrl);
         $this->setVar('formScriptVar', $formScriptVar);
         if (Request::has('build_dialog')) {
             $this->setVar('title', '');
         }
         return $this->render();
     }
+
     public function __call($name, $arguments)
     {
 

@@ -159,11 +159,12 @@ class Column extends View
     {
         $this->display(function ($val, $data) use ($active, $inactive) {
             $switch = new Switchs('switch', '');
+            $switch->setAttr(':row-data', 'data');
             if (count($active) > 0 && count($inactive) > 0) {
                 $switch->state($active, $inactive);
             }
             $switch->setAttr('field', $this->field);
-            $switch->setAttr(':values', 'data.' . $this->field);
+            $switch->setAttr('v-model', 'data.' . $this->field);
             return $switch->render();
         });
         return $this;

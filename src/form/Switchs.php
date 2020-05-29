@@ -38,7 +38,6 @@ class Switchs extends Field
         $this->setAttr('inactive-text', current($inactive));
         $this->setAttr(':inactive-value', key($inactive));
         $this->setAttr('active-color', $color);
-        $this->setAttr(':row-data', 'data');
         $this->setAttr(':width', 75);
     }
 
