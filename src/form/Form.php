@@ -501,10 +501,10 @@ class Form extends View
                         $this->setData($formItem->field, $formItem->value);
                     }
                 }else{
-                    $field = $formItem->field;
+                    //一对多解析
                     $formItem->setAttr('@blur',"clearValidateArr(\"{$formItem->field}\",index)");
                     $formItem->setAttr('v-model', 'manyItem.'.$formItem->field);
-                    $valdateField = str_replace('.', '_', $formItem->field);
+                    $valdateField = str_replace('.', '_', $this->hasManyRelation.'.'.$formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
                     $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + index + '.{$formItem->field}'\" :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
@@ -512,21 +512,22 @@ class Form extends View
                     //设置默认值
                     if ($this->isEdit) {
                         if (is_null($fieldValue)) {
-                            $this->hasManyRowData[$field] = $formItem->defaultValue;
+                            $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
                         } else {
-                            $this->hasManyRowData[$field] = $fieldValue;
+                            $this->hasManyRowData[$formItem->field] = $fieldValue;
                         }
                     } else {
                         if (is_array($fieldValue)) {
-                            $this->hasManyRowData[$field] = $fieldValue;
+                            $this->hasManyRowData[$formItem->field] = $fieldValue;
                         } else {
-                            $this->hasManyRowData[$field] = $formItem->defaultValue;
+                            $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
                         }
                     }
                     //设置固定值
                     if (!is_null($formItem->value)) {
                         $this->hasManyRowData[$field] = $formItem->value;
                     }
+                    $formItem->setField("{$this->hasManyRelation}.$formItem->field");
                 }
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
@@ -641,9 +642,9 @@ class Form extends View
 
     /**
      * 验证表单规则
-     * @param $data
+     * @param $datas
      */
-    public function checkRule($data)
+    public function checkRule($datas)
     {
         if ($this->isEdit) {
             //更新
@@ -652,7 +653,19 @@ class Form extends View
             //新增
             $validate = Validate::rule($this->createRules['rule'])->message($this->createRules['msg']);
         }
-        $result = $validate->batch(true)->check($data);
+        foreach ($datas as $field=>$data){
+            if (method_exists($this->model,$field) && $this->model->$field() instanceof HasMany){
+                foreach ($data as $value){
+                    $valdateData[$field] = $value;
+                    $result = $validate->batch(true)->check($valdateData);
+                    if (!$result) {
+                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
+                    }
+                }
+
+            }
+        }
+        $result = $validate->batch(true)->check($datas);
         if (!$result) {
             throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
         }
