@@ -7,7 +7,7 @@ namespace thinkEasy\service;
 
 use EasyWeChat\Factory;
 use think\facade\Filesystem;
-use function thinkEasy\sysconf;
+use thinkEasy\tools\Data;
 
 class WechatService
 {
@@ -20,12 +20,12 @@ class WechatService
     public static function wechat($options=[])
     {
         $config = [
-            'app_id' => sysconf('wechat_appid'),
-            'secret' => sysconf('wechat_secret'),
-            'token' => sysconf('wechat_token'),
-            'aes_key' => sysconf('wechat_aes_key'),
-            'cert_path' => Filesystem::disk('safe')->path(sysconf('wechat_mch_ssl_cert')),
-            'key_path' => Filesystem::disk('safe')->path(sysconf('wechat_mch_ssl_key')),
+            'app_id' => Data::sysconf('wechat_appid'),
+            'secret' => Data::sysconf('wechat_secret'),
+            'token' => Data::sysconf('wechat_token'),
+            'aes_key' => Data::sysconf('wechat_aes_key'),
+            'cert_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_cert')),
+            'key_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_key')),
             'response_type' => 'array',
         ];
         $config = array_merge($config, $options);
@@ -41,11 +41,11 @@ class WechatService
     public static function payment($options=[])
     {
         $config = [
-            'app_id' => sysconf('wechat_appid'),
-            'mch_id' => sysconf('wechat_mch_id'),
-            'key' => sysconf('wechat_mch_key'),
-            'cert_path' => Filesystem::disk('safe')->path(sysconf('wechat_mch_ssl_cert')),
-            'key_path' => Filesystem::disk('safe')->path(sysconf('wechat_mch_ssl_key')),
+            'app_id' => Data::sysconf('wechat_appid'),
+            'mch_id' => Data::sysconf('wechat_mch_id'),
+            'key' => Data::sysconf('wechat_mch_key'),
+            'cert_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_cert')),
+            'key_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_key')),
             'response_type' => 'array',
         ];
         $config = array_merge($config, $options);
@@ -60,8 +60,8 @@ class WechatService
      */
     public static function miniProgram($options=[]){
         $config = [
-            'app_id' => sysconf('wechat_mini_appid'),
-            'secret' => sysconf('wechat_mini_secret'),
+            'app_id' => Data::sysconf('wechat_mini_appid'),
+            'secret' => Data::sysconf('wechat_mini_secret'),
             'response_type' => 'array',
         ];
         $config = array_merge($config, $options);

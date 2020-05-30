@@ -40,22 +40,13 @@ class FileService extends Service
         if (is_null($file)) {
             if ($totalChunks == 1) {
                 if (Filesystem::disk($upType)->has($saveDir . $filename)) {
-                    if ($this->upType == 'safe'){
-                        return $saveDir .$filename;
-                    }else{
-                        return $this->url($saveDir . $filename);
-                    }
+                    return $this->url($saveDir . $filename);
                 } else {
                     return false;
                 }
             } elseif ($isUniqidmd5 == false) {
                 if (Filesystem::disk($upType)->has($saveDir . $filename)) {
-                    halt($filename);
-                    if ($this->upType == 'safe'){
-                        return $saveDir .$filename;
-                    }else{
-                        return $this->url($saveDir . $filename);
-                    }
+                    return $this->url($saveDir . $filename);
                 } else {
                     return $this->checkChunkExtis($filename, $chunkSaveDir, $chunkNumber, $chunkSize, $totalSize);
                 }
@@ -124,9 +115,7 @@ class FileService extends Service
         }else{
             $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $fileName);
         }
-        if ($this->upType == 'safe' && $saveName) {
-            return $saveDir.$saveName;
-        } elseif ($saveName) {
+        if ($saveName) {
             return $this->url($saveName);
         } else {
             return false;
@@ -190,7 +179,12 @@ class FileService extends Service
     public function url($name)
     {
         $config = Filesystem::disk($this->upType)->getConfig();
-        return $this->app->request->domain() . $config->get('url') . DIRECTORY_SEPARATOR . $name;
+        if($this->upType == 'safe'){
+            return $name;
+        }else{
+            return $this->app->request->domain() . $config->get('url') . DIRECTORY_SEPARATOR . $name;
+        }
+
     }
 
     /**

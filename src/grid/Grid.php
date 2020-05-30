@@ -93,14 +93,15 @@ class Grid extends View
     }
 
     /**
-     * 开启排序
+     * 拖拽排序列
      * @param $field 排序字段
+     * @param string $label 显示标签
      */
-    public function sort($field = 'sort')
+    public function sortDrag($field = 'sort', $label = '排序')
     {
         $this->sortField = $field;
         $this->model()->order($field);
-        $this->column($field, '排序')->display(function ($val, $data) {
+        $this->column($field, $label)->display(function ($val, $data) {
             $html = <<<EOF
 <div style="text-align:center;">
 <el-tooltip  effect="dark" content="置顶" placement="right-start"><i @click="sortTop(index,data)" class="el-icon-caret-top" style="cursor: pointer"></i></el-tooltip>
@@ -110,6 +111,22 @@ class Grid extends View
 EOF;
             return $html;
         })->width(50)->align('center');
+    }
+
+    /**
+     * input排序列
+     * @param string $field 排序字段
+     * @param string $label 显示标签
+     */
+    public function sortInput($field = 'sort', $label = '排序')
+    {
+        $this->sortField = $field;
+        $this->column('sort', $label)->display(function ($val, $data) use($field) {
+            $html = <<<EOF
+<el-input v-model="data.{$field}" @input="sortInput(data,'{$field}',data.{$field})"></el-input>
+EOF;
+            return $html;
+        })->width(80)->align('center');
     }
 
     /**

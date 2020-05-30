@@ -25,7 +25,7 @@ class Filter extends View
     protected $model;
     //当前模型db
     protected $db;
-
+    protected $fields = [];
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -280,6 +280,30 @@ class Filter extends View
         return $this;
     }
     /**
+     * 单选框
+     * @param $options 选项值
+     * @return \thinkEasy\form\Radio
+     */
+    public function radio(array $options)
+    {
+        $formItem = array_pop($this->formItem);
+        $formItem = $this->formItem($formItem->field, $formItem->label, 'radio');
+        $formItem->options($options);
+        return $formItem;
+    }
+    /**
+     * 多选框
+     * @param $options 选项值
+     * @return \thinkEasy\form\Checkbox
+     */
+    public function checkbox(array $options)
+    {
+        $formItem = array_pop($this->formItem);
+        $formItem = $this->formItem($formItem->field, $formItem->label, 'checkbox');
+        $formItem->options($options);
+        return $formItem;
+    }
+    /**
      * 下拉框
      * @param $options 选项值
      * @return \thinkEasy\form\Select
@@ -306,6 +330,12 @@ class Filter extends View
         $field = str_replace('.', '__', $field);
         $formItem = new $class($field, $label);
         $this->formItem[] = $formItem;
+        if($name == 'checkbox'){
+            $this->fields[$field] = [];
+        }else{
+            $this->fields[$field] = '';
+        }
+
         return $formItem;
     }
 
@@ -476,6 +506,7 @@ class Filter extends View
             }
             $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
         }
+        array_push($this->scriptArr,"form:".json_encode($this->fields,JSON_UNESCAPED_UNICODE));
         return $formItemHtml;
     }
 }

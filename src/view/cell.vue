@@ -20,6 +20,24 @@
           }
         },
         methods:{
+            //输入框排序
+            sortInput(row,field,sort){
+                const param = {}
+                param[field] = sort
+                param.ids = [row.id]
+                this.$request({
+                    url: this.$route.path +'/batch.rest',
+                    method: 'put',
+                    data: param
+                }).then(res=>{
+                    this.$notify({
+                        title: '操作完成',
+                        message: '排序完成',
+                        type: 'success',
+                        duration: 1500
+                    })
+                })
+            },
             //排序置顶
             sortTop(index,data){
                 this.$request({

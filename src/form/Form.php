@@ -31,6 +31,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Input password($field, $label) 密码输入框
  * @method \thinkEasy\form\Input number($field, $label) 数字输入框
  * @method \thinkEasy\form\Select select($field, $label) 下拉选择器
+ * @method \thinkEasy\form\Radio radio($field, $label) 单选框
  * @method \thinkEasy\form\Switchs switch ($field, $label) switch开关
  * @method \thinkEasy\form\Tree tree($field, $label) 树形
  * @method \thinkEasy\form\DateTime dateTime($field, $label) 日期时间
@@ -211,15 +212,15 @@ class Form extends View
         $this->saveData = $data;
         $this->parseFormItem();
         $this->checkRule($this->saveData);
-        //保存前回调
-        if (!is_null($this->beforeSave)) {
-            $beforePost = call_user_func($this->beforeSave, $this->saveData, $this->data);
-            if (is_array($beforePost)) {
-                $this->saveData = array_merge($this->saveData, $beforePost);
-            }
-        }
         Db::startTrans();
         try {
+            //保存前回调
+            if (!is_null($this->beforeSave)) {
+                $beforePost = call_user_func($this->beforeSave, $this->saveData, $this->data);
+                if (is_array($beforePost)) {
+                    $this->saveData = array_merge($this->saveData, $beforePost);
+                }
+            }
             if (is_null($this->model)) {
                 foreach ($this->saveData as $name => $value) {
                     if ($name == 'empty' || $name == 'submitFromMethod') {
@@ -278,15 +279,14 @@ class Form extends View
                     }
                 }
             }
-
+            //保存回后调
+            if (!is_null($this->afterSave)) {
+                call_user_func_array($this->afterSave, [$this->saveData, $res]);
+            }
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-        }
-        //保存回后调
-        if (!is_null($this->afterSave)) {
-            call_user_func_array($this->afterSave, [$this->saveData, $res]);
         }
         return $res;
     }
@@ -562,7 +562,6 @@ class Form extends View
         }
         return $formItemHtml;
     }
-
     protected function setData($field, $val)
     {
         if ($this->model instanceof Model) {
@@ -584,19 +583,22 @@ class Form extends View
      * 2019/8/22 14:56
      * @return array|mixed
      */
-    public function getData($field = null)
+    public function getData($field = null,$data=null)
     {
 
+        if(is_null($data)){
+            $data = $this->data;
+        }
         if (is_null($field)) {
             return $this->data;
         } else {
             if (method_exists($this->model, $field)) {
                 if ($this->model->$field() instanceof BelongsToMany) {
                     $pk = $this->model->$field()->getPk();
-                    if (empty($this->data->$field)) {
+                    if (empty($data->$field)) {
                         $relationData = null;
                     } else {
-                        $relationData = $this->data->$field;
+                        $relationData = $data->$field;
                     }
                     if (is_null($relationData)) {
                         $val = [];
@@ -606,7 +608,6 @@ class Form extends View
                     return $val;
                 }
             }
-            $data = $this->data;
             foreach (explode('.', $field) as $f) {
                 if (isset($data[$f])) {
                     $data = $data[$f];

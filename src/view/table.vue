@@ -71,7 +71,6 @@
         data(){
             return {
                 sortable:null,
-                form:{},
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
                 showEditId:0,
@@ -112,7 +111,7 @@
             }
             this.cellComponent.forEach((cmponent,index)=>{
                 this.cellComponent[index] = () => new Promise(resolve => {
-                    resolve(this.splitCode(cmponent))
+                    resolve(this.$splitCode(cmponent))
                 })
             })
             if(sessionStorage.getItem('deleteColumnShow')){
@@ -221,32 +220,6 @@
                 }
                 this.requestPageData()
             },
-            splitCode  (codeStr)  {
-                const script = this.getSource(codeStr, 'script').replace(/export default/, 'return ')
-                const css = this.getSource(codeStr, 'style')
-                const template = this.getSource(codeStr, 'template')
-                if (css) {
-                    const style = document.createElement('style')
-                    style.type = 'text/css'
-                    // style.id = this.id;
-                    style.innerHTML = css
-                    document.getElementsByTagName('head')[0].appendChild(style)
-                }
-                return {
-                    ...new Function(script)(), template
-                }
-            },
-            getSource (source, type){
-                const regex = new RegExp(`<${type}[^>]*>`)
-                let openingTag = source.match(regex)
-
-                if (!openingTag) {
-                    return ''
-                } else {
-                    openingTag = openingTag[0]
-                }
-                return source.slice(source.indexOf(openingTag) + openingTag.length, source.lastIndexOf(`</${type}>`))
-            },
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
                 let url
@@ -268,7 +241,7 @@
                         this.{$dialogTitleVar|default='isDialog'} = title
                         let cmponent = response.data
                         this.plugDialog = () => new Promise(resolve => {
-                            resolve(this.splitCode(cmponent))
+                            resolve(this.$splitCode(cmponent))
                         })
                         this.dialogVisible = true
 
@@ -414,7 +387,7 @@
                     this.total = res.data.total
                     res.data.cellComponent.forEach((cmponent,index)=>{
                         this.cellComponent[index] = () => new Promise(resolve => {
-                            resolve(this.splitCode(cmponent))
+                            resolve(this.$splitCode(cmponent))
                         })
                     })
                 }).catch(res=>{
@@ -427,6 +400,10 @@
 </script>
 
 <style scoped>
+    .sortable-selecte{
+        background-color: #EBEEF5 !important;
+
+    }
     .sortable-ghost{
         opacity: .8;
         color: #fff!important;
