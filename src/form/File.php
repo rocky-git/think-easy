@@ -36,6 +36,26 @@ class File extends Field
         return $this;
     }
     /**
+     * 显示视频
+     * @param $width 宽度
+     * @return $this
+     */
+    public function video($width='auto'){
+        $this->setAttr(':width',$width);
+        $this->displayType('video');
+        return $this;
+    }
+    /**
+     * 显示音频
+     * @param $width 宽度
+     * @return $this
+     */
+    public function audio($width='auto'){
+        $this->setAttr(':width',$width);
+        $this->displayType('audio');
+        return $this;
+    }
+    /**
      * 上传显示方式
      * @param $type image图片,file文件
      */
