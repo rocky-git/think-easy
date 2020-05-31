@@ -103,14 +103,22 @@ class Form extends View
     //表单验证双向绑定变量
     protected $formValidate = [];
 
+    //表单item标记集合
+    protected $formItemTags = [];
+
+    //radio事件js
+    protected $radioJs = null;
     //表字段
     protected $tableFields = [];
 
     protected $saveData = [];
 
     protected $hasManyRelation = null;
+
     protected $hasManyRowData = [];
+
     protected $hasManyIndex = 0;
+
     public function __construct($model = null)
     {
         if ($model instanceof Model) {
@@ -265,8 +273,8 @@ class Form extends View
                                 $this->data->$field->save($relationData);
                             }
 
-                        }elseif ($this->model->$field() instanceof HasMany){
-                            $realtionUpdateIds = array_column($value,'id');
+                        } elseif ($this->model->$field() instanceof HasMany) {
+                            $realtionUpdateIds = array_column($value, 'id');
                             $deleteIds = $this->data->$field->column('id');
                             if (is_array($realtionUpdateIds)) {
                                 $deleteIds = array_diff($deleteIds, $realtionUpdateIds);
@@ -437,15 +445,15 @@ class Form extends View
                     case 'hasMany':
                         $this->hasManyRelation = $formItem['relationMethod'];
                         $manyData = $this->getData($this->hasManyRelation);
-                        $formItemHtml = "<div v-for='(manyItem,index) in form.{$this->hasManyRelation}' :key='index'>";
+                        $formItemHtml = "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
                         $formItemHtml .= "<el-divider content-position='left'>{$formItem['label']}</el-divider>";
                         $formItemHtml = $this->parseFormItem($formItemHtml);
-                        $encodeManyData  = urlencode(json_encode($this->hasManyRowData,JSON_UNESCAPED_UNICODE));
-                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',index)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',index)\" v-show='form.{$this->hasManyRelation}.length > 1 && index > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && index < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',index)\">下移</el-button></el-form-item>";
+                        $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
+                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
                         $formItemHtml .= "</div><el-divider></el-divider>";
-                        if(is_null($manyData)){
+                        if (is_null($manyData)) {
                             $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
-                        }else{
+                        } else {
                             $this->formData[$this->hasManyRelation] = $manyData;
                         }
                         $this->hasManyRelation = null;
@@ -476,11 +484,11 @@ class Form extends View
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
                 }
-                if(is_null( $this->hasManyRelation )){
+                if (is_null($this->hasManyRelation)) {
                     $valdateField = str_replace('.', '_', $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-if=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     $fieldValue = $this->getData($formItem->field);
                     //设置默认值
                     if ($this->isEdit) {
@@ -500,15 +508,16 @@ class Form extends View
                     if (!is_null($formItem->value)) {
                         $this->setData($formItem->field, $formItem->value);
                     }
-                }else{
+                } else {
                     //一对多解析
-                    $formItem->setAttr('@blur',"clearValidateArr(\"{$formItem->field}\",index)");
-                    $formItem->setAttr('v-model', 'manyItem.'.$formItem->field);
-                    $valdateField = str_replace('.', '_', $this->hasManyRelation.'.'.$formItem->field);
+                    $formItem->setAttr('@blur', "clearValidateArr(\"{$formItem->field}\",manyIndex)");
+                    $formItem->setAttr('v-model', 'manyItem.' . $formItem->field);
+                    $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + index + '.{$formItem->field}'\" :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-                    $fieldValue = isset($this->hasManyRowData[$formItem->field])?$this->hasManyRowData[$formItem->field]:'';
+                    $formItemTmp = "<el-form-item v-if=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    //一对多设置null，解析formItem初始值
+                    $fieldValue = null;
                     //设置默认值
                     if ($this->isEdit) {
                         if (is_null($fieldValue)) {
@@ -525,10 +534,25 @@ class Form extends View
                     }
                     //设置固定值
                     if (!is_null($formItem->value)) {
-                        $this->hasManyRowData[$field] = $formItem->value;
+                        $this->hasManyRowData[$formItem->field] = $formItem->value;
+                    }
+                    //一对多radio事件初始化值
+                    if ($formItem instanceof Radio) {
+                        $manyData = $this->getData($this->hasManyRelation);
+                        $radioJs = <<<EOF
+                        this.form.{$this->hasManyRelation}.forEach((item,index)=>{
+                            this.radioChange(item.{$formItem->field},'{$formItem->getTag()}',index)
+                        })
+EOF;
+                        $this->script($radioJs);
                     }
                     $formItem->setField("{$this->hasManyRelation}.$formItem->field");
                 }
+                //添加radio事件
+                if ($formItem instanceof Radio) {
+                    $this->radioJs .= $formItem->getEventJs();
+                }
+
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
                 $this->setRules($rule, $msg, 1);
@@ -557,11 +581,21 @@ class Form extends View
                 } else {
                     $formItemHtml .= $formItemTmp;
                 }
-
+                $this->script($formItem->getScript());
             }
         }
         return $formItemHtml;
     }
+
+    /**
+     * 设置js
+     * @param $js
+     */
+    public function script($js)
+    {
+        $this->script .= $js . PHP_EOL;
+    }
+
     protected function setData($field, $val)
     {
         if ($this->model instanceof Model) {
@@ -583,10 +617,10 @@ class Form extends View
      * 2019/8/22 14:56
      * @return array|mixed
      */
-    public function getData($field = null,$data=null)
+    public function getData($field = null, $data = null)
     {
 
-        if(is_null($data)){
+        if (is_null($data)) {
             $data = $this->data;
         }
         if (is_null($field)) {
@@ -654,9 +688,9 @@ class Form extends View
             //新增
             $validate = Validate::rule($this->createRules['rule'])->message($this->createRules['msg']);
         }
-        foreach ($datas as $field=>$data){
-            if (method_exists($this->model,$field) && $this->model->$field() instanceof HasMany){
-                foreach ($data as $value){
+        foreach ($datas as $field => $data) {
+            if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany) {
+                foreach ($data as $value) {
                     $valdateData[$field] = $value;
                     $result = $validate->batch(true)->check($valdateData);
                     if (!$result) {
@@ -716,11 +750,14 @@ class Form extends View
         if (!empty($scriptStr)) {
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
-        $this->formData = array_merge($this->formData, $this->extraData);
 
+        $this->formData = array_merge($this->formData, $this->extraData);
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
+        $this->setVar('formItemTags', json_encode($this->formItemTags, JSON_UNESCAPED_UNICODE));
+        $this->setVar('script', $this->script);
         $this->setVar('attrStr', $attrStr);
+        $this->setVar('radioJs', $this->radioJs);
         $this->setVar('formItem', $formItem);
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);

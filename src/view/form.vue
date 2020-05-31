@@ -26,32 +26,60 @@
         },
         data(){
             return {
+                manyIndex:0,
                 form:{$formData|raw},
                 validates:{$formValidate|raw},
+                formItemTags:{$formItemTags|raw},
                 {$formScriptVar|raw}
             }
         },
+        created(){
+            this.init()
+        },
         methods:{
-            handleUp (relation,index) { // 上移
+            //单选框切换事件
+            radioChange(val,tag,manyIndex){
+                {$radioJs|raw|default=''}
+            },
+            init(){
+                {$script|raw}
+            },
+            //数组寻找并删除
+            deleteArr(arr,value){
+                for(var i = arr.length ; i > 0 ; i--){
+                    if(arr[i-1]== value){
+                        arr.splice(i-1,1);
+                    }
+                }
+            },
+            // 一对多上移
+            handleUp (relation,index) {
                 const len = this.form[relation][index - 1]
                 this.$set(this.form[relation], index - 1, this.form[relation][index])
                 this.$set(this.form[relation], index, len)
             },
-            handleDown (relation,index) { // 下移
+            // 一对多下移
+            handleDown (relation,index) {
                 const len = this.form[relation][index + 1]
                 this.$set(this.form[relation], index + 1, this.form[relation][index])
                 this.$set(this.form[relation], index, len)
             },
+            //一对多添加元素
             addManyData(relation,manyData){
                 this.form[relation].push(JSON.parse(decodeURIComponent(manyData)))
+                this.init()
             },
+            //一对多移除元素
             removeManyData(relation,index){
                 this.form[relation].splice(index, 1)
+                this.init()
             },
+            //移除错误
             clearValidate(formName) {
                 this.$refs[formName].clearValidate();
                 this.validates[formName+'ErrorMsg'] = ''
             },
+            //一对多移除错误
             clearValidateArr(formName,index){
                 this.$refs[formName][index].clearValidate();
                 this.validates[formName+'ErrorMsg'] = ''
@@ -60,6 +88,7 @@
                 let field = this.$refs.tree.$attrs.field
                 this.form[field] = this.$refs.tree.getCheckedNodes();
             },
+            //提交
             onSubmit(formName){
                 let url,method
                 let urlArr = this.$route.path.split('/')

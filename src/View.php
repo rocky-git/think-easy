@@ -32,9 +32,11 @@ abstract class View
     //js变量
     protected $scriptVar = [];
 
-
     protected $varMatk = null;
-
+    //唯一标记
+    protected $tag = null;
+    //js
+    protected $script = '';
     /**
      * 设置变量
      */
@@ -153,6 +155,7 @@ abstract class View
     public function setField($field){
         $this->field = $field;
     }
+    
     /**
      * 设置属性变量
      * @param $name
@@ -165,6 +168,28 @@ abstract class View
         return $this;
     }
 
+    /**
+     * 获取标记
+     */
+    public function getTag(){
+        if(is_null($this->tag)){
+            $class = basename(str_replace('\\', '/', get_class($this)));
+            $this->tag = $class .'tag'. mt_rand(10000000, 99999999);
+        }
+        return $this->tag;
+    }
+    /**
+     * 设置标记
+     * @param $name
+     * @return $this
+     */
+    public function tag($name){
+        $this->tag = $name;
+        return $this;
+    }
+    public function getScript(){
+        return $this->script;
+    }
     /**
      * 返回视图
      * @return string
