@@ -149,7 +149,9 @@ class Column extends View
         $this->displayClosure = $closure;
         return $this;
     }
-
+    public function getClosure(){
+        return $this->displayClosure;
+    }
     /**
      * switch开关
      * @param array $active 开启状态 [1=>'开启']
@@ -170,6 +172,36 @@ class Column extends View
         return $this;
     }
 
+    /**
+     * 显示语音
+     * @return $this
+     */
+    public function audio(){
+        $this->display(function ($val, $data) {
+            if (is_array($val)){
+                $audios = implode(',',$val);
+            }else{
+                $audios = $val;
+            }
+            return "<eadmin-audio url='$audios'></eadmin-audio>";
+        });
+        return $this;
+    }
+    /**
+     * 显示视频
+     * @return $this
+     */
+    public function video(){
+        $this->display(function ($val, $data) {
+            if (is_array($val)){
+                $videos = implode(',',$val);
+            }else{
+                $videos = $val;
+            }
+            return "<eadmin-video url='$videos'></eadmin-video>";
+        });
+        return $this;
+    }
     /**
      * 显示图片
      * @param int $width 宽度
@@ -214,7 +246,11 @@ class Column extends View
             if(empty($rowData)){
                 $res = '';
             }else{
-                $res = call_user_func_array($this->displayClosure, [$val, $rowData]);
+                $clone = clone $this;
+                $res = call_user_func_array($this->displayClosure, [$val, $rowData,$clone]);
+                if($res instanceof self){
+                    $res = call_user_func_array($clone->getClosure(), [$val, $rowData,$clone]);
+                }
             }
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
@@ -337,6 +373,7 @@ class Column extends View
             $this->display = sprintf($this->scopeTemplaet, "<span v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
         }
         list($attrStr, $dataStr) = $this->parseAttr();
+
         return "<el-table-column $attrStr>" . $this->display . "</el-table-column>";
     }
 }

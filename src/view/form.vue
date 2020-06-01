@@ -26,6 +26,7 @@
         },
         data(){
             return {
+                auto:'',
                 manyIndex:0,
                 form:{$formData|raw},
                 validates:{$formValidate|raw},
