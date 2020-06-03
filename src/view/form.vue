@@ -7,7 +7,7 @@
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
                 <el-form-item style="margin-top: 15px;">
-                    <el-button type="primary" native-type="submit" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
+                    <el-button type="primary" :disabled="disabledSubmit" native-type="submit" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
                     <!--{/if}-->
@@ -26,6 +26,7 @@
         },
         data(){
             return {
+                disabledSubmit:false,
                 auto:'',
                 manyIndex:0,
                 form:{$formData|raw},
@@ -38,6 +39,20 @@
             this.init()
         },
         methods:{
+            copyLink () {
+                let clipboard = new this.$copy('.copy')
+                clipboard.on('success', e => {
+                    this.$message({
+                        message: '复制成功',
+                        type: 'success'
+                    })
+                    clipboard.destroy() // 使用destroy可以清楚缓存
+                })
+                clipboard.on('error', e => {
+                    this.$message.error('复制失败')
+                    clipboard.destroy()
+                })
+            },
             //单选框切换事件
             radioChange(val,tag,manyIndex){
                 {$radioJs|raw|default=''}
@@ -104,11 +119,13 @@
                 }
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        this.disabledSubmit = true
                         this.$request({
                             url: url,
                             method: method,
                             data:this.form
                         }).then(response=>{
+                            this.disabledSubmit = false
                             if(response.code == 200){
                                 this.$notify({
                                     title: '操作完成',
@@ -125,6 +142,8 @@
                                     this.validates[field+'ErrorMsg'] = val
                                 }
                             }
+                        }).catch(res=>{
+                            this.disabledSubmit = false
                         })
                     } else {
                         return false;

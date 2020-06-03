@@ -119,23 +119,29 @@ class Form extends View
 
     protected $hasManyIndex = 0;
 
+    protected $pkField = 'id';
     public function __construct($model = null)
     {
         if ($model instanceof Model) {
             $this->model = $model;
             $this->tableFields = $this->model->getTableFields();
+            $this->pkField = $this->model->getPk();
         }
         $this->template = 'form';
         $this->labelPosition('right');
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
-        if (request()->has('id')) {
-            $this->edit(request()->param('id'));
-        }
-
     }
 
+    /**
+     * 设置主键字段
+     * @param $field
+     */
+    public function setPkField($field)
+    {
+        $this->pkField  = $field;
+    }
     /**
      * 一对多
      * @param $label 标签
@@ -246,10 +252,15 @@ class Form extends View
                     }
                 }
             } else {
-                $pk = $this->model->getPk();
                 if (!is_null($id)) {
-                    $this->data = $this->model->find($id);
-                    $this->model = $this->model->find($id);
+                    $this->data = $this->model->where($this->pkField,$id)->find();
+                    $this->model = $this->model->where($this->pkField,$id)->find();
+                }elseif (isset($this->saveData[$this->pkField])){
+                    $isExists = Db::name($this->model->getTable())->where($this->pkField,$this->saveData[$this->pkField])->find();
+                    if($isExists){
+                        $this->data = $this->model->where($this->pkField,$this->saveData[$this->pkField])->find();
+                        $this->model = $this->model->where($this->pkField,$this->saveData[$this->pkField])->find();
+                    }
                 }
                 $res = $this->model->save($this->saveData);
                 foreach ($this->saveData as $field => $value) {
@@ -280,7 +291,7 @@ class Form extends View
                                 $deleteIds = array_diff($deleteIds, $realtionUpdateIds);
                             }
                             if (count($deleteIds) > 0) {
-                                $this->model->$field()->whereIn('id', $deleteIds)->delete();
+                                $this->model->$field()->whereIn($this->pkField, $deleteIds)->delete();
                             }
                             $this->model->$field()->saveAll($value);
                         }
@@ -328,8 +339,8 @@ class Form extends View
      */
     public function edit($id)
     {
-        $this->data = $this->model->find($id);
-        $this->formData[$this->model->getPk()] = $id;
+        $this->data = $this->model->where($this->pkField,$id)->find();
+        $this->formData[$this->pkField] = $id;
         $this->isEdit = true;
         return $this;
     }
@@ -438,14 +449,14 @@ class Form extends View
 
         foreach ($this->formItem as $key => $formItem) {
             if (is_array($formItem)) {
-                $formItemArr = array_slice($this->formItem, $key + 1);
+                $formItemArr = array_slice($this->formItem, $key+1);
                 $this->formItem = [];
                 call_user_func_array($formItem['closure'], [$this]);
                 switch ($formItem['type']) {
                     case 'hasMany':
                         $this->hasManyRelation = $formItem['relationMethod'];
                         $manyData = $this->getData($this->hasManyRelation);
-                        $formItemHtml = "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
+                        $formItemHtml .= "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
                         $formItemHtml .= "<el-divider content-position='left'>{$formItem['label']}</el-divider>";
                         $formItemHtml = $this->parseFormItem($formItemHtml);
                         $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
@@ -488,7 +499,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-if=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     $fieldValue = $this->getData($formItem->field);
                     //设置默认值
                     if ($this->isEdit) {
@@ -498,6 +509,7 @@ class Form extends View
                             $this->setData($formItem->field, $fieldValue);
                         }
                     } else {
+
                         if (is_array($fieldValue)) {
                             $this->setData($formItem->field, $fieldValue);
                         } else {
@@ -506,6 +518,7 @@ class Form extends View
                     }
                     //设置固定值
                     if (!is_null($formItem->value)) {
+
                         $this->setData($formItem->field, $formItem->value);
                     }
                 } else {
@@ -515,7 +528,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-if=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='{$formItem->rule}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //一对多设置null，解析formItem初始值
                     $fieldValue = null;
                     //设置默认值
@@ -607,7 +620,11 @@ EOF;
                 $this->formData[$field] = $val;
             }
         } else {
-            $this->formData[$field] = SystemConfig::where('name', $field)->value('value');
+            if(empty($val)){
+                $this->formData[$field] = SystemConfig::where('name', $field)->value('value');
+            }else{
+                $this->formData[$field] = $val;
+            }
         }
     }
 
@@ -628,7 +645,6 @@ EOF;
         } else {
             if (method_exists($this->model, $field)) {
                 if ($this->model->$field() instanceof BelongsToMany) {
-                    $pk = $this->model->$field()->getPk();
                     if (empty($data->$field)) {
                         $relationData = null;
                     } else {
@@ -637,7 +653,7 @@ EOF;
                     if (is_null($relationData)) {
                         $val = [];
                     } else {
-                        $val = $relationData->column($pk);
+                        $val = $relationData->column($this->pkField);
                     }
                     return $val;
                 }
@@ -744,6 +760,12 @@ EOF;
 
     public function view()
     {
+
+        if (request()->has( $this->pkField)) {
+            $this->edit(request()->param( $this->pkField));
+        }elseif (isset($this->extraData[$this->pkField])){
+            $this->edit($this->extraData[$this->pkField]);
+        }
         $formItem = $this->parseFormItem();
         $scriptStr = implode(',', array_unique($this->scriptArr));
         list($attrStr, $formScriptVar) = $this->parseAttr();
