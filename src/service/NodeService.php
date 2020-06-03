@@ -215,7 +215,7 @@ class NodeService extends Service
                         continue;
                     }
                 }
-                if($method->class == $namespace){
+                if($method->class == $namespace && $method->isPublic()){
                     $node  = $moduleName.'/'.$controller.'/'.$method->getName();
                     $node = strtolower($node);
                     if($res === false){
