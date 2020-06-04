@@ -35,7 +35,6 @@ class Table extends View
         'expand-row-keys',
         'default-sort',
         'show-summary',
-        'summary-method',
         'span-method',
         'select-on-indeterminate',
         'lazy',
@@ -52,8 +51,10 @@ class Table extends View
         $this->template = 'table';
         $this->headers = $headers;
         $this->setAttr('data', $data);
+        $this->setAttr('@sort-change', 'sortHandel');
         $this->setAttr('ref','dragTable');
         $this->setAttr('v-loading', 'loading');
+        $this->setAttr(':summary-method', 'columnSumHandel');
 
     }
 

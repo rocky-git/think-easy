@@ -271,7 +271,7 @@ class NodeService extends Service
         foreach ($modules as $module){
             $moduleName = basename($module);
             //权限模块
-            $authNoduleName = config('admin.authNoduleName');
+            $authNoduleName = config('admin.authNodule');
             if(isset($authNoduleName[$moduleName])){
                 $authNoduleTitle= $authNoduleName[$moduleName];
                 $this->treeArr[$moduleName] = [

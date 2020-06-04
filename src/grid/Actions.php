@@ -9,8 +9,6 @@
 namespace thinkEasy\grid;
 
 
-use thinkEasy\form\Button;
-
 class Actions extends Column
 {
     //隐藏详情按钮
@@ -65,12 +63,7 @@ class Actions extends Column
      */
     public function prepend($val)
     {
-        if ($val instanceof Button) {
-            $this->prependArr[] = $val->render();
-
-        } else {
-            $this->prependArr[] = $val;
-        }
+        $this->prependArr[] = $val;
     }
 
     /**
@@ -79,11 +72,7 @@ class Actions extends Column
      */
     public function append($val)
     {
-        if ($val instanceof Button) {
-            $this->appendArr[] = $val->render();
-        } else {
-            $this->appendArr[] = $val;
-        }
+        $this->appendArr[] = $val;
     }
 
     /**

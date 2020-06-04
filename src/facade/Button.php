@@ -11,7 +11,7 @@ use think\Facade;
 /**
  * Class Button
  * @package \thinkEasy\form\Button
- * @method \thinkEasy\form\Button create($text='',$type='',$size='small',$icon='',$plain=false) static 创建按钮
+ * @method \thinkEasy\form\Button create($text='',$colorType='',$size='small',$icon='',$plain=false) static 创建按钮
  */
 class Button extends Facade
 {

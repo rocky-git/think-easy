@@ -298,10 +298,17 @@ EOF;
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
         }
+
         if (count($this->data) > 0) {
             foreach ($this->data as $key => &$rows) {
                 foreach ($this->columns as $column) {
                     $column->setData($rows);
+                    if($column->isTotal()){
+                        $field = $column->getField();
+                        $rows[$field.'isTotalRow'] = true;
+                        $rows[$field.'totalText'] = $column->totalText;
+                        $this->table->setAttr('show-summary', true);
+                    }
                 }
             }
         } else {
@@ -507,9 +514,9 @@ EOF;
                 $this->hideAction();
                 $this->column('action_delete', '操作')->display(function ($val, $data) {
                     $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
-                        ->delete($data['id'], '此操作将恢复该数据, 是否继续?', 2)->render();
+                        ->delete($data['id'], '此操作将恢复该数据, 是否继续?', 2);
                     $button .= Button::create('永久删除', 'danger', 'small', 'el-icon-delete')
-                        ->delete($data['id'], '此操作将永久删除该数据, 是否继续?', 1)->render();
+                        ->delete($data['id'], '此操作将永久删除该数据, 是否继续?', 1);
                     return $button;
                 });
             } else {
@@ -544,6 +551,9 @@ EOF;
         switch ($build_request_type) {
             case 'page':
                 if (!$this->treeTable && $this->isPage) {
+                    if(Request::has('sort_field')){
+                        $this->db->removeOption('order')->order(Request::get('sort_field'),Request::get('sort_by'));
+                    }
                     $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
                 }
                 $this->table->view();

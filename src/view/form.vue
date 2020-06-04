@@ -1,5 +1,5 @@
 <template>
-        <el-main ref="ruleForm" style="background: #fff;">
+        <el-main ref="ruleForm" style="background: #fff;border-radius: 4px;">
             <!--{notempty name="title"}-->
             <div >{$title}</div>
             <el-divider></el-divider>
@@ -39,20 +39,6 @@
             this.init()
         },
         methods:{
-            copyLink () {
-                let clipboard = new this.$copy('.copy')
-                clipboard.on('success', e => {
-                    this.$message({
-                        message: '复制成功',
-                        type: 'success'
-                    })
-                    clipboard.destroy() // 使用destroy可以清楚缓存
-                })
-                clipboard.on('error', e => {
-                    this.$message.error('复制失败')
-                    clipboard.destroy()
-                })
-            },
             //单选框切换事件
             radioChange(val,tag,manyIndex){
                 {$radioJs|raw|default=''}

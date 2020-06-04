@@ -53,6 +53,10 @@ class Column extends View
     protected $cellVue;
     //占位栅格数
     protected $md = 24;
+    //开启合计行
+    protected $isTotalRow = false;
+    public $totalText = '';
+
     public function __construct($field = '', $label = '')
     {
 
@@ -68,8 +72,11 @@ class Column extends View
         }
     }
 
-    protected function getField($field)
+    public function getField($field = '')
     {
+        if (empty($field)) {
+            $field = $this->field;
+        }
         $fields = explode('.', $field);
         return end($fields);
     }
@@ -149,9 +156,12 @@ class Column extends View
         $this->displayClosure = $closure;
         return $this;
     }
-    public function getClosure(){
+
+    public function getClosure()
+    {
         return $this->displayClosure;
     }
+
     /**
      * switch开关
      * @param array $active 开启状态 [1=>'开启']
@@ -173,35 +183,54 @@ class Column extends View
     }
 
     /**
+     * 开启合计行
+     * @param string $text
+     */
+    public function total($text = '')
+    {
+        $this->isTotalRow = true;
+        $this->totalText = $text;
+    }
+
+    public function isTotal()
+    {
+        return $this->isTotalRow;
+    }
+
+    /**
      * 显示语音
      * @return $this
      */
-    public function audio(){
+    public function audio()
+    {
         $this->display(function ($val, $data) {
-            if (is_array($val)){
-                $audios = implode(',',$val);
-            }else{
+            if (is_array($val)) {
+                $audios = implode(',', $val);
+            } else {
                 $audios = $val;
             }
             return "<eadmin-audio url='$audios'></eadmin-audio>";
         });
         return $this;
     }
+
     /**
      * 显示视频
      * @return $this
      */
-    public function video(){
+    public function video()
+    {
         $this->display(function ($val, $data) {
-            if (is_array($val)){
-                $videos = implode(',',$val);
-            }else{
+            if (is_array($val)) {
+                $videos = implode(',', $val);
+            } else {
                 $videos = $val;
             }
             return "<eadmin-video url='$videos'></eadmin-video>";
         });
         return $this;
     }
+
     /**
      * 显示图片
      * @param int $width 宽度
@@ -212,13 +241,13 @@ class Column extends View
     public function image($width = 80, $height = 80, $radius = 5)
     {
         $this->display(function ($val, $data) use ($width, $height, $radius) {
-            if(is_string($val)){
-                $images = explode(',',$val);
-            }elseif (is_array($val)){
+            if (is_string($val)) {
+                $images = explode(',', $val);
+            } elseif (is_array($val)) {
                 $images = $val;
             }
             $html = '';
-            foreach ($images as $image){
+            foreach ($images as $image) {
                 $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit'></el-image>&nbsp;";
             }
             return $html;
@@ -243,18 +272,19 @@ class Column extends View
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$val}</span>";
         }
         if (!is_null($this->displayClosure)) {
-            if(empty($rowData)){
+            if (empty($rowData)) {
                 $res = '';
-            }else{
+            } else {
                 $clone = clone $this;
-                $res = call_user_func_array($this->displayClosure, [$val, $rowData,$clone]);
-                if($res instanceof self){
-                    $res = call_user_func_array($clone->getClosure(), [$val, $rowData,$clone]);
+                $res = call_user_func_array($this->displayClosure, [$val, $rowData, $clone]);
+                if ($res instanceof self) {
+                    $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
                 }
             }
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
     }
+
     /**
      * 获取数据
      * @param $data 行数据
@@ -293,6 +323,7 @@ class Column extends View
         }
         return $this->cellVue;
     }
+
     public function getDetailDisplay($key)
     {
 
@@ -306,6 +337,16 @@ class Column extends View
         }
         return $this->cellVue;
     }
+
+    /**
+     * 开启排序
+     */
+    public function sortable()
+    {
+        $this->setAttr('sortable', 'custom');
+        return $this;
+    }
+
     /**
      * 占位栅格数，24栏占满
      * @param $num 数量
@@ -316,10 +357,11 @@ class Column extends View
         $this->md = $num;
         return $this;
     }
+
     public function detailRender()
     {
         $label = "<span style='margin-left:20px;font-weight: bold;font-size: 14px;'>{$this->label}:</span>&nbsp;";
-        $this->rowField = 'data.'.$this->field;
+        $this->rowField = 'data.' . $this->field;
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
         } elseif (count($this->usings) > 0) {
@@ -340,10 +382,11 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;height:50px;line-height: 50px;'>".$label.$this->display."</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;height:50px;line-height: 50px;'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }
+
     public function render()
     {
         if (empty($this->display)) {

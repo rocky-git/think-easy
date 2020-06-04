@@ -1,6 +1,19 @@
 <template>
     <div>
-
+        <!--{notempty name="$filter"}-->
+        <div class="container" style="margin-bottom: 10px">
+            <el-divider content-position="left">筛选</el-divider>
+            <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
+                {$filter|raw|default=''}
+                <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+                    搜索
+                </el-button>
+                <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
+                    重置
+                </el-button>
+            </el-form>
+        </div>
+        <!--{/notempty}-->
         <div class="container">
             <!--{notempty name="title"}-->
                 <!--{if !isset($trashed) || $trashed===false}-->
@@ -8,20 +21,7 @@
             <el-divider></el-divider>
                 <!--{/if}-->
             <!--{/notempty}-->
-            <!--{notempty name="$filter"}-->
-            <div class="filter-container" >
-                <el-divider content-position="left">筛选</el-divider>
-                <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
-                {$filter|raw|default=''}
-                    <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-                        搜索
-                    </el-button>
-                    <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
-                        重置
-                    </el-button>
-                </el-form>
-            </div>
-            <!--{/notempty}-->
+
             <el-row style="margin-top: 5px">
                 <el-col :span="24">
                 <!--{if !isset($hideAddButton)}-->
@@ -70,6 +70,7 @@
     export default {
         data(){
             return {
+                sortableParams:{},
                 sortable:null,
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
@@ -156,6 +157,42 @@
             },
         },
         methods: {
+            //合计
+            columnSumHandel(param) {
+                const {columns, data} = param;
+                const sums = [];
+                columns.forEach((column, index) => {
+                    data.map(item => {
+                        if(item[column.property + 'isTotalRow']){
+                            if(sums[index] == undefined){
+                                sums[index] = 0
+                            }
+                            sums[index] += Number(item[column.property])
+                        }
+                    })
+                    if(sums[index]){
+                        sums[index] += data[0][column.property + 'totalText']
+                    }
+                 })
+                return sums;
+            },
+            //排序
+            sortHandel({ column, prop, order }){
+                if(order == null){
+                    this.sortableParams = {}
+                }else{
+                    if(order === 'descending'){
+                        order = 'desc'
+                    }else if(order === 'ascending'){
+                        order = 'asc'
+                    }
+                    this.sortableParams = {
+                        sort_field:prop,
+                        sort_by:order
+                    }
+                }
+                this.requestPageData()
+            },
             //拖拽排序
             setSort(){
                 const el = this.$refs.dragTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]
@@ -376,6 +413,7 @@
                     requestParams = Object.assign(requestParams,{'is_deleted':true})
                 }
                 requestParams = Object.assign(requestParams,this.form)
+                requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
                 this.$request({
                     url: url,
@@ -413,5 +451,6 @@
         background: #fff;
         position: relative;
         padding: 20px 16px;
+        border-radius: 4px;
     }
 </style>

@@ -18,13 +18,16 @@ class Permission
 {
     public function handle(Request $request, \Closure $next)
     {
+
         $pathinfo = $request->pathinfo();
         if (empty($pathinfo) || $pathinfo == 'apiBaseUrl') {
             return $next($request);
         }
-        $node = app('http')->getName() . '/' . $pathinfo;
+        $moudel = app('http')->getName() ;
+        $node = $moudel. '/' . $pathinfo;
         //验证权限
-        if (!AdminService::instance()->check($node, $request->method())) {
+        $authNodules = array_keys(config('admin.authNodule'));
+        if (in_array($moudel,$authNodules) && !AdminService::instance()->check($node, $request->method())) {
             abort(200, '没有访问该操作的权限！');
         }
         return $next($request);

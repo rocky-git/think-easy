@@ -21,12 +21,12 @@ class Button extends View
      * @param string $size 尺寸 medium / small / mini
      * @param string $icon 图标
      */
-    public function create($text='',$type='',$size='small',$icon='',$plain=false)
+    public function create($text='',$colorType='',$size='small',$icon='',$plain=false)
     {
         $button = new self();
         $button->template  = 'button';
         $button->text  = $text;
-        $button->setAttr('type',$type);
+        $button->setAttr('type',$colorType);
         $button->setAttr('size',$size);
         $button->setAttr('icon',$icon);
         $button->setAttr('text',$text);
@@ -60,7 +60,18 @@ class Button extends View
     public function href($url,$type='open'){
         $this->setAttr('url',$url);
         $this->setAttr('open-type',$type);
-        return $this;
+        return $this->html();
+    }
+
+    /**
+     * 复制文本
+     * @param $text
+     * @return $this
+     */
+    public function copy($text){
+        $this->setAttr('open-type','copy');
+        $this->setAttr('copy-text',$text);
+        return $this->html();
     }
     /**
      * 更新数据
@@ -78,7 +89,7 @@ class Button extends View
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
-        return $this;
+        return $this->html();
     }
 
     /**
@@ -97,7 +108,7 @@ class Button extends View
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
         $this->setAttr(':selectionData','selectionData');
-        return $this;
+        return $this->html();
     }
     /**
      * 删除数据
@@ -112,13 +123,13 @@ class Button extends View
         $this->setAttr('mode',$mode);
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
-        return $this;
+        return $this->html();
     }
     /**
      * 返回html
      * @return string
      */
-    public function render(){
+    protected function html(){
         list($attrStr, $scriptVar) = $this->parseAttr();
         $html = "<eadmin-button {$attrStr}></eadmin-button>";
         return $html;

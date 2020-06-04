@@ -80,6 +80,7 @@ class AdminService extends Service
         $method = strtolower($method);
         $node = strtolower($node);
         $ext = pathinfo($node, PATHINFO_EXTENSION);
+
         if(strpos($node,'edit.rest')){
             $node = preg_replace("/(.+)\/(.+)\/(.+)\/edit\.rest$/U","\\1/\\2/:id/edit.rest",$node);
         }elseif(strpos($node,'create.rest')){
@@ -88,7 +89,9 @@ class AdminService extends Service
 
             $node = preg_replace("/(.+)\/(.+)\/(.+)\.rest$/U","\\1/\\2/:id.rest",$node);
         }
+
         $permissions = $this->permissions();
+
         if(empty($method)){
             $rules = array_column($permissions, 'rule');
             if (in_array($node, $rules)) {
