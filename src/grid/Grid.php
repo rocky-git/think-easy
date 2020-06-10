@@ -308,6 +308,7 @@ EOF;
                         $rows[$field.'isTotalRow'] = true;
                         $rows[$field.'totalText'] = $column->totalText;
                         $this->table->setAttr('show-summary', true);
+                        $this->table->setAttr(':summary-method', 'columnSumHandel');
                     }
                 }
             }

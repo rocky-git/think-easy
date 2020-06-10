@@ -54,8 +54,6 @@ class Table extends View
         $this->setAttr('@sort-change', 'sortHandel');
         $this->setAttr('ref','dragTable');
         $this->setAttr('v-loading', 'loading');
-        $this->setAttr(':summary-method', 'columnSumHandel');
-
     }
 
     //获取自定义内容组件

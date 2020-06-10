@@ -595,6 +595,9 @@ EOF;
                     $formItemHtml .= $formItemTmp;
                 }
                 $this->script($formItem->getScript());
+                foreach ($formItem->getWhenItem() as $whenItem){
+                    call_user_func_array($whenItem['closure'],[$this]);
+                }
             }
         }
         return $formItemHtml;

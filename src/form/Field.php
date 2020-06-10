@@ -44,7 +44,7 @@ class Field extends View
     //提示帮助文本
     public $helpText = '';
 
-   
+    protected $whenItem = [];
     /**
      * Input constructor.
      * @param $field 字段
@@ -209,5 +209,28 @@ class Field extends View
             $this->field => $rule
         ];
         return [$resRule, $ruleMsg];
+    }
+
+    /**
+     * 条件显示
+     * @param mixed ...$conditon
+     * @return $this
+     */
+    public function when(...$conditon){
+        if(count($conditon) == 3){
+            list($val,$operator,$closure) = $conditon;
+        }elseif (count($conditon) == 2){
+            $operator = '=';
+            list($val,$closure) = $conditon;
+        }
+        $this->whenItem[] = [
+            'value'=>$val,
+            'operator'=>$operator,
+            'closure'=>$closure,
+        ];
+        return $this;
+    }
+    public function getWhenItem(){
+        return $this->whenItem;
     }
 }
