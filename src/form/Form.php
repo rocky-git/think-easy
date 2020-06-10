@@ -561,10 +561,7 @@ EOF;
                     }
                     $formItem->setField("{$this->hasManyRelation}.$formItem->field");
                 }
-                //添加radio事件
-                if ($formItem instanceof Radio) {
-                    $this->radioJs .= $formItem->getEventJs();
-                }
+
 
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
@@ -595,8 +592,29 @@ EOF;
                     $formItemHtml .= $formItemTmp;
                 }
                 $this->script($formItem->getScript());
-                foreach ($formItem->getWhenItem() as $whenItem){
+
+
+                //when显示元素解析，item互动事件显示隐藏
+                $whenTags = [];
+                $whenTagsAll = [];
+                foreach ($formItem->getWhenItem() as $whenIndex=>$whenItem){
+                    $formItemArr = array_slice($this->formItem, $key+1);
+                    $this->formItem = [];
                     call_user_func_array($whenItem['closure'],[$this]);
+                    $formItemHtml = $this->parseFormItem($formItemHtml);
+                    foreach ($this->formItem as $whenformItem){
+                        $whenTags[$whenItem['value']][] = $whenformItem->getTag();
+                        $whenTagsAll[] = $whenformItem->getTag();
+                        $this->radioJs .= "if(val == '{$whenItem['value']}' && tag === '{$formItem->getTag()}'){this.deleteArr(this.formItemTags,'{$whenformItem->getTag()}' + manyIndex)}".PHP_EOL;
+                    }
+                }
+                foreach ($whenTags as $whenVal=>$tags){
+                    $hideTags = array_diff($whenTagsAll,$tags);
+                    $hideTags = array_map(function ($v){
+                        return "'{$v}' + manyIndex";
+                    },$hideTags);
+                    $hideTags = implode(',',$hideTags);
+                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$hideTags})}".PHP_EOL;
                 }
             }
         }

@@ -41,6 +41,7 @@
         methods:{
             //单选框切换事件
             radioChange(val,tag,manyIndex){
+                console.log(tag)
                 {$radioJs|raw|default=''}
             },
             init(){

@@ -228,6 +228,7 @@ class Field extends View
             'operator'=>$operator,
             'closure'=>$closure,
         ];
+        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0)".PHP_EOL;
         return $this;
     }
     public function getWhenItem(){
