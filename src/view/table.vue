@@ -27,6 +27,18 @@
                 <!--{if !isset($hideAddButton)}-->
                 <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
                 <!--{/if}-->
+                <!--{if isset($exportOpen)}-->
+                    <el-dropdown trigger="click" style="margin-left: 10px;">
+                        <el-button type="primary" size="small" icon="el-icon-download">
+                            导出<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item @click.native="exportData(1)">导出当前页</el-dropdown-item>
+                            <el-dropdown-item @click.native="exportData(2)" v-show="this.selectionData.length > 0">导出选中行</el-dropdown-item>
+                            <el-dropdown-item @click.native="exportData(0)">导出全部</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                <!--{/if}-->
                 <!--{if isset($toolbar)}-->
                 {$toolbar|raw}
                 <!--{/if}-->
@@ -35,6 +47,7 @@
                 <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                 <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                 <!--{/if}-->
+
                 </el-col>
              </el-row>
         </div>
@@ -157,6 +170,20 @@
             },
         },
         methods: {
+            //导出
+            exportData(type){
+                if(type == 0){
+                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=all"
+                }else if(type == 1){
+                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size
+                }else if(type == 2){
+                    let ids  =[]
+                    this.selectionData.forEach((item)=>{
+                        ids.push(item.id)
+                    })
+                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',')
+                }
+            },
             //合计
             columnSumHandel(param) {
                 const {columns, data} = param;

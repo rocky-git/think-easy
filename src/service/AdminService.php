@@ -77,6 +77,7 @@ class AdminService extends Service
         if ($this->id() == config('admin.admin_auth_id')) {
             return true;
         }
+
         $method = strtolower($method);
         $node = strtolower($node);
         $ext = pathinfo($node, PATHINFO_EXTENSION);

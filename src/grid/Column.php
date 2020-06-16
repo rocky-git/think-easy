@@ -55,7 +55,13 @@ class Column extends View
     protected $md = 24;
     //开启合计行
     protected $isTotalRow = false;
+    //导出自定义显示闭包
+    protected $exportClosure = null;
+    //导出数据值
+    protected $exportValue = '';
+
     public $totalText = '';
+    public $closeExport = false;
 
     public function __construct($field = '', $label = '')
     {
@@ -263,6 +269,12 @@ class Column extends View
     {
         $rowData = $data;
         $val = $this->getValue($data);
+        if (count($this->usings) > 0) {
+            $this->exportValue = isset($this->usings[$val]) ? $this->usings[$val] : '';
+        } else {
+            $this->exportValue = $val;
+        }
+
         if (isset($rowData['id'])) {
             $id = $rowData['id'];
         } else {
@@ -280,9 +292,45 @@ class Column extends View
                 if ($res instanceof self) {
                     $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
                 }
+                $this->exportValue = $res;
             }
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
+        if (!is_null($this->exportClosure)) {
+            $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
+            $this->exportValue = $res;
+        }
+    }
+
+    /**
+     * 关闭excel 导出
+     * @Author: rocky
+     * 2019/10/9 16:54
+     */
+    public function closeExport()
+    {
+        $this->closeExport = true;
+        return $this;
+    }
+
+    /**
+     * 获取导出数据值
+     * @return string
+     */
+    public function getExportValue()
+    {
+        return $this->exportValue;
+    }
+
+    /**
+     * 导出数据自定义
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function export(\Closure $closure)
+    {
+        $this->exportClosure = $closure;
+        return $this;
     }
 
     /**

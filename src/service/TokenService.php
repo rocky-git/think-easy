@@ -26,6 +26,7 @@ class TokenService extends Service
     protected $expire = 7200;
     //当前token
     protected static $token = '';
+
     public function __construct()
     {
         $key = config('admin.token_key', 'QoYEClMJsgOSWUBkSCq26yWkApqSuH3');
@@ -40,13 +41,15 @@ class TokenService extends Service
      * @param $token
      * @return mixed
      */
-    public function logout($token=''){
-        if(empty($token)){
-            return Cache::set(md5(self::$token),time(),$this->expire);
-        }else{
-            return Cache::set(md5($token),time(),$this->expire);
+    public function logout($token = '')
+    {
+        if (empty($token)) {
+            return Cache::set(md5(self::$token), time(), $this->expire);
+        } else {
+            return Cache::set(md5($token), time(), $this->expire);
         }
     }
+
     /**
      * 获取当前token
      * @Author: rocky
@@ -55,8 +58,9 @@ class TokenService extends Service
      */
     public function get()
     {
-        return self::$token;
+        return self::$token ? self::$token : Request::header('Authorization');
     }
+
     /**
      * 设置token
      * @Author: rocky
@@ -80,6 +84,7 @@ class TokenService extends Service
         self::$token = '';
         return true;
     }
+
     /**
      * 返回token
      * @Author: rocky
@@ -92,15 +97,15 @@ class TokenService extends Service
         $data['expire'] = time() + $this->expire;
         $str = json_encode($data);
         $token = openssl_encrypt($str, 'aes-256-cbc', $this->key, 0, self::IV);
-        if(isset($data['id'])){
-            $cacheKey = 'last_auth_token_'.$data['id'];
+        if (isset($data['id'])) {
+            $cacheKey = 'last_auth_token_' . $data['id'];
             //开启唯一登录就将上次token加入黑名单
-            if(Cache::has($cacheKey) && config('token_unique',false)){
+            if (Cache::has($cacheKey) && config('token_unique', false)) {
                 $logoutToken = Cache::get($cacheKey);
                 $this->logout($logoutToken);
             }
             //保存最新token
-            Cache::set($cacheKey,$token,$this->expire);
+            Cache::set($cacheKey, $token, $this->expire);
         }
         return [
             'token' => $token,
@@ -115,12 +120,17 @@ class TokenService extends Service
      * @param $token
      * @return string
      */
-    public function decode($token='')
+    public function decode($token = '')
     {
-        if(empty($token)){
+        if (empty($token)) {
             $token = Request::header('Authorization');
+            if(Request::has('Authorization')){
+                $token = rawurldecode(Request::get('Authorization'));
+            }
         }
+       
         $str = openssl_decrypt($token, 'aes-256-cbc', $this->key, 0, self::IV);
+
         if ($str === false) {
             return false;
         } else {
@@ -133,14 +143,16 @@ class TokenService extends Service
      * @param $token
      * @return array|bool
      */
-    public function refresh($token = ''){
+    public function refresh($token = '')
+    {
         $data = $this->decode($token);
-        if($data){
+        if ($data) {
             return $this->encode($data);
-        }else{
+        } else {
             return false;
         }
     }
+
     /**
      * 验证token
      * @Author: rocky
@@ -150,23 +162,19 @@ class TokenService extends Service
      */
     public function auth()
     {
-        $token = Request::header('Authorization');
-        if($token){
-            if(strpos($token,'Bearer ') === 0){
-                $token = substr($token,7,strlen($token));
-            }
-        }else{
-            $token = self::$token ? self::$token : Request::header('Authorization');
+        $token = self::$token ? self::$token : Request::header('Authorization');
+        if(Request::has('Authorization')){
+            $token = rawurldecode(Request::get('Authorization'));
         }
         if (empty($token)) {
-            $this->errorCode(4000,'请先登陆再访问');
+            $this->errorCode(4000, '请先登陆再访问');
         }
         $data = $this->decode($token);
         if ($data === false || Cache::has(md5($token))) {
-            $this->errorCode(4001,'授权认证失败');
+            $this->errorCode(4001, '授权认证失败');
         }
         if ($data['expire'] < time()) {
-            $this->errorCode(4002,'授权失效,身份过期');
+            $this->errorCode(4002, '授权失效,身份过期');
         }
         return true;
     }
@@ -205,7 +213,7 @@ class TokenService extends Service
      */
     public function user($lock = false)
     {
-        
+
         if (is_null($this->id())) {
             return null;
         }

@@ -16,6 +16,8 @@ use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
+use thinkEasy\service\AdminService;
+use thinkEasy\service\TokenService;
 use thinkEasy\View;
 
 class Grid extends View
@@ -73,13 +75,16 @@ class Grid extends View
     protected $filter = null;
     //排序字段
     protected $sortField = null;
-
+    //导出数据
+    protected $exportData = [];
+    //导出文件名
+    protected $exportFileName = null;
     public function __construct(Model $model)
     {
         $this->model = $model;
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
-        $this->actionColumn = new Actions('id', '操作');
+        $this->actionColumn = new Actions('actionColumn', '操作');
         $this->table = new Table($this->columns, []);
         if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
@@ -298,13 +303,13 @@ EOF;
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
         }
-
         if (count($this->data) > 0) {
             foreach ($this->data as $key => &$rows) {
                 foreach ($this->columns as $column) {
+                    $field = $column->getField();
                     $column->setData($rows);
+                    $this->exportData[$key][$field] = $column->getExportValue();
                     if($column->isTotal()){
-                        $field = $column->getField();
                         $rows[$field.'isTotalRow'] = true;
                         $rows[$field.'totalText'] = $column->totalText;
                         $this->table->setAttr('show-summary', true);
@@ -320,7 +325,6 @@ EOF;
         $this->table->setColumn($this->columns);
         $this->table->setVar('toolbar', implode('', $this->toolsArr));
     }
-
     /**
      * 更新数据
      * @param $ids 更新条件id
@@ -486,12 +490,49 @@ EOF;
             }
         }
     }
-
     protected function getDataArray()
     {
         return $this->data->toArray();
     }
 
+    /**
+     * 开启导出
+     * @param $fileName 导出文件名
+     */
+    public function export($fileName=''){
+        $this->table->setVar('exportOpen',true);
+        $moudel = app('http')->getName() ;
+        $node = $moudel. '/' . request()->pathinfo();
+        $token = TokenService::instance()->get();
+        $this->table->setVar('exportUrl',request()->domain().'/'.$node.'?Authorization='.rawurlencode($token));
+        $this->exportFileName = empty($fileName)?date('Ymd'):$fileName;
+    }
+    //导出数据操作
+    protected function exportData(){
+        if(Request::get('build_request_type') == 'export'){
+            foreach ($this->columns as $column){
+                $field = $column->getField();
+                if(!$column->closeExport && !empty($field && $field != 'actionColumn')){
+                    $columnTitle[$field] = $column->label;
+                }
+            }
+            if(Request::get('export_type') == 'all'){
+                set_time_limit(0);
+                $this->db->chunk(500, function($datas) use($columnTitle) {
+                    $this->data  = $datas;
+                    $this->parseColumn();
+                    Excel::export($columnTitle,$this->exportData,$this->exportFileName);
+                    $this->exportData = [];
+                });
+                exit;
+            }elseif (Request::get('export_type') == 'select'){
+                $this->data = $this->model->whereIn($this->model->getPk(),Request::get('ids'))->select();
+            }
+            $this->parseColumn();
+            Excel::export($columnTitle,$this->exportData,$this->exportFileName);
+            exit;
+        }
+    }
     /**
      * 视图渲染
      */
@@ -526,7 +567,8 @@ EOF;
 
             }
         }
-
+        //如果是导出数据
+        $this->exportData();
         //解析列
         $this->parseColumn();
         $this->table->setAttr('data', $this->getDataArray());
