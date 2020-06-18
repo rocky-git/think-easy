@@ -48,6 +48,8 @@ use thinkEasy\View;
  * @method \thinkEasy\form\File image($field, $label) 图片上传
  * @method \thinkEasy\form\Editor editor($field, $label) 富文本编辑器
  * @method \thinkEasy\form\Slider slider($field, $label) 滑块
+ * @method \thinkEasy\form\Color color($field, $label) 颜色选择器
+ * @method \thinkEasy\form\Rate rate($field, $label) 评分组件
  */
 class Form extends View
 {

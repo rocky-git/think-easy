@@ -15,7 +15,7 @@ class Checkbox extends Field
         'data',
         'disabled',
     ];
-    protected $optionHtml;
+    protected $optionHtml = '<el-checkbox %s>{{item.label}}</el-checkbox>';
     public function __construct($field, $label, array $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
@@ -33,15 +33,25 @@ class Checkbox extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = "<el-checkbox-button
-      v-for='item in checkboxData{$this->varMatk}'
-      :key='item.value'
-      :label='item.value'>
-      {{item.label}}
-    </el-checkbox-button>";
+        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in checkboxData{$this->varMatk}' :key='item.value' :label='item.value'");
         $this->setAttr('data', $options);
         return $this;
 
+    }
+
+    /**
+     * 按钮样式
+     */
+    public function themeButton(){
+        $this->optionHtml  = str_replace('el-checkbox','el-checkbox-button',$this->optionHtml);
+        return $this;
+    }
+    /**
+     * 带边框样式
+     */
+    public function themeBorder(){
+        $this->optionHtml  = str_replace('<el-checkbox','<el-checkbox border',$this->optionHtml);
+        return $this;
     }
     public function render()
     {

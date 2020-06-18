@@ -8,7 +8,11 @@
 
 namespace thinkEasy\form;
 
-
+/**
+ * 滑块
+ * Class Slider
+ * @package thinkEasy\form
+ */
 class Slider extends Field
 {
     protected $attrs = [

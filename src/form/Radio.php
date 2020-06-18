@@ -15,7 +15,7 @@ class Radio extends Field
         'data',
         'disabled',
     ];
-    protected $optionHtml;
+    protected $optionHtml = '<el-radio %s>{{item.label}}</el-radio>';
     protected $eventJs = null;
     /**
      * 设置选项数据
@@ -30,13 +30,22 @@ class Radio extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = "<el-radio
-      v-for='item in radioData{$this->varMatk}'
-      :key='item.value'
-      :label='item.value'>
-      {{item.label}}
-    </el-radio>";
+        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in radioData{$this->varMatk}' :key='item.value' :label='item.value'");
         $this->setAttr('data', $options);
+        return $this;
+    }
+    /**
+     * 按钮样式
+     */
+    public function themeButton(){
+        $this->optionHtml  = str_replace('el-radio','el-radio-button',$this->optionHtml);
+        return $this;
+    }
+    /**
+     * 带边框样式
+     */
+    public function themeBorder(){
+        $this->optionHtml  = str_replace('<el-radio','<el-radio border',$this->optionHtml);
         return $this;
     }
     public function render()
