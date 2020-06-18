@@ -47,6 +47,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\File file($field, $label) 文件上传
  * @method \thinkEasy\form\File image($field, $label) 图片上传
  * @method \thinkEasy\form\Editor editor($field, $label) 富文本编辑器
+ * @method \thinkEasy\form\Slider slider($field, $label) 滑块
  */
 class Form extends View
 {
@@ -518,7 +519,6 @@ class Form extends View
                     }
                     //设置固定值
                     if (!is_null($formItem->value)) {
-
                         $this->setData($formItem->field, $formItem->value);
                     }
                 } else {

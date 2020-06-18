@@ -134,7 +134,7 @@ class Input extends Field
      */
     public function max($num)
     {
-        $this->setAttr('min', $num);
+        $this->setAttr('max', $num);
         return $this;
     }
 

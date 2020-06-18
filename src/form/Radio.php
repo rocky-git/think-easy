@@ -17,10 +17,6 @@ class Radio extends Field
     ];
     protected $optionHtml;
     protected $eventJs = null;
-    public function __construct($field, $label, array $arguments = [])
-    {
-        parent::__construct($field, $label, $arguments);
-    }
     /**
      * 设置选项数据
      * @param array $datas
