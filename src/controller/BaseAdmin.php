@@ -66,7 +66,7 @@ class BaseAdmin extends Controller
      */
     public function edit($id)
     {
-        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->edit($id)->view());
+        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
     }
 
     /**

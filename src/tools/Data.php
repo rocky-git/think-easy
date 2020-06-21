@@ -7,6 +7,7 @@
  */
 
 namespace thinkEasy\tools;
+
 use think\facade\Db;
 
 class Data
@@ -39,5 +40,23 @@ class Data
                 ]);
             }
         }
+    }
+
+    public static function generateTree($data,  $id = 'id',$pid = 'pid',$children = 'children')
+    {
+        $items = array();
+        foreach($data as $v){
+            $items[$v[$id]] = $v;
+        }
+        $tree = array();
+        foreach($items as $k => $item){
+            if(isset($items[$item[$pid]])){
+                $items[$item[$pid]][$children][] = &$items[$k];
+            }else{
+                $tree[] = &$items[$k];
+            }
+        }
+        return $tree;
+
     }
 }

@@ -26,7 +26,11 @@ class Rate extends Field
         'min',
         'max',
     ];
-
+    public function __construct($field, $label, $arguments = [])
+    {
+        parent::__construct($field, $label, $arguments);
+        $this->defaultValue = 0;
+    }
     /**
      * 设置最大值
      * @param $num

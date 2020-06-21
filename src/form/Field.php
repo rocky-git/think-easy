@@ -15,8 +15,9 @@ class Field extends View
 {
     //字段
     public $field = '';
+
+    public $fields = [];
     
-    protected $fields = [];
     //标签
     public $label = '';
 

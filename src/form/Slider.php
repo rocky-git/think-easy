@@ -52,7 +52,14 @@ class Slider extends Field
         $this->setAttr('max', $num);
         return $this;
     }
-
+    /**
+     * 竖向模式
+     * @param int $height 高度
+     */
+    public function vertical($height=100){
+        $this->setAttr('vertical', true);
+        $this->setAttr('height', $height.'px');
+    }
     /**
      * 设置最小值
      * @param $num

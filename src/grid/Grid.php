@@ -79,6 +79,7 @@ class Grid extends View
     protected $exportData = [];
     //导出文件名
     protected $exportFileName = null;
+
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -89,6 +90,7 @@ class Grid extends View
         if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
             if (request()->has('is_deleted')) {
+                $this->db->removeWhereField($this->softDeleteField);
                 $this->db->whereNotNull($this->softDeleteField);
             } else {
                 $this->db->whereNull($this->softDeleteField);
@@ -126,7 +128,7 @@ EOF;
     public function sortInput($field = 'sort', $label = '排序')
     {
         $this->sortField = $field;
-        $this->column('sort', $label)->display(function ($val, $data) use($field) {
+        $this->column('sort', $label)->display(function ($val, $data) use ($field) {
             $html = <<<EOF
 <el-input v-model="data.{$field}" @input="sortInput(data,'{$field}',data.{$field})"></el-input>
 EOF;
@@ -164,10 +166,11 @@ EOF;
 
     /**
      * 对话框表单
+     * @param $fullscreen 是否全屏
      */
-    public function setFormDialog()
+    public function setFormDialog($fullscreen = false)
     {
-        $this->table->setFormDialog('');
+        $this->table->setFormDialog('', $fullscreen);
     }
 
     /**
@@ -309,9 +312,9 @@ EOF;
                     $field = $column->getField();
                     $column->setData($rows);
                     $this->exportData[$key][$field] = $column->getExportValue();
-                    if($column->isTotal()){
-                        $rows[$field.'isTotalRow'] = true;
-                        $rows[$field.'totalText'] = $column->totalText;
+                    if ($column->isTotal()) {
+                        $rows[$field . 'isTotalRow'] = true;
+                        $rows[$field . 'totalText'] = $column->totalText;
                         $this->table->setAttr('show-summary', true);
                         $this->table->setAttr(':summary-method', 'columnSumHandel');
                     }
@@ -325,6 +328,7 @@ EOF;
         $this->table->setColumn($this->columns);
         $this->table->setVar('toolbar', implode('', $this->toolsArr));
     }
+
     /**
      * 更新数据
      * @param $ids 更新条件id
@@ -349,7 +353,7 @@ EOF;
             $this->model->where($this->model->getPk(), $sortable_data['id'])->update([$this->sortField => $sortable_data['sort']]);
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
         } else {
-            return $this->model->update($data, [[$this->model->getPk(), 'in', $ids]]);
+            return $this->model->removeWhereField($this->softDeleteField)->strict(false)->update($data, [[$this->model->getPk(), 'in', $ids]]);
         }
     }
 
@@ -490,6 +494,7 @@ EOF;
             }
         }
     }
+
     protected function getDataArray()
     {
         return $this->data->toArray();
@@ -499,40 +504,44 @@ EOF;
      * 开启导出
      * @param $fileName 导出文件名
      */
-    public function export($fileName=''){
-        $this->table->setVar('exportOpen',true);
-        $moudel = app('http')->getName() ;
-        $node = $moudel. '/' . request()->pathinfo();
+    public function export($fileName = '')
+    {
+        $this->table->setVar('exportOpen', true);
+        $moudel = app('http')->getName();
+        $node = $moudel . '/' . request()->pathinfo();
         $token = TokenService::instance()->get();
-        $this->table->setVar('exportUrl',request()->domain().'/'.$node.'?Authorization='.rawurlencode($token));
-        $this->exportFileName = empty($fileName)?date('Ymd'):$fileName;
+        $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token));
+        $this->exportFileName = empty($fileName) ? date('Ymd') : $fileName;
     }
+
     //导出数据操作
-    protected function exportData(){
-        if(Request::get('build_request_type') == 'export'){
-            foreach ($this->columns as $column){
+    protected function exportData()
+    {
+        if (Request::get('build_request_type') == 'export') {
+            foreach ($this->columns as $column) {
                 $field = $column->getField();
-                if(!$column->closeExport && !empty($field && $field != 'actionColumn')){
+                if (!$column->closeExport && !empty($field && $field != 'actionColumn')) {
                     $columnTitle[$field] = $column->label;
                 }
             }
-            if(Request::get('export_type') == 'all'){
+            if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
-                $this->db->chunk(500, function($datas) use($columnTitle) {
-                    $this->data  = $datas;
+                $this->db->chunk(500, function ($datas) use ($columnTitle) {
+                    $this->data = $datas;
                     $this->parseColumn();
-                    Excel::export($columnTitle,$this->exportData,$this->exportFileName);
+                    Excel::export($columnTitle, $this->exportData, $this->exportFileName);
                     $this->exportData = [];
                 });
                 exit;
-            }elseif (Request::get('export_type') == 'select'){
-                $this->data = $this->model->whereIn($this->model->getPk(),Request::get('ids'))->select();
+            } elseif (Request::get('export_type') == 'select') {
+                $this->data = $this->model->whereIn($this->model->getPk(), Request::get('ids'))->select();
             }
             $this->parseColumn();
-            Excel::export($columnTitle,$this->exportData,$this->exportFileName);
+            Excel::export($columnTitle, $this->exportData, $this->exportFileName);
             exit;
         }
     }
+
     /**
      * 视图渲染
      */
@@ -551,7 +560,6 @@ EOF;
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {
-                $this->db->whereNotNull($this->softDeleteField);
                 $this->column($this->softDeleteField, '删除时间');
                 $this->hideAction();
                 $this->column('action_delete', '操作')->display(function ($val, $data) {
@@ -562,7 +570,6 @@ EOF;
                     return $button;
                 });
             } else {
-                $this->db->whereNull($this->softDeleteField);
                 $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow');
 
             }
@@ -594,8 +601,8 @@ EOF;
         switch ($build_request_type) {
             case 'page':
                 if (!$this->treeTable && $this->isPage) {
-                    if(Request::has('sort_field')){
-                        $this->db->removeOption('order')->order(Request::get('sort_field'),Request::get('sort_by'));
+                    if (Request::has('sort_field')) {
+                        $this->db->removeOption('order')->order(Request::get('sort_field'), Request::get('sort_by'));
                     }
                     $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
                 }

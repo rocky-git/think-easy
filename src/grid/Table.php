@@ -46,13 +46,14 @@ class Table extends View
     protected $data;
     protected $cellComponent;
     protected $scriptArr = [];
+
     public function __construct($headers, array $data)
     {
         $this->template = 'table';
         $this->headers = $headers;
         $this->setAttr('data', $data);
         $this->setAttr('@sort-change', 'sortHandel');
-        $this->setAttr('ref','dragTable');
+        $this->setAttr('ref', 'dragTable');
         $this->setAttr('v-loading', 'loading');
     }
 
@@ -64,11 +65,17 @@ class Table extends View
 
     /**
      * 对话框表单
+     * @param $title 标题
+     * @param bool $fullscreen 是否全屏
+     * @param string $width 宽度
      */
-    public function setFormDialog($title,$width="40%")
+    public function setFormDialog($title, $fullscreen = false, $width = "40%")
     {
-        $dialog = new Dialog($title,"<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
+        $dialog = new Dialog($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
         $dialog->setAttr('width', $width);
+        if ($fullscreen) {
+            $dialog->setAttr('fullscreen', true);
+        }
         $this->setVar('dialog', $dialog->render());
         $this->setVar('dialogVar', $dialog->getVisibleVar());
         $this->setVar('dialogTitleVar', $dialog->getTitleVar());
@@ -83,9 +90,12 @@ class Table extends View
     {
         $this->headers = $cloumns;
     }
-    public function setScriptArr($scriptArr){
+
+    public function setScriptArr($scriptArr)
+    {
         $this->scriptArr = array_merge($this->scriptArr, $scriptArr);
     }
+
     /**
      * 返回视图
      * @return string

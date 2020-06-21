@@ -25,6 +25,7 @@
             dialogVisible:Boolean
         },
         data(){
+            let _self = this
             return {
                 disabledSubmit:false,
                 auto:'',
@@ -41,7 +42,6 @@
         methods:{
             //单选框切换事件
             radioChange(val,tag,manyIndex){
-                console.log(tag)
                 {$radioJs|raw|default=''}
             },
             init(){

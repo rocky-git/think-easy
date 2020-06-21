@@ -19,7 +19,9 @@ class Select extends Field
         'multiple',
         'readonly',
     ];
-
+    protected $options = [];
+    protected $groupOptions = [];
+    protected $disabledData = [];
     public function __construct($field, $label, $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
@@ -37,7 +39,6 @@ class Select extends Field
         $this->setAttr('style', 'width:' . $num);
         return $this;
     }
-
     /**
      * 设置分组选项数据
      * @param array $datas
@@ -46,10 +47,10 @@ class Select extends Field
     public function groupOptions(array $datas)
     {
         /* 格式
-
          $datas = [
             [
                 'label' => '第一个分组',
+                'value' => 2,
                 'options' => [
                     [
                         'label' => '第一个标签',
@@ -59,6 +60,7 @@ class Select extends Field
             ],
             [
                 'label' => '第二个分组',
+                'value' => 2,
                 'options' => [
                     [
                         'label' => '第二个标签',
@@ -66,22 +68,23 @@ class Select extends Field
                     ]
                 ]
             ]
-         ]；
-
+         ];
         */
+        $this->groupOptions = $datas;
         $this->optionHtml = "<el-option-group
       v-for='group in selectData{$this->varMatk}'
-      :key='group.label'
-      :label='group.label'>
+      :key='group.value'
+      :label='group.label'
+      :disabled='group.disabled'>
       <el-option
       v-for='item in group.options'
       :key='item.value'
       :label='item.label'
-      :value='item.value'>
+      :value='item.value'
+      :disabled='item.disabled'>
       <span v-html='item.label'></span>
     </el-option>
     </el-option-group>";
-        $this->setAttr('data', $datas);
         return $this;
 
     }
@@ -92,25 +95,18 @@ class Select extends Field
      */
     public function options(array $datas)
     {
-        $options = [];
-        foreach ($datas as $value => $label) {
-            $options[] = [
-                'value' => $value,
-                'label' => $label,
-            ];
-        }
+        $this->options = $datas;
         $this->optionHtml = "<el-option
       v-for='item in selectData{$this->varMatk}'
       :key='item.value'
       :label='item.label'
-      :value='item.value'>
+      :value='item.value'
+      :disabled='item.disabled'>
       <span v-html='item.label'></span>
     </el-option>";
-        $this->setAttr('data', $options);
         return $this;
 
     }
-
     /**
      * 多选
      */
@@ -120,8 +116,61 @@ class Select extends Field
         return $this;
     }
 
+    /**
+     * 禁用选项数据
+     * @param array $data 禁用数据
+     */
+    public function disabledData(array $data){
+        $this->disabledData = $data;
+    }
+    protected function parseOptions(){
+        $options = [];
+        foreach ($this->options as $value=>$label){
+            if(in_array($value,$this->disabledData)){
+                $disabled = true;
+            }else{
+                $disabled = false;
+            }
+            $options[] = [
+                'value' => $value,
+                'label' => $label,
+                'disabled' => $disabled,
+            ];
+        }
+        $this->setAttr('data', $options);
+        $groupOptions = [];
+        foreach ($this->groupOptions as $key=>$option){
+            if(in_array($option['value'],$this->disabledData)){
+                $disabled = true;
+            }else{
+                $disabled = false;
+            }
+            $group = [
+                'value' => $option['value'],
+                'label' => $option['label'],
+                'disabled' => $disabled,
+            ];
+            foreach ($option['options'] as $item){
+                if(in_array($item['value'],$this->disabledData)){
+                    $disabled = true;
+                }else{
+                    $disabled = false;
+                }
+                $group['options'][] = [
+                    'value' => $item['value'],
+                    'label' => $item['label'],
+                    'disabled' => $disabled,
+                ];
+            }
+            $groupOptions[] = $group;
+        }
+        if(count($groupOptions) > 0){
+            $this->setAttr('data', $groupOptions);
+        }
+    }
     public function render()
     {
+        $this->parseOptions();
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         $html = "<el-select {$attrStr}>
     {$this->optionHtml}

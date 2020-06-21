@@ -51,7 +51,7 @@ class Button extends View
         return $this;
     }
     /**
-     * 打开窗口 modal弹窗对话框 open当前窗口
+     * 打开窗口 modal弹窗对话框 open新窗口 ，full全屏弹窗对话框
      * @Author: rocky
      * 2019/9/11 10:02
      * @param $url 跳转链接

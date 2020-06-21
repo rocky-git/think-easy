@@ -17,6 +17,7 @@ class Dialog extends View
         'title',
         'modal-append-to-body',
         'close-on-click-modal',
+        'fullscreen',
     ];
     public function __construct($title,$content)
     {
