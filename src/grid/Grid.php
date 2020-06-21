@@ -168,9 +168,9 @@ EOF;
      * 对话框表单
      * @param $fullscreen 是否全屏
      */
-    public function setFormDialog($fullscreen = false)
+    public function setFormDialog($fullscreen = false,$width='40%')
     {
-        $this->table->setFormDialog('', $fullscreen);
+        $this->table->setFormDialog('', $fullscreen,$width);
     }
 
     /**

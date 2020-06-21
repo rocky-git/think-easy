@@ -27,7 +27,7 @@ class Column extends View
         'filter-method',
         'filtered-value',
     ];
-    protected $scopeTemplaet = '<template slot-scope="scope">%s</template>';
+    protected $scopeTemplate = '<template slot-scope="scope">%s</template>';
     //自定义内容
     protected $display = '';
 
@@ -97,6 +97,14 @@ class Column extends View
         return $this;
     }
 
+    /**
+     * 列是否固定
+     * @param string $fixed
+     */
+    public function fixed($fixed='left'){
+        $this->setAttr('fixed', $fixed);
+        return $this;
+    }
     /**
      * 设置宽度
      * @param int $number
@@ -439,7 +447,8 @@ class Column extends View
     {
         if (empty($this->display)) {
             if (!empty($this->tag)) {
-                $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
+                $html = sprintf($this->tag, "{{{$this->rowField}}}");
+                $this->display = sprintf($this->scopeTemplate, $html);
             }
             if (count($this->usings) > 0) {
                 $html = '';
@@ -455,13 +464,13 @@ class Column extends View
                     }
                     $html = sprintf($html, $value);
                 }
-                $this->display = sprintf($this->scopeTemplaet, $html);
+                $this->display = sprintf($this->scopeTemplate, $html);
             }
         } else {
-            $this->display = sprintf($this->scopeTemplaet, $this->display);
+            $this->display = sprintf($this->scopeTemplate, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {
-            $this->display = sprintf($this->scopeTemplaet, "<span v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
+            $this->display = sprintf($this->scopeTemplate, "<span v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
         }
         list($attrStr, $dataStr) = $this->parseAttr();
 
