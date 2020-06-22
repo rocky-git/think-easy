@@ -28,7 +28,6 @@ class Tree extends Field
     public function __construct($field, $label, $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
-        $this->template = 'tree';
         $this->setAttr('default-expand-all', true);
         $this->setAttr('show-checkbox', true);
         $this->setAttr('field', $field);
