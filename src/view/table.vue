@@ -1,8 +1,8 @@
 <template>
     <div>
         <!--{notempty name="$filter"}-->
-        <div class="container" style="margin-bottom: 10px">
-            <el-divider content-position="left">筛选</el-divider>
+        <div class="filter" style="margin-bottom: 5px">
+
             <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
                 {$filter|raw|default=''}
                 <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
@@ -478,6 +478,12 @@
         background: #fff;
         position: relative;
         padding: 20px 16px;
+        border-radius: 4px;
+    }
+    .filter {
+        background: #fff;
+        position: relative;
+        padding: 20px 16px 0px;
         border-radius: 4px;
     }
 </style>

@@ -57,6 +57,6 @@ class Column extends View
     }
     public function render(){
         list($attrStr, $scriptVar) = $this->parseAttr();
-        return "<el-col $attrStr><el-card shadow=\"hover\">{$this->html}</el-card></el-col>";
+        return "<el-col $attrStr>{$this->html}</el-col>";
     }
 }
