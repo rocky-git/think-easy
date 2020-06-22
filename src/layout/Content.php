@@ -13,16 +13,16 @@ class Content extends View
 
     /**
      * 添加一行
-     * @param $content
+     * @param $content 内容
+     * @param $span 栅格占据的列数,默认24
      */
-    public function row($content){
+    public function row($content,$span = 24){
         $row = new Row();
         if($content instanceof \Closure){
             call_user_func($content,$row);
         }else{
-            $row->column($content);
+            $row->column($content,$span);
         }
-
         $this->html .= $row->render();
     }
     public function view(){

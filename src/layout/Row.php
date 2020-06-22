@@ -43,10 +43,10 @@ class Row extends View
      * @param $number
      */
     public function gutter($number){
-        $this->setAttr(':gutter'.$number);
+        $this->setAttr(':gutter',$number);
     }
     public function render(){
         list($attrStr, $scriptVar) = $this->parseAttr();
-        return "<el-row $attrStr>{$this->html}</el-row>";
+        return "<el-row style=\"margin-bottom: 15px;\" $attrStr>{$this->html}</el-row>";
     }
 }
