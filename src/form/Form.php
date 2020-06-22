@@ -52,6 +52,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Rate rate($field, $label) 评分组件
  * @method \thinkEasy\form\Cascader cascader(...$field, $label) 级联选择器
  * @method \thinkEasy\form\Transfer transfer($field, $label) 穿梭框
+ * @method \thinkEasy\form\Icon icon($field, $label) 图标选择器
  */
 class Form extends View
 {
@@ -615,8 +616,8 @@ EOF;
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
                 $render = $formItem->render();
-                
-                
+
+
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
@@ -643,8 +644,8 @@ EOF;
                         }
                     }
                 }
-                
-                
+
+
                 if ($formItem instanceof Input && $formItem->isHidden()) {
                     $formItemTmp = $render;
                 } else {

@@ -86,9 +86,9 @@ class NodeService extends Service
      * @throws \ReflectionException
      */
     protected function parse($files){
-        
+
         $data = [];
-       
+
         foreach ($files as $key=>$file){
             $controller = str_replace('.php','',basename($file));
             $path = dirname(dirname($file));
@@ -106,7 +106,7 @@ class NodeService extends Service
             $this->treeArr[$moduleName]['children'][$key] = [
                     'label'=>$title,
                     'children'=>[]
-                
+
             ];
             foreach ($class->getMethods() as $method){
                 $doc = $method->getDocComment();
@@ -271,7 +271,7 @@ class NodeService extends Service
         foreach ($modules as $module){
             $moduleName = basename($module);
             //权限模块
-            $authNoduleName = config('admin.authNodule');
+            $authNoduleName = config('admin.authModule');
             if(isset($authNoduleName[$moduleName])){
                 $authNoduleTitle= $authNoduleName[$moduleName];
                 $this->treeArr[$moduleName] = [

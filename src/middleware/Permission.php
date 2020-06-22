@@ -26,7 +26,7 @@ class Permission
         $moudel = app('http')->getName() ;
         $node = $moudel. '/' . $pathinfo;
         //验证权限
-        $authNodules = array_keys(config('admin.authNodule'));
+        $authNodules = array_keys(config('admin.authModule'));
         if (in_array($moudel,$authNodules) && !AdminService::instance()->check($node, $request->method())) {
             abort(200, '没有访问该操作的权限！');
         }
