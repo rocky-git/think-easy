@@ -1,6 +1,6 @@
 <template>
-    <el-card class="box-card">
-        <div slot="header" class="clearfix">
+    <el-card shadow="hover">
+        <div slot="header">
             <div style="display: flex;justify-content: space-between;align-items:center;">
                 <span>折线图</span>
                 <el-button-group>
