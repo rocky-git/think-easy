@@ -6,7 +6,12 @@
 
 <script>
     export default {
-        name: "eadminContent"
+        name: "eadminContent",
+        data(){
+            return {
+                {$scriptVar|raw|default=''}
+            }
+        }
     }
 </script>
 

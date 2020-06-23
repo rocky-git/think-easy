@@ -10,7 +10,7 @@ class Column extends View
 {
     protected $html = '';
     protected $span = 24;
-
+    protected $component = [];
     /**
      * 添加一行
      * @param $content
@@ -23,7 +23,38 @@ class Column extends View
             $row->column($content);
         }
         $this->html .= $row->render();
+        $this->component = array_merge($this->component,$row->getComponents());
     }
+    /**
+     * 添加一行组件
+     * @param $component 组件
+     * @param $span 栅格占据的列数,默认24
+     */
+    public function rowComponent($component,$span = 24){
+        $row = new Row();
+        $row->columnComponent($component,$span);
+        $this->html .= $row->render();
+        $this->component = array_merge($this->component,$row->getComponents());
+    }
+    /**
+     * 添加一行组件
+     * @param $url 组件url
+     * @param $span 栅格占据的列数,默认24
+     */
+    public function rowComponentUrl($url,$span = 24){
+        $row = new Row();
+        $row->columnComponentUrl($url,$span);
+        $this->html .= $row->render();
+        $this->component = array_merge($this->component,$row->getComponents());
+    }
+    public function getComponents(){
+        return $this->component;
+    }
+
+    /**
+     * 添加内容
+     * @param $html
+     */
     public function content($html){
         $this->html = $html;
     }

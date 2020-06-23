@@ -17,6 +17,15 @@ class LineChart extends View
         $this->setAttr('width',$width);
         $this->setAttr('height',$height);
     }
+
+    /**
+     * 设置标题
+     * @param $text
+     */
+    public function title($text){
+        $this->setAttr('title',$text);
+        return $this;
+    }
     /**
      * 设置数据源
      * @param string $name
@@ -27,6 +36,7 @@ class LineChart extends View
         $this->series[] = [
             'name'=>$name,
             'type'=>'line',
+            'symbolSize'=>8,
             'data'=>$data,
         ];
         return $this;
