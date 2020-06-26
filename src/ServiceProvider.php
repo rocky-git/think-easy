@@ -14,7 +14,7 @@ use think\Service;
 use thinkEasy\middleware\Permission;
 use thinkEasy\service\FileService;
 
-class AdminServiceRegister extends Service
+class ServiceProvider extends Service
 {
     public function register()
     {

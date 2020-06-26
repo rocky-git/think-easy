@@ -2,7 +2,9 @@
     <el-card shadow="hover">
         <div slot="header">
             <div style="display: flex;justify-content: space-between;align-items:center;">
-                <span>折线图</span>
+                <!--{notempty name="title"}-->
+                <div>{$title}</div>
+                <!--{/notempty}-->
                 <el-button-group>
 
                     <el-button v-if="params.date_type == 'yesterday'"type="primary" @click="requestData('yesterday')">昨天</el-button>
@@ -32,7 +34,21 @@
                 </el-button-group>
             </div>
         </div>
-        <component v-loading="loading" :is="component"></component>
+
+            <!--{notempty name="$filter"}-->
+            <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
+                {$filter|raw|default=''}
+                <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+                    搜索
+                </el-button>
+                <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
+                    重置
+                </el-button>
+            </el-form>
+            <!--{/notempty}-->
+            <component v-loading="loading" :is="component"></component>
+
+
     </el-card>
 </template>
 
@@ -40,6 +56,7 @@
     export default {
         data(){
             return {
+                form:{},
                 rangeDate:[],
                 component:null,
                 loading:false,
@@ -66,6 +83,15 @@
             })
         },
         methods:{
+            //查询过滤
+            handleFilter(){
+                this.params = Object.assign(this.params,this.form)
+                this.requestData(this.params.date_type)
+            },
+            //重置筛选表单
+            filterReset(){
+                this.$refs['form'].resetFields();
+            },
             requestData(type){
                 this.loading = true
                 this.params.date_type = type

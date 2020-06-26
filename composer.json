@@ -28,7 +28,7 @@
   "extra": {
     "think": {
       "services": [
-        "thinkEasy\\AdminServiceRegister"
+        "thinkEasy\\ServiceProvider"
       ]
     }
   }
