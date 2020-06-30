@@ -34,18 +34,21 @@ class CountCard extends View
             $percentage = $currentTotal / $total * 100;
         }
         $this->html = "<div style='display: flex;flex-direction: column;position: relative'><el-badge type='{$badgeType}' value='{$badge}' style='margin-left: auto;top: -8px;position: absolute;right: -2px'></el-badge>
-<div style='display: flex;justify-content: space-between;align-items: center;margin: 5px 0px;'><i class='$icon' style='font-size: 55px;color: {$iconColor}'></i><div style='display: flex;flex-direction: column;align-items: flex-end'><span style='font-size: 12px;color: #666;margin-top: 15px'>{$title}</span><span style='font-size: 24px;align-items: normal;'>{$currentTotal}</span></div></div>
+<div style='display: flex;justify-content: space-between;align-items: center;margin: 5px 0px;'><i class='$icon' style='font-size: 55px;color: {$iconColor}'></i><div style='display: flex;flex-direction: column;align-items: flex-end'><span style='font-size: 12px;color: #666;margin-top: 15px'>{$title}</span><span style='font-size: 24px;align-items: normal;'><count-to :start-val='0' :decimals='{$this->getFloatLength($currentTotal)}' :end-val='{$currentTotal}'  /></span></div></div>
 <el-progress :show-text=\"false\" :stroke-width='5' color='{$iconColor}' :percentage='{$percentage}'></el-progress>
-<div style='margin-top: 5px;display: flex;justify-content: space-between;align-items: flex-end'><span style='font-size: 12px;color: #666;'>总{$title}</span> <span style='font-size: 14px'>{$total}</span></div></div>";
-        return $this;
+<div style='margin-top: 5px;display: flex;justify-content: space-between;align-items: flex-end'><span style='font-size: 12px;color: #666;'>总{$title}</span> <span style='font-size: 14px'><count-to :start-val='0' :decimals='{$this->getFloatLength($total)}' :end-val='{$total}'  /></span></div></div>";
+        return $this->render();
     }
-
-    public function href($url)
-    {
-        $this->html = "<eadmin-link to-path='{$url}'>{$this->html}</eadmin-link>";
-        return $this;
+    protected function getFloatLength($num){
+        $count = 0;
+        $temp = explode ( '.', $num );
+        if (count ( $temp ) > 1) {
+            $decimal = end ( $temp );
+            $count = strlen ( $decimal );
+        }
+        return $count;
     }
-
+    
     public function render()
     {
         return "<el-card shadow='hover' style='cursor: pointer;'>{$this->html}</el-card>";
