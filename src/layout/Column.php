@@ -11,6 +11,8 @@ class Column extends View
     protected $html = '';
     protected $span = 24;
     protected $component = [];
+    protected $row = [];
+    protected $clickLink = null;
     /**
      * 添加一行
      * @param $content
@@ -22,8 +24,8 @@ class Column extends View
         }else{
             $row->column($content);
         }
-        $this->html .= $row->render();
-        $this->component = array_merge($this->component,$row->getComponents());
+        $this->row[] = $row;
+        return $row;
     }
     /**
      * 添加一行组件
@@ -33,8 +35,8 @@ class Column extends View
     public function rowComponent($component,$span = 24){
         $row = new Row();
         $row->columnComponent($component,$span);
-        $this->html .= $row->render();
-        $this->component = array_merge($this->component,$row->getComponents());
+        $this->row[] = $row;
+        return $row;
     }
     /**
      * 添加一行组件
@@ -44,8 +46,8 @@ class Column extends View
     public function rowComponentUrl($url,$span = 24){
         $row = new Row();
         $row->columnComponentUrl($url,$span);
-        $this->html .= $row->render();
-        $this->component = array_merge($this->component,$row->getComponents());
+        $this->row[] = $row;
+        return $row;
     }
     public function getComponents(){
         return $this->component;
@@ -86,8 +88,25 @@ class Column extends View
     public function pull($num){
         $this->setAttr(':pull',$num);
     }
+
+    /**
+     * 点击切换组件
+     * @param $url 链接
+     * @param $name 组件名称标记
+     */
+    public function clickLink($url,$name){
+        $this->clickLink = [$url,$name];
+    }
     public function render(){
+        foreach ($this->row as $row){
+            $this->html .= $row->render();
+            $this->component = array_merge($this->component,$row->getComponents());    
+        }
         list($attrStr, $scriptVar) = $this->parseAttr();
+        if(!is_null($this->clickLink)){
+            list($url,$name) = $this->clickLink;
+            $this->html = "<span @click='linkComponent(\"{$url}\",\"{$name}\")'>{$this->html}</span>";
+        }
         return "<el-col $attrStr>{$this->html}</el-col>";
     }
 }
