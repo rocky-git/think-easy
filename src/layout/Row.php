@@ -49,7 +49,7 @@ class Row extends View
                             resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
                         })";
         $column->content('<component :is="'.$componentKey.'" />');
-        $this->$column[] = $column;
+        $this->column[] = $column;
         return $column;
     }
     /**

@@ -97,6 +97,7 @@ class Grid extends View
             }
             $this->trashed(true);
         }
+        $this->table->setVar('grid',true);
     }
 
     /**

@@ -14,6 +14,7 @@
             </el-form>
         </div>
         <!--{/notempty}-->
+        <!--{if isset($grid)}-->
         <div class="container">
             <!--{notempty name="title"}-->
                 <!--{if !isset($trashed) || $trashed===false}-->
@@ -51,6 +52,7 @@
                 </el-col>
              </el-row>
         </div>
+        <!--{/if}-->
         <!--{if isset($trashed) && $trashed===true}-->
         <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick">
             <el-tab-pane label="{$title|default='数据列表'}" name="data">

@@ -6,7 +6,7 @@
             <!--{/notempty}-->
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
-                <el-form-item style="margin-top: 15px;">
+                <el-form-item>
                     <el-button type="primary" :disabled="disabledSubmit" native-type="submit" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
