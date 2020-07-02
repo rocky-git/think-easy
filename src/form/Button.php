@@ -13,7 +13,7 @@ use thinkEasy\View;
 
 class Button extends View
 {
-    
+
     /**
      * Button constructor.
      * @param $text 按钮文字
@@ -81,14 +81,16 @@ class Button extends View
      * @param array $updateData 更新数据
      * @param string $url
      * @param $confirm 操作提示
+     * @param $refresh 刷新当前页面 
      */
-    public function save($id,array $data,$url='',$confirm=''){
+    public function save($id,array $data,$url='',$confirm='',$refresh = false){
         $this->setAttr('pk-id',$id);
         $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
         $this->setAttr('open-type','update');
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
+        $this->setAttr('refresh',$refresh);
         return $this->html();
     }
 

@@ -9,6 +9,7 @@
         name: "eadminContent",
         data(){
             return {
+                tableData:[],
                 {$scriptVar|raw|default=''}
             }
         },
