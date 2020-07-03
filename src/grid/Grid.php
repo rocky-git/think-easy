@@ -210,7 +210,7 @@ EOF;
         $column = $this->column($headimg, $label);
         return $column->display(function ($val, $data) use ($column, $nickname) {
             $nicknameValue = $column->getValue($data, $nickname);
-            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit'></el-image><br>{$nicknameValue}";
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit' :preview-src-list='[\"{$val}\"]'></el-image><br>{$nicknameValue}";
         })->align('center');
     }
 
@@ -451,7 +451,6 @@ EOF;
             Db::rollback();
             $res = false;
         }
-
         return $res;
     }
 
@@ -469,6 +468,7 @@ EOF;
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
         $className = $reflection->getName();
         $relatonMethod = [];
+
         foreach ($methods as $method) {
             if ($method->class == $className) {
                 $relation = $method->name;

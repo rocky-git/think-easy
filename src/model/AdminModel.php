@@ -24,7 +24,7 @@ class AdminModel extends BaseModel
     }
     //权限
     public function permissions(){
-        return SystemAuthNode::whereIn('auth',$this->roles()->column('id'))->select();
+        return SystemAuthNode::whereIn('auth',$this->roles()->column('system_auth.id'))->select();
     }
 
     //角色组

@@ -89,6 +89,21 @@ class File extends Field
         $this->setAttr(':single-file',"false");
         return $this;
     }
+
+    /**
+     * 裁剪尺寸,暂仅支持单文件
+     * @param $width 宽度
+     * @param $height 高度
+     * @param $auto 是否自动居中裁剪,否显示界面手动裁剪
+     * @return $this
+     */
+    public function crop($width,$height,$auto = true){
+        $this->setAttr(':crop-width',$width);
+        $this->setAttr(':crop-height',$height);
+        $this->setAttr(':cropper-on','true');
+        $this->setAttr('cropper-auto',$auto);
+        return $this;
+    }
     /**
      * 显示尺寸
      * @param $width 宽度
