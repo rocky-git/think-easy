@@ -308,6 +308,9 @@ class Form extends View
                                     $res = $this->model->$field()->whereIn($this->pkField, $deleteIds)->delete();
                                 }
                             }
+                            foreach ($value as $key=>&$val){
+                                $val['sort'] = $key;
+                            }
                             $this->model->$field()->saveAll($value);
                         }
                     }
@@ -478,7 +481,7 @@ class Form extends View
                         $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
                         $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
                         $formItemHtml .= "</div><el-divider></el-divider>";
-                        if (is_null($manyData)) {
+                        if (empty($manyData)) {
                             $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
                         } else {
                             $this->formData[$this->hasManyRelation] = $manyData;

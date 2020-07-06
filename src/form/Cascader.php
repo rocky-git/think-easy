@@ -45,6 +45,14 @@ class Cascader extends Field
     }
 
     /**
+     * 父子节点取消关联
+     * @return $this
+     */
+    public function checkStrictly(){
+        $this->props('checkStrictly',true);
+        return $this;
+    }
+    /**
      * 联动加载
      * @param $url 请求url
      * @return $this

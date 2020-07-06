@@ -26,6 +26,7 @@ class Filter extends View
     //当前模型db
     protected $db;
     protected $fields = [];
+
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -61,6 +62,7 @@ class Filter extends View
         $this->formItem($field, $label);
         return $this;
     }
+
     /**
      * in查询
      * @param $field 字段
@@ -73,6 +75,7 @@ class Filter extends View
         $this->formItem($field, $label);
         return $this;
     }
+
     /**
      * not in查询
      * @param $field 字段
@@ -85,6 +88,7 @@ class Filter extends View
         $this->formItem($field, $label);
         return $this;
     }
+
     /**
      * 等于查询
      * @param $field 字段
@@ -97,6 +101,7 @@ class Filter extends View
         $this->formItem($field, $label);
         return $this;
     }
+
     /**
      * 不等于查询
      * @param $field 字段
@@ -109,6 +114,7 @@ class Filter extends View
         $this->formItem($field, $label)->prepend('不等于');
         return $this;
     }
+
     /**
      * 大于等于
      * @param $field 字段
@@ -121,6 +127,7 @@ class Filter extends View
         $this->formItem($field, $label)->prepend('大于等于');
         return $this;
     }
+
     /**
      * 大于
      * @param $field 字段
@@ -133,6 +140,7 @@ class Filter extends View
         $this->formItem($field, $label)->prepend('大于');
         return $this;
     }
+
     /**
      * 小于等于
      * @param $field 字段
@@ -145,6 +153,7 @@ class Filter extends View
         $this->formItem($field, $label)->prepend('小于等于');
         return $this;
     }
+
     /**
      * 大于
      * @param $field 字段
@@ -157,6 +166,7 @@ class Filter extends View
         $this->formItem($field, $label)->prepend('小于');
         return $this;
     }
+
     /**
      * 区间查询
      * @param $field 字段
@@ -166,8 +176,8 @@ class Filter extends View
     public function between($field, $label)
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field.'__between_start', $label);
-        $this->formItem($field.'__between_end', '-')->placeholder("请输入$label");
+        $this->formItem($field . '__between_start', $label);
+        $this->formItem($field . '__between_end', '-')->placeholder("请输入$label");
         return $this;
     }
 
@@ -177,95 +187,125 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function date($field, $label){
+    public function date($field, $label)
+    {
         $this->paseFilter('eq', $field);
-        $this->formItem($field, $label,'DateTime');
+        $this->formItem($field, $label, 'DateTime');
         return $this;
     }
+
     /**
      * 时间筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function time($field, $label){
+    public function time($field, $label)
+    {
         $this->paseFilter('eq', $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType('time');
         return $formItem;
     }
+
     /**
      * 日期时间筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function datetime($field, $label){
+    public function datetime($field, $label)
+    {
         $this->paseFilter('eq', $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType('datetime');
         return $formItem;
     }
+
     /**
      * 日期时间范围筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function datetimeRange($field, $label){
+    public function datetimeRange($field, $label)
+    {
         $this->paseFilter('dateBetween', $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType('datetime')->range();
         return $formItem;
     }
+
+    /**
+     * 级联筛选
+     * @param ...$field 字段1,字段2,字段3...
+     * @param $label 标签
+     * @return \thinkEasy\form\Cascader
+     */
+    public function cascader(...$field)
+    {
+        $label = array_pop($field);
+        $this->paseFilter('eq', $field);
+        $formItem = $this->formItem($field[0], $label, 'cascader', array_slice($field, 1));
+        return $formItem;
+    }
+
     /**
      * 日期范围筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function dateRange($field, $label){
+    public function dateRange($field, $label)
+    {
         $this->paseFilter('dateBetween', $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType('date')->range();
         return $formItem;
     }
+
     /**
      * 时间范围筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function timeRange($field, $label){
+    public function timeRange($field, $label)
+    {
         $this->paseFilter('dateBetween', $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType('time')->range();
         return $formItem;
     }
+
     /**
      * 年日期筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function year($field, $label){
+    public function year($field, $label)
+    {
         $this->paseFilter(__FUNCTION__, $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType(__FUNCTION__);
         return $formItem;
     }
+
     /**
      * 月日期筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function month($field, $label){
+    public function month($field, $label)
+    {
         $this->paseFilter(__FUNCTION__, $field);
-        $formItem =  $this->formItem($field, $label,'DateTime');
+        $formItem = $this->formItem($field, $label, 'DateTime');
         $formItem->setType(__FUNCTION__);
         return $formItem;
     }
+
     /**
      * NOT区间查询
      * @param $field 字段
@@ -275,10 +315,11 @@ class Filter extends View
     public function notBetween($field, $label)
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field.'__between_start', $label)->prepend('不存在区间');;
-        $this->formItem($field.'__between_end', '-')->placeholder("请输入$label");
+        $this->formItem($field . '__between_start', $label)->prepend('不存在区间');;
+        $this->formItem($field . '__between_end', '-')->placeholder("请输入$label");
         return $this;
     }
+
     /**
      * 单选框
      * @param $options 选项值
@@ -291,6 +332,7 @@ class Filter extends View
         $formItem->options($options);
         return $formItem;
     }
+
     /**
      * 多选框
      * @param $options 选项值
@@ -303,6 +345,7 @@ class Filter extends View
         $formItem->options($options);
         return $formItem;
     }
+
     /**
      * 下拉框
      * @param $options 选项值
@@ -324,15 +367,15 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\Input
      */
-    protected function formItem($field, $label, $name = 'input')
+    protected function formItem($field, $label, $name = 'input', $arguments = [])
     {
         $class = "thinkEasy\\form\\" . ucfirst($name);
         $field = str_replace('.', '__', $field);
-        $formItem = new $class($field, $label);
+        $formItem = new $class($field, $label, $arguments);
         $this->formItem[] = $formItem;
-        if($name == 'checkbox'){
+        if ($name == 'checkbox') {
             $this->fields[$field] = [];
-        }else{
+        } else {
             $this->fields[$field] = '';
         }
 
@@ -345,101 +388,125 @@ class Filter extends View
      * @param $field 字段
      * @return mixed
      */
-    protected function paseFilter($method,$field)
+    protected function paseFilter($method, $field)
     {
         if (is_string($field)) {
             $field = str_replace('.', '__', $field);
             $fields = explode('__', $field);
             $dbField = end($fields);
             if (count($fields) > 1) {
-                $this->relationWhere($fields[0], function ($filter) use ($dbField,$field, $method) {
-                    $filter->filterField($method,$dbField,$field);
+                $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
+                    $filter->filterField($method, $dbField, $field);
                 });
-            } else {
-                $this->filterField($method,$dbField,$field);
             }
+            $requestField = $field;
+        }elseif (is_array($field)){
+            $dbField = $field;
+            $requestField = array_shift($field);
         }
-        return $field;
+        $this->filterField($method, $dbField, $requestField);
     }
+
     /**
      * 查询过滤
      * @param $method 方法
-     * @param $fields 数据库字段
-     * @param $fields 请求数据字段
+     * @param $dbField 数据库字段
+     * @param $field 请求数据字段
      * @param string $request 请求方式
      * @return $this
      */
-    private function filterField($method, $dbField, $field = null,$request = 'get')
+    private function filterField($method, $dbField, $field = null, $request = 'get')
     {
-        if(is_null($field)){
+        if (is_null($field)) {
             $field = $dbField;
         }
 
         $data = request()->$request();
-        if($method == 'between' || $method == 'notBetween'){
+        if ($method == 'between' || $method == 'notBetween') {
             $field .= '__between_start';
         }
-        if (isset($data[$field]) && $data[$field] !== '') {
-            if (in_array($dbField, $this->tableFields)) {
-                switch ($method) {
-                    case 'year':
-                        $this->db->whereYear($dbField,$data[$field]);
-                        break;
-                    case 'month':
-                        $this->db->whereMonth($dbField,$data[$field]);
-                        break;
-                    case 'dateBetween':
-                        list($startTime,$endTime) = $data[$field];
-                        $this->db->whereBetweenTime($dbField,$startTime,$endTime);
-                        break;
-                    case 'between':
-                         $betweenStart = $data[$field];
-                         $field = str_replace('__between_start','__between_end',$field);
-                         $betweenEnd = $data[$field];
-                         $this->db->whereBetween($dbField,[$betweenStart,$betweenEnd]);
-                        break;
-                    case 'notBetween':
-                        $betweenStart = $data[$field];
-                        $field = str_replace('__between_start','__between_end',$field);
-                        $betweenEnd = $data[$field];
-                        $this->db->whereNotBetween($dbField,[$betweenStart,$betweenEnd]);
-                        break;
-                    case 'like':
-                        $this->db->whereLike($dbField, "%$data[$field]%");
-                        break;
-                    case 'eq':
-                        $this->db->where($dbField, $data[$field]);
-                        break;
-                    case 'neq':
-                        $this->db->where($dbField, '<>',$data[$field]);
-                        break;
-                    case 'egt':
-                        $this->db->where($dbField, '>=',$data[$field]);
-                        break;
-                    case 'gt':
-                        $this->db->where($dbField, '>',$data[$field]);
-                        break;
-                    case 'elt':
-                        $this->db->where($dbField, '<=',$data[$field]);
-                        break;
-                    case 'lt':
-                        $this->db->where($dbField, '<',$data[$field]);
-                        break;
-                    case 'findIn':
-                        $this->db->whereFindInSet($dbField, $data[$field]);
-                        break;
-                    case 'in':
-                        $this->db->whereIn($dbField, $data[$field]);
-                        break;
-                    case 'notIn':
-                        $this->db->whereNotIn($dbField, $data[$field]);
-                        break;
+        if(is_array($dbField)){
+            $dbFields = $dbField;
+        }else{
+            $dbFields[] = $dbField;
+        }
+        foreach ($dbFields as $f){
+            if (isset($data[$field]) && $data[$field] !== '') {
+                if(is_array($data[$field])){
+                    $fieldData[$field] = array_shift($data[$field]);
+                }else{
+                    $fieldData = $data;
                 }
+                $this->parseRule($method, $f, $field, $fieldData);
             }
         }
         return $this;
     }
-
+    /**
+     * @param $method
+     * @param $dbField
+     * @param $field
+     * @param $data
+     */
+    private function parseRule($method, $dbField, $field, $data): void
+    {
+        if (in_array($dbField, $this->tableFields)) {
+            switch ($method) {
+                case 'year':
+                    $this->db->whereYear($dbField, $data[$field]);
+                    break;
+                case 'month':
+                    $this->db->whereMonth($dbField, $data[$field]);
+                    break;
+                case 'dateBetween':
+                    list($startTime, $endTime) = $data[$field];
+                    $this->db->whereBetweenTime($dbField, $startTime, $endTime);
+                    break;
+                case 'between':
+                    $betweenStart = $data[$field];
+                    $field = str_replace('__between_start', '__between_end', $field);
+                    $betweenEnd = $data[$field];
+                    $this->db->whereBetween($dbField, [$betweenStart, $betweenEnd]);
+                    break;
+                case 'notBetween':
+                    $betweenStart = $data[$field];
+                    $field = str_replace('__between_start', '__between_end', $field);
+                    $betweenEnd = $data[$field];
+                    $this->db->whereNotBetween($dbField, [$betweenStart, $betweenEnd]);
+                    break;
+                case 'like':
+                    $this->db->whereLike($dbField, "%$data[$field]%");
+                    break;
+                case 'eq':
+                    $this->db->where($dbField, $data[$field]);
+                    break;
+                case 'neq':
+                    $this->db->where($dbField, '<>', $data[$field]);
+                    break;
+                case 'egt':
+                    $this->db->where($dbField, '>=', $data[$field]);
+                    break;
+                case 'gt':
+                    $this->db->where($dbField, '>', $data[$field]);
+                    break;
+                case 'elt':
+                    $this->db->where($dbField, '<=', $data[$field]);
+                    break;
+                case 'lt':
+                    $this->db->where($dbField, '<', $data[$field]);
+                    break;
+                case 'findIn':
+                    $this->db->whereFindInSet($dbField, $data[$field]);
+                    break;
+                case 'in':
+                    $this->db->whereIn($dbField, $data[$field]);
+                    break;
+                case 'notIn':
+                    $this->db->whereNotIn($dbField, $data[$field]);
+                    break;
+            }
+        }
+    }
     /**
      * 关联查询
      * @param $relation_method 关联方法
@@ -490,9 +557,11 @@ class Filter extends View
      * 返回db对象
      * @return Db
      */
-    public function db(){
+    public function db()
+    {
         return $this->db;
     }
+
     public function render()
     {
         $formItemHtml = '';
@@ -506,7 +575,9 @@ class Filter extends View
             }
             $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
         }
-        array_push($this->scriptArr,"form:".json_encode($this->fields,JSON_UNESCAPED_UNICODE));
+        array_push($this->scriptArr, "form:" . json_encode($this->fields, JSON_UNESCAPED_UNICODE));
         return $formItemHtml;
     }
+
+
 }
