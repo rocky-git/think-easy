@@ -245,7 +245,7 @@ class Filter extends View
     public function cascader(...$field)
     {
         $label = array_pop($field);
-        $this->paseFilter('eq', $field);
+        $this->paseFilter('cascader', $field);
         $formItem = $this->formItem($field[0], $label, 'cascader', array_slice($field, 1));
         return $formItem;
     }
@@ -430,15 +430,39 @@ class Filter extends View
         }else{
             $dbFields[] = $dbField;
         }
+        $whereOr = [];
         foreach ($dbFields as $f){
             if (isset($data[$field]) && $data[$field] !== '') {
                 if(is_array($data[$field])){
-                    $fieldData[$field] = array_shift($data[$field]);
+                    $value = array_shift($data[$field]);
+                    if(is_null($value)){
+                        continue;
+                    }
+                    $fieldData[$field] = $value;
+                    if($method == 'cascader'){
+                        $res = json_decode($fieldData[$field],true);
+                        if(!is_null($res)){
+                            $fieldData[$field] = $res;
+                        }
+                    }
+                    if(is_array($fieldData[$field])){
+                        $where = [];
+                        foreach ($fieldData[$field] as $index=>$value){
+                            $where[] = [$dbFields[$index],'=',$value];
+
+                        }
+                        $whereOr[] = $where;
+                        continue;
+                    }
                 }else{
                     $fieldData = $data;
                 }
                 $this->parseRule($method, $f, $field, $fieldData);
             }
+        }
+        if(!empty($whereOr)){
+            $fieldData[$field] = $whereOr;
+            $this->parseRule($method, $f, $field, $fieldData);
         }
         return $this;
     }
@@ -479,6 +503,15 @@ class Filter extends View
                     break;
                 case 'eq':
                     $this->db->where($dbField, $data[$field]);
+                    break;
+                case 'cascader':
+                    if(is_array($data[$field])){
+                        $this->db->where(function ($q) use($data,$field){
+                            $q->whereOr($data[$field]);
+                        });
+                    }else{
+                        $this->db->where($dbField, $data[$field]);
+                    }
                     break;
                 case 'neq':
                     $this->db->where($dbField, '<>', $data[$field]);
