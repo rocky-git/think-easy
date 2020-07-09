@@ -27,9 +27,8 @@ class Switchs extends Field
      * 设置状态
      * @param array $active 开启状态 [1=>'开启']
      * @param array $inactive 关闭状态 [0=>'关闭]
-     * @param string $color 颜色
      */
-    public function state(array $active, array $inactive, $color = '#409EFF')
+    public function state(array $active, array $inactive)
     {
         $activeText = current($active);
         $inactiveText = current($inactive);
@@ -37,7 +36,6 @@ class Switchs extends Field
         $this->setAttr(':active-value', key($active));
         $this->setAttr('inactive-text', current($inactive));
         $this->setAttr(':inactive-value', key($inactive));
-        $this->setAttr('active-color', $color);
         $this->setAttr(':width', 75);
     }
 
