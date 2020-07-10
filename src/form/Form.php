@@ -625,7 +625,7 @@ EOF;
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
                     $itemFields = $formItem->getFileds();
-                    if($this->model->$field() instanceof HasMany){
+                    if(method_exists($this->model, $field) && $this->model->$field() instanceof HasMany){
                         //针对级联选择器多选解析保存一对多数据
                         $this->saveData[$field] = [];
                         foreach ($itemSaveValues as $index=>$itemSaveValue){

@@ -450,7 +450,6 @@ EOF;
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-            halt(1);
         }
         return $res;
     }
@@ -474,10 +473,8 @@ EOF;
             if ($method->class == $className) {
                 $relation = $method->name;
                 $p = new \ReflectionMethod($method->class, $relation);
-
                 if ($p->getNumberOfParameters() == 0) {
                     if ($this->model->$relation() instanceof BelongsToMany) {
-                        halt($this->model->$relation());
                         if ($deleteDatas === true) {
                             $deleteDatas = $this->model->select();
                         }

@@ -70,6 +70,7 @@ class MenuService extends Service
     protected function getTree($list, $pid = 0)
     {
         $tree = [];
+        $resourceRouter = [];
         if (!empty($list)) {
             $newList = [];
             foreach ($list as $k => $v) {
@@ -102,7 +103,7 @@ class MenuService extends Service
                 $newList[$v['id']] = $v;
             }
             $routers = array_values($newList);
-            $resourceRouter = [];
+
             //资源路由
             foreach ($routers as $router) {
                 $createRouter = $router;

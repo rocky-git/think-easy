@@ -9,9 +9,14 @@
 namespace thinkEasy\model;
 
 
+use think\facade\Request;
 use think\Model;
 
-
+/**
+ * @method $this pages() 分页条件
+ * Class BaseModel
+ * @package thinkEasy\model
+ */
 class BaseModel extends Model
 {
     protected $autoWriteTimestamp = 'datetime';
@@ -30,5 +35,12 @@ class BaseModel extends Model
         if (in_array('delete_time', $tableFields)) {
             $query->whereNull('delete_time');
         }
+    }
+    //分页条件
+    public function scopePages($query,$page=1,$size=10)
+    {
+        $page = Request::param('page', $page);
+        $size = Request::param('size', $size);
+        $query->page($page, $size);
     }
 }
