@@ -87,6 +87,7 @@ class Grid extends View
         $this->tableFields = $this->model->getTableFields();
         $this->actionColumn = new Actions('actionColumn', '操作');
         $this->table = new Table($this->columns, []);
+        $this->table->setAttr('style','z-index:0');
         if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
             if (request()->has('is_deleted')) {

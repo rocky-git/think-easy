@@ -110,15 +110,17 @@ class MenuService extends Service
                 $createRouter['path'] = $createRouter['path'] . '/create\.rest';
                 $createRouter['name'] = $createRouter['name'] . '$create';
                 $createRouter['meta']['id'] = -1;
+                $createRouter['meta']['title'] = $createRouter['meta']['title'].'添加';
                 $editRouter = $router;
                 $editRouter['path'] = $editRouter['path'] . '/:id/edit\.rest';
                 $editRouter['name'] = $editRouter['name'] . '$edit';
+                $editRouter['meta']['title'] = $editRouter['meta']['title'].'编辑';
                 $editRouter['meta']['id'] = -1;
                 $detailRouter = $router;
                 $detailRouter['path'] = $detailRouter['path'] . '/:id\.rest';
+                $detailRouter['meta']['title'] = $detailRouter['meta']['title'].'详情';
                 $detailRouter['name'] = $detailRouter['name'] . '$detail';
                 $detailRouter['meta']['id'] = -1;
-
                 $resourceRouter[] = $router;
                 $resourceRouter[] = $createRouter;
                 $resourceRouter[] = $editRouter;
