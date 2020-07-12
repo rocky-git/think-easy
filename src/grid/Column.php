@@ -241,11 +241,11 @@ class Column extends View
             }
             if (is_array($val)) {
                 $files = $val;
-                $html = '';
+                $htmlArr = [];
                 foreach ($files as $file){
-                    $html .= "<eadmin-download-file url='$file'></eadmin-download-file>";
+                    $htmlArr[] = "<eadmin-download-file url='$file'></eadmin-download-file>";
                 }
-                return $html;
+                return implode('<br>',$htmlArr);
             } else {
                 return "<eadmin-download-file url='$val'></eadmin-download-file>";
             }
