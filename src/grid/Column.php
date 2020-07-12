@@ -159,7 +159,7 @@ class Column extends View
         $this->usings = $usings;
         return $this;
     }
-
+    
     /**
      * 自定义显示
      * @param \Closure $closure
@@ -218,6 +218,9 @@ class Column extends View
     public function audio()
     {
         $this->display(function ($val, $data) {
+            if(empty($val)){
+                return '--';
+            }
             if (is_array($val)) {
                 $audios = implode(',', $val);
             } else {
@@ -227,7 +230,29 @@ class Column extends View
         });
         return $this;
     }
-
+    /**
+     * 显示文件
+     * @return $this
+     */
+    public function file(){
+        $this->display(function ($val, $data) {
+            if(empty($val)){
+                return '--';
+            }
+            if (is_array($val)) {
+                $files = $val;
+                $html = '';
+                foreach ($files as $file){
+                    $html .= "<eadmin-download-file url='$file'></eadmin-download-file>";
+                }
+                return $html;
+            } else {
+                return "<eadmin-download-file url='$val'></eadmin-download-file>";
+            }
+           
+        });
+        return $this;
+    }
     /**
      * 显示视频
      * @return $this
@@ -235,6 +260,9 @@ class Column extends View
     public function video()
     {
         $this->display(function ($val, $data) {
+            if(empty($val)){
+                return '--';
+            }
             if (is_array($val)) {
                 $videos = implode(',', $val);
             } else {
@@ -255,6 +283,9 @@ class Column extends View
     public function image($width = 80, $height = 80, $radius = 5)
     {
         $this->display(function ($val, $data) use ($width, $height, $radius) {
+            if(empty($val)){
+                return '--';
+            }
             if (is_string($val)) {
                 $images = explode(',', $val);
             } elseif (is_array($val)) {

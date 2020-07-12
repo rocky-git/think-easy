@@ -67,6 +67,7 @@
                 this.$set(this.form[relation], index + 1, this.form[relation][index])
                 this.$set(this.form[relation], index, len)
             },
+
             //一对多添加元素
             addManyData(relation,manyData){
                 this.form[relation].push(JSON.parse(decodeURIComponent(manyData)))

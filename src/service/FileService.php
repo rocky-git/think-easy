@@ -39,14 +39,18 @@ class FileService extends Service
         $chunkSaveDir = $names[0];
         if (is_null($file)) {
             if ($totalChunks == 1) {
-                if (Filesystem::disk($upType)->has($saveDir . $filename)) {
+                $res = $this->fileExist($upType,$saveDir . $filename,$totalSize);
+                if($res === true){
                     return $this->url($saveDir . $filename);
-                } else {
-                    return false;
+                }else{
+                    return $res;
                 }
             } elseif ($isUniqidmd5 == false) {
-                if (Filesystem::disk($upType)->has($saveDir . $filename)) {
+                $res = $this->fileExist($upType,$saveDir . $filename,$totalSize);
+                if($res === true){
                     return $this->url($saveDir . $filename);
+                }elseif ($res == -1){
+                    return $res;
                 } else {
                     return $this->checkChunkExtis($filename, $chunkSaveDir, $chunkNumber, $chunkSize, $totalSize);
                 }
@@ -101,6 +105,26 @@ class FileService extends Service
         }
     }
 
+    /**
+     * 判断文件是否存在大小一致
+     * @param $upType 上传类型
+     * @param $filePath 文件路径
+     * @param $totalSize 文件大小
+     * @return bool
+     * @throws \League\Flysystem\FileNotFoundException
+     */
+    protected function fileExist($upType,$filePath,$totalSize){
+        if (Filesystem::disk($upType)->has($filePath)) {
+            if(Filesystem::disk($upType)->getSize($filePath) == $totalSize){
+                return true;
+            }else{
+                //文件名相同，但大小不一致，判断文件不一样
+                return -1;
+            }
+        } else {
+            return false;
+        }
+    }
     /**
      * 上传文件
      * @param $file 文件对象
