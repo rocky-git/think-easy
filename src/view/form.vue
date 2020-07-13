@@ -7,7 +7,7 @@
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
                 <el-form-item>
-                    <el-button type="primary" :disabled="disabledSubmit" native-type="submit" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
+                    <el-button type="primary" :disabled="disabledSubmit" native-type="submit" :loading="loading" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
                     <!--{/if}-->
@@ -27,6 +27,7 @@
         data(){
             let _self = this
             return {
+                loading:false,
                 disabledSubmit:false,
                 auto:'',
                 manyIndex:0,
@@ -94,6 +95,7 @@
             },
             //提交
             onSubmit(formName){
+                this.loading = true
                 let url,method
                 let urlArr = this.$route.path.split('/')
                 //url = urlArr[1]+'/'+ urlArr[2]
@@ -113,6 +115,7 @@
                             method: method,
                             data:this.form
                         }).then(response=>{
+                            this.loading = false
                             this.disabledSubmit = false
                             if(response.code == 200){
                                 this.$notify({
@@ -131,6 +134,7 @@
                                 }
                             }
                         }).catch(res=>{
+                            this.loading = false
                             this.disabledSubmit = false
                         })
                     } else {

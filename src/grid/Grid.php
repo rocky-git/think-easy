@@ -174,7 +174,14 @@ EOF;
     {
         $this->table->setFormDialog('', $fullscreen,$width);
     }
-
+    /**
+     * 对话框表单
+     * @param $fullscreen 是否全屏
+     */
+    public function setFormDrawer($direction='rtl')
+    {
+        $this->table->setFormDrawer('', $direction);
+    }
     /**
      * 开启树形表格
      * @param string $pid 父级字段

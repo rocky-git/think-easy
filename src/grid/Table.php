@@ -11,6 +11,7 @@ namespace thinkEasy\grid;
 
 use thinkEasy\form\Dialog;
 use think\helper\Str;
+use thinkEasy\form\Drawer;
 use thinkEasy\View;
 
 class Table extends View
@@ -81,7 +82,21 @@ class Table extends View
         $this->setVar('dialogTitleVar', $dialog->getTitleVar());
         $this->scriptArr = array_merge($this->scriptArr, $dialog->getScriptVar());
     }
-
+    /**
+     * 抽屉表单
+     * @param $title 标题
+     * @param bool $fullscreen 是否全屏
+     * @param string $width 宽度
+     */
+    public function setFormDrawer($title, $direction = 'rtl')
+    {
+        $drawer = new Drawer($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
+        $drawer->setAttr('direction', $direction);
+        $this->setVar('dialog', $drawer->render());
+        $this->setVar('dialogVar', $drawer->getVisibleVar());
+        $this->setVar('dialogTitleVar', $drawer->getTitleVar());
+        $this->scriptArr = array_merge($this->scriptArr, $drawer->getScriptVar());
+    }
     /**
      * 设置列
      * @param $cloumns
