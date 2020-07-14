@@ -22,7 +22,8 @@
 <script>
     export default {
         props:{
-            dialogVisible:Boolean
+            dialogVisible:Boolean,
+            tableDataUpdate:Boolean
         },
         data(){
             let _self = this
@@ -109,6 +110,7 @@
                 }
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        this.$emit('update:tableDataUpdate', false)
                         this.disabledSubmit = true
                         this.$request({
                             url: url,
@@ -125,6 +127,7 @@
                                     duration: 1500
                                 })
                                 this.$emit('update:dialogVisible', false)
+                                this.$emit('update:tableDataUpdate', true)
                             }else if(response.code == 422){
                                 for(field in response.data){
                                     val = response.data[field]

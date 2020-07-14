@@ -72,7 +72,7 @@ class Table extends View
      */
     public function setFormDialog($title, $fullscreen = false, $width = "40%")
     {
-        $dialog = new Dialog($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
+        $dialog = new Dialog($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible' :tableDataUpdate.sync='tableDataUpdate'></component>");
         $dialog->setAttr('width', $width);
         if ($fullscreen) {
             $dialog->setAttr('fullscreen', true);
@@ -85,13 +85,15 @@ class Table extends View
     /**
      * 抽屉表单
      * @param $title 标题
-     * @param bool $fullscreen 是否全屏
-     * @param string $width 宽度
+     * @param bool $direction 打开的方向 rtl / ltr / ttb / btt
+     * @param string $size 窗体的大小
      */
-    public function setFormDrawer($title, $direction = 'rtl')
+    public function setFormDrawer($title, $direction = 'rtl',$size = '30%')
     {
-        $drawer = new Drawer($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible'></component>");
+        $drawer = new Drawer($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible' :tableDataUpdate.sync='tableDataUpdate'></component>");
+        $drawer->setAttr('size', $size);
         $drawer->setAttr('direction', $direction);
+        $drawer->setAttr('wrapper-closable', false);
         $this->setVar('dialog', $drawer->render());
         $this->setVar('dialogVar', $drawer->getVisibleVar());
         $this->setVar('dialogTitleVar', $drawer->getTitleVar());

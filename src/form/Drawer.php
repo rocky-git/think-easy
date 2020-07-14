@@ -15,9 +15,9 @@ class Drawer extends View
 {
     protected $attrs = [
         'title',
-        'modal-append-to-body',
-        'close-on-click-modal',
-        'fullscreen',
+        'append-to-body',
+        'wrapper-closable',
+        'size',
     ];
     public function __construct($title,$content)
     {

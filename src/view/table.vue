@@ -1,29 +1,30 @@
 <template>
     <div>
         <!--{notempty name="$filter"}-->
-        <div class="filter" style="margin-bottom: 5px">
+        <el-drawer title="筛选" size="25%" :visible.sync="filterVisible" >
+            <div class="filter" style="margin-bottom: 5px">
+                <el-form label-width="80px" size="small" ref="form" @submit.native.prevent :model="form">
+                    {$filter|raw|default=''}
+                    <el-row :gutter="10">
+                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter">筛选</el-button></el-col>
+                        <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
 
-            <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
-                {$filter|raw|default=''}
-                <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-                    搜索
-                </el-button>
-                <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
-                    重置
-                </el-button>
-            </el-form>
-        </div>
+                    </el-row>
+                </el-form>
+            </div>
+        </el-drawer>
         <!--{/notempty}-->
         <!--{if isset($grid)}-->
-        <div class="container">
+        <div class="headContainer">
             <!--{notempty name="title"}-->
                 <!--{if !isset($trashed) || $trashed===false}-->
-                <div>{$title}</div>
-            <el-divider></el-divider>
+                <div style="padding-top: 10px;">{$title}</div>
+            <el-divider style="padding-bottom: 20px"></el-divider>
                 <!--{/if}-->
             <!--{/notempty}-->
 
-            <el-row style="margin-top: 5px">
+            <!--{if !isset($hideTools)}-->
+            <el-row style="padding-top: 10px">
                 <el-col :span="24">
                 <!--{if !isset($hideAddButton)}-->
                 <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
@@ -48,9 +49,14 @@
                 <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                 <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                 <!--{/if}-->
-
+                <!--{notempty name="$filter"}-->
+                    <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="filterVisible=true">
+                        筛选
+                    </el-button>
+                <!--{/notempty}-->
                 </el-col>
              </el-row>
+            <!--{/if}-->
         </div>
         <!--{/if}-->
         <!--{if isset($trashed) && $trashed===true}-->
@@ -66,7 +72,7 @@
         {$tableHtml|raw}
         <!--{/if}-->
 
-        <el-pagination class="container"
+        <el-pagination class="pagination"
                        v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -85,6 +91,7 @@
     export default {
         data(){
             return {
+                filterVisible:false,
                 sortableParams:{},
                 sortable:null,
                 deleteButtonText:'清空数据',
@@ -92,6 +99,7 @@
                 showEditId:0,
                 showDetailId:0,
                 dialogVisible:false,
+                tableDataUpdate:false,
                 isDialog :false,
                 selectButtonShow:false,
                 loading:false,
@@ -108,8 +116,29 @@
                 {$tableScriptVar|raw}
             }
         },
-        created(){
-            /*{if isset($dialogVar)}*/
+        computed:{
+            tableHeight(){
+                /*{if isset($hideTools)}*/
+                let height = -40
+                /*{else/}*/
+                let height = 0
+                /*{/if}*/
+
+                if(this.pageHide){
+                    height -= 70
+                }
+                /*{if isset($trashed) && $trashed===true}*/
+                return window.innerHeight - 335 - height
+                /*{/if}*/
+                /*{notempty name="title"}*/
+                return window.innerHeight - 340 - height
+                /*{else/}*/
+                return window.innerHeight - 265 - height
+                /*{/notempty}*/
+           }
+       },
+       created(){
+           /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
             let i = 10
@@ -153,11 +182,15 @@
                     this.deleteButtonText = '清空数据'
                 }
             },
+            tableDataUpdate(val){
+              if(val){
+                  this.requestPageData()
+              }
+            },
             dialogVisible(val){
                 if(!val){
-                    this.showEditId=0
+                    this.showEditId = 0
                     this.showDetailId = 0
-                    this.requestPageData()
                 }
             },
             showEditId(val){
@@ -444,11 +477,14 @@
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
+                let tmptableData = this.tableData
+                this.tableData = []
                 this.$request({
                     url: url,
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
+                    this.filterVisible = false
                     this.loading = false
                     this.tableData = res.data.data
                     this.total = res.data.total
@@ -458,7 +494,9 @@
                         })
                     })
                 }).catch(res=>{
+                    this.tableData = tmptableData
                     this.loading = false
+                    this.filterVisible = false
                 })
 
             }
@@ -476,10 +514,22 @@
         color: #fff!important;
         background: #2d8cf0!important;
     }
+    .pagination{
+        background: #fff;
+        padding: 20px 16px;
+        border-radius: 4px;
+    }
+    .headContainer {
+        background: #fff;
+        position: relative;
+        border-radius: 4px;
+        padding-left: 10px;
+        padding-bottom: 20px;
+    }
     .container {
         background: #fff;
         position: relative;
-        padding: 20px 16px;
+        padding: 10px 16px;
         border-radius: 4px;
     }
     .filter {
@@ -487,5 +537,8 @@
         position: relative;
         padding: 20px 16px 0px;
         border-radius: 4px;
+    }
+    :focus{
+        outline:0;
     }
 </style>

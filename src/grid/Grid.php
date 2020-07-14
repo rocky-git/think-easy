@@ -87,6 +87,7 @@ class Grid extends View
         $this->tableFields = $this->model->getTableFields();
         $this->actionColumn = new Actions('actionColumn', '操作');
         $this->table = new Table($this->columns, []);
+        $this->table->setAttr(':max-height', 'tableHeight');
         $this->table->setAttr('style','z-index:0');
         if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
@@ -178,9 +179,9 @@ EOF;
      * 对话框表单
      * @param $fullscreen 是否全屏
      */
-    public function setFormDrawer($direction='rtl')
+    public function setFormDrawer($direction='rtl',$size = '30%')
     {
-        $this->table->setFormDrawer('', $direction);
+        $this->table->setFormDrawer('', $direction,$size);
     }
     /**
      * 开启树形表格
@@ -365,7 +366,13 @@ EOF;
             return $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(),$ids)->update($data);
         }
     }
-
+    /**
+     * 隐藏工具栏
+     */
+    public function hideTools()
+    {
+        $this->table->setVar('hideTools', true);
+    }
     /**
      * 隐藏添加按钮
      */
@@ -556,6 +563,7 @@ EOF;
      */
     public function view()
     {
+
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
