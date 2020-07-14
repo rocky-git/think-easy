@@ -430,26 +430,24 @@ class Filter extends View
         }else{
             $dbFields[] = $dbField;
         }
+
         $whereOr = [];
         foreach ($dbFields as $f){
             if (isset($data[$field]) && $data[$field] !== '') {
-                if(is_array($data[$field])){
+                if(is_array($data[$field]) && $method == 'cascader'){
                     $value = array_shift($data[$field]);
                     if(is_null($value)){
                         continue;
                     }
                     $fieldData[$field] = $value;
-                    if($method == 'cascader'){
-                        $res = json_decode($fieldData[$field],true);
-                        if(!is_null($res)){
-                            $fieldData[$field] = $res;
-                        }
+                    $res = json_decode($fieldData[$field],true);
+                    if(!is_null($res)){
+                        $fieldData[$field] = $res;
                     }
                     if(is_array($fieldData[$field])){
                         $where = [];
                         foreach ($fieldData[$field] as $index=>$value){
                             $where[] = [$dbFields[$index],'=',$value];
-
                         }
                         $whereOr[] = $where;
                         continue;
@@ -532,6 +530,7 @@ class Filter extends View
                     $this->db->whereFindInSet($dbField, $data[$field]);
                     break;
                 case 'in':
+
                     $this->db->whereIn($dbField, $data[$field]);
                     break;
                 case 'notIn':
