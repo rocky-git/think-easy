@@ -33,7 +33,7 @@ class Checkbox extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in checkboxData{$this->varMatk}' :key='item.value' :label='item.value'");
+        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in checkboxData{$this->varMark}' :key='item.value' :label='item.value'");
         $this->setAttr('data', $options);
         return $this;
 

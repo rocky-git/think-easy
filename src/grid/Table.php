@@ -54,6 +54,7 @@ class Table extends View
         $this->headers = $headers;
         $this->setAttr('data', $data);
         $this->setAttr('@sort-change', 'sortHandel');
+        $this->setAttr('@row-click', 'rowClick');
         $this->setAttr('ref', 'dragTable');
         $this->setAttr('v-loading', 'loading');
     }
@@ -139,10 +140,10 @@ class Table extends View
             $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
         }
 
-        $tableHtml = '<el-table @selection-change="handleSelect" ' . $attrStr . '>' . $columnHtml . '</el-table>';
+        $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' . $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);
-        $this->setVar('tableDataScriptVar', 'tableData' . $this->varMatk);
+        $this->setVar('tableDataScriptVar', 'tableData' . $this->varMark);
         $this->setVar('tableScriptVar', $tableScriptVar);
         return $this->render();
     }

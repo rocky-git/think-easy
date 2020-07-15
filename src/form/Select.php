@@ -72,7 +72,7 @@ class Select extends Field
         */
         $this->groupOptions = $datas;
         $this->optionHtml = "<el-option-group
-      v-for='group in selectData{$this->varMatk}'
+      v-for='group in selectData{$this->varMark}'
       :key='group.value'
       :label='group.label'
       :disabled='group.disabled'>
@@ -97,7 +97,7 @@ class Select extends Field
     {
         $this->options = $datas;
         $this->optionHtml = "<el-option
-      v-for='item in selectData{$this->varMatk}'
+      v-for='item in selectData{$this->varMark}'
       :key='item.value'
       :label='item.label'
       :value='item.value'
@@ -105,7 +105,6 @@ class Select extends Field
       <span v-html='item.label'></span>
     </el-option>";
         return $this;
-
     }
     /**
      * 多选
@@ -115,7 +114,6 @@ class Select extends Field
         $this->setAttr('multiple', true);
         return $this;
     }
-
     /**
      * 禁用选项数据
      * @param array $data 禁用数据

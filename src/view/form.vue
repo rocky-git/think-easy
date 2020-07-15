@@ -13,10 +13,8 @@
                     <!--{/if}-->
                 </el-form-item>
             </el-form>
-
+            <el-dialog :visible.sync="iframeVisible" :append-to-body="true" width="70%"><component :iframeMode="true" :is="plugIframe" :iframeVisible.sync="iframeVisible" :iframeMultiple="iframeMultiple" :iframeSelect.sync="iframeSelect"  /></el-dialog>
         </el-main>
-
-
 </template>
 
 <script>
@@ -28,10 +26,16 @@
         data(){
             let _self = this
             return {
+                iframeSelect:[],
+                iframeMultiple:false,
+                iframeData:[],
                 loading:false,
                 disabledSubmit:false,
                 auto:'',
                 manyIndex:0,
+                plugIframe:null,
+                iframeVisible:false,
+                iframeField:null,
                 form:{$formData|raw},
                 validates:{$formValidate|raw},
                 formItemTags:{$formItemTags|raw},
@@ -41,10 +45,79 @@
         created(){
             this.init()
         },
+        watch:{
+            iframeSelect(val){
+
+                if(this.iframeMultiple){
+                    if(this.form[this.iframeField]){
+                        this.form[this.iframeField] = this.form[this.iframeField].concat(val)
+                    }else{
+                        this.form[this.iframeField] = val
+                    }
+
+                }else{
+                    if(val instanceof Array){
+                        this.form[this.iframeField] = val.join(',')
+                    }else{
+                        val = [val]
+                    }
+                }
+                this.iframeData.forEach(item=>{
+                    if(!this.iframeMultiple){
+                        item.show = false
+                    }
+                    if(val){
+                        if(val.indexOf(item.id) !== -1){
+                            item.show = true
+                        }
+                    }
+                })
+
+            }
+        },
         methods:{
+            handleTagClose(arr,index,id,field){
+                this.deleteArr(this.form[field],id)
+                arr[index].show = false
+            },
+
             //单选框切换事件
             radioChange(val,tag,manyIndex){
                 {$radioJs|raw|default=''}
+            },
+            iframeClear(data,field){
+                data.forEach(item=>{
+                    item.show = false
+                })
+                this.form[field] = []
+            },
+            //弹窗选择框点击事件
+            iframeClick(data,url,field,multiple){
+                if(multiple == 1){
+                    this.iframeMultiple = true
+                }else{
+                    this.iframeMultiple = false
+                }
+                this.iframeData = data
+                this.iframeField = field
+                let ids = ''
+                if(this.form[field] instanceof Array){
+                   ids = this.form[field].join(',')
+                }else{
+                    ids =  this.form[field]
+                }
+                this.$request({
+                    url: url,
+                    method:'get',
+                    params:{
+                        ids:ids
+                    }
+                }).then(res=>{
+                    this.iframeVisible = true
+                    this.plugIframe = () => new Promise(resolve => {
+                        resolve(this.$splitCode(res.data))
+                    })
+                })
             },
             init(){
                 {$script|raw}

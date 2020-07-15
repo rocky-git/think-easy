@@ -25,10 +25,10 @@ class Drawer extends View
         $this->content = $content;
     }
     public function getVisibleVar(){
-        return 'drawerVisible'.$this->varMatk;
+        return 'drawerVisible'.$this->varMark;
     }
     public function getTitleVar(){
-        return 'drawerTitle'.$this->varMatk;
+        return 'drawerTitle'.$this->varMark;
     }
     public function render()
     {

@@ -26,10 +26,10 @@ class Dialog extends View
         $this->content = $content;
     }
     public function getVisibleVar(){
-        return 'dialogVisible'.$this->varMatk;
+        return 'dialogVisible'.$this->varMark;
     }
     public function getTitleVar(){
-        return 'dialogTitle'.$this->varMatk;
+        return 'dialogTitle'.$this->varMark;
     }
     public function render()
     {

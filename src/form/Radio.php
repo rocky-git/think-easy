@@ -30,7 +30,7 @@ class Radio extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in radioData{$this->varMatk}' :key='item.value' :label='item.value'");
+        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in radioData{$this->varMark}' :key='item.value' :label='item.value'");
         $this->setAttr('data', $options);
         return $this;
     }
@@ -50,7 +50,6 @@ class Radio extends Field
     }
     public function render()
     {
-        $this->setAttr('@change',"(e)=>radioChange(e,\"{$this->getTag()}\",manyIndex)");
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         $html = "<el-radio-group {$attrStr}>{$this->optionHtml}</el-radio-group>";
         return $html;

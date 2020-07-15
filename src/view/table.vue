@@ -1,14 +1,13 @@
 <template>
     <div>
         <!--{notempty name="$filter"}-->
-        <el-drawer title="筛选" size="25%" :visible.sync="filterVisible" >
+        <el-drawer title="筛选" size="25%" :append-to-body="true" :visible.sync="filterVisible" >
             <div class="filter" style="margin-bottom: 5px">
                 <el-form label-width="80px" size="small" ref="form" @submit.native.prevent :model="form">
                     {$filter|raw|default=''}
                     <el-row :gutter="10">
                         <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter">筛选</el-button></el-col>
                         <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
-
                     </el-row>
                 </el-form>
             </div>
@@ -45,7 +44,8 @@
                 {$toolbar|raw}
                 <!--{/if}-->
                 <!--{if !isset($hideDeletesButton)}-->
-                <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect()">删除选中</el-button>
+                <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                <el-button plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
                 <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                 <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                 <!--{/if}-->
@@ -89,6 +89,20 @@
 <script>
 
     export default {
+        props:{
+            iframeVisible:Boolean,
+            iframeMode: {
+                type: Boolean,
+                default: false
+            },
+            iframeSelect:{
+                type: [Array,String,Number],
+            },
+            iframeMultiple:{
+                type: Boolean,
+                default: false
+            }
+        },
         data(){
             return {
                 filterVisible:false,
@@ -118,6 +132,9 @@
         },
         computed:{
             tableHeight(){
+                if(this.iframeMode){
+                    return window.innerHeight / 2
+                }
                 /*{if isset($hideTools)}*/
                 let height = -40
                 /*{else/}*/
@@ -270,7 +287,7 @@
                         this.tableData.splice(evt.newIndex, 0, targetRow)
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
-                                url: this.$route.path +'/batch.rest',
+                                url: '{$submitUrl}/batch.rest',
                                 method: 'put',
                                 data:{
                                     action:'buldview_drag_sort',
@@ -321,13 +338,13 @@
             },
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
-                let url
+                let url  = '{$submitUrl}'
                 if(type == 1){
-                    url = this.$route.path+'/create.rest'
+                    url += '/create.rest'
                 }else if(type == 2){
-                    url = this.$route.path+'/'+this.showEditId+'/edit.rest'
+                    url += '/'+this.showEditId+'/edit.rest'
                 }else if(type == 3){
-                    url = this.$route.path+'/'+this.showDetailId+'.rest'
+                    url += '/'+this.showDetailId+'.rest'
                 }
                 if(this.isDialog){
                     this.$request({
@@ -347,6 +364,23 @@
                     })
                 }else{
                     this.$router.push(url)
+                }
+            },
+            //确认选中
+            confirmSelect(){
+                let ids  =[]
+                this.selectionData.forEach((item)=>{
+                    ids.push(item.id)
+                })
+                this.$emit('update:iframeSelect', ids)
+                this.$emit('update:iframeVisible', false)
+
+            },
+            //当某一行被点击时会触发该事件
+            rowClick(row, column, event){
+                if(!this.iframeMultiple){
+                    this.$emit('update:iframeSelect', [row.id])
+                    this.$emit('update:iframeVisible', false)
                 }
             },
             //删除选中
@@ -388,7 +422,7 @@
                     cancelButtonText: '取消',
                     type: 'info'
                 }).then(() => {
-                    let url  = this.$route.path
+                    let url  = '{$submitUrl}'
                     this.$request({
                         url: url +'/batch.rest',
                         method: 'put',
@@ -417,7 +451,7 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    let url  = this.$route.path
+                    let url  = '{$submitUrl}'
                     this.$request({
                         url: url+'/delete.rest',
                         method: 'delete',
@@ -465,7 +499,8 @@
             },
             requestPageData(){
                 this.loading = true
-                let url  = this.$route.path
+                //let url  = this.$route.path
+                let url  = '{$submitUrl}'
                 let requestParams = {
                     build_request_type:'page',
                     page:this.page,
@@ -477,13 +512,12 @@
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
-                let tmptableData = this.tableData
-                this.tableData = []
                 this.$request({
                     url: url,
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
+                    this.tableData = []
                     this.filterVisible = false
                     this.loading = false
                     this.tableData = res.data.data
@@ -494,7 +528,6 @@
                         })
                     })
                 }).catch(res=>{
-                    this.tableData = tmptableData
                     this.loading = false
                     this.filterVisible = false
                 })

@@ -32,7 +32,7 @@ abstract class View
     //js变量
     protected $scriptVar = [];
 
-    protected $varMatk = null;
+    protected $varMark = null;
     //唯一标记
     protected $tag = null;
     //js
@@ -124,7 +124,7 @@ abstract class View
 
     private function varAttrName($var)
     {
-        $var = str_replace($this->varMatk, '', $var);
+        $var = str_replace($this->varMark, '', $var);
         $var = Str::snake($var);
         $var = str_replace('_', '-', $var);
         $class = basename(str_replace('\\', '/', lcfirst(get_class($this))));
@@ -133,7 +133,7 @@ abstract class View
         $var = str_replace($class . ':', ':', $var);
         $var = str_replace($class . '@', '@', $var);
         $var = str_replace($class . '-', '', $var);
-        $var = str_replace($this->varMatk, '', $var);
+        $var = str_replace($this->varMark, '', $var);
         return $var;
     }
 
@@ -144,18 +144,18 @@ abstract class View
      */
     private function attrVarName($attr)
     {
-        if (is_null($this->varMatk)) {
-            $this->varMatk = 'buildVar' . mt_rand(100000, 999999);
+        if (is_null($this->varMark)) {
+            $this->varMark = 'buildVar' . mt_rand(100000, 999999);
         }
         $varName = str_replace('-', '_', $attr);
         $class = basename(str_replace('\\', '/', get_class($this)));
-        $var = lcfirst($class) . Str::studly($varName) . $this->varMatk;
+        $var = lcfirst($class) . Str::studly($varName) . $this->varMark;
         return $var;
     }
     public function setField($field){
         $this->field = $field;
     }
-    
+
     /**
      * 设置属性变量
      * @param $name
