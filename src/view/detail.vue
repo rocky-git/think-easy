@@ -42,6 +42,9 @@
     .el-col {
         margin-bottom: 10px;
     }
+    .el-card__body .el-col{
+        margin-bottom: 0px;
+    }
     .el-card {
         margin-bottom: 10px;
     }

@@ -481,7 +481,7 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;line-height: 50px;'>" . $label . $this->display . "</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;line-height: 50px;'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }

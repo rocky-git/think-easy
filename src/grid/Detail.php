@@ -7,6 +7,7 @@ namespace thinkEasy\grid;
 use think\exception\HttpResponseException;
 use think\facade\Request;
 use think\Model;
+use think\model\Collection;
 use think\model\relation\HasMany;
 use thinkEasy\layout\Card;
 use thinkEasy\View;
@@ -103,15 +104,7 @@ class Detail extends View
      */
     public function hasMany($relationMethod,$title, $md,\Closure $closure)
     {
-        if (method_exists($this->model, $relationMethod)) {
-            if($this->model->$relationMethod() instanceof HasMany){
-                array_push($this->columns, ['type' => 'hasMany', 'title' => $title, 'md' => $md,'relationMethod'=>$relationMethod,  'closure' => $closure]);
-            }else{
-                abort(999,'关联方法不是一对多');
-            }
-        }else{
-            abort(999,'无效关联方法');
-        }
+        array_push($this->columns, ['type' => 'hasMany', 'title' => $title, 'md' => $md,'relationMethod'=>$relationMethod,  'closure' => $closure]);
         return $this;
     }
     /**
@@ -127,7 +120,11 @@ class Detail extends View
                 $column->setData($val);
             }
         }
-        $table = new Table($this->columns, $this->data->$relationMethod->toArray());
+        if($this->data->$relationMethod instanceof Collection){
+            $table = new Table($this->columns, $this->data->$relationMethod->toArray());
+        }else{
+            $table = new Table($this->columns, $this->data->$relationMethod);
+        }
         return $table->view();
     }
 
@@ -139,6 +136,7 @@ class Detail extends View
      */
     private function paseLayout($title,$md){
         $card = new Card();
+        $card->setAttr(':body-style','{padding: "0px 0px" }');
         $card->header($title);
         $html = '';
         foreach ($this->columns as $i=>$column) {
@@ -163,6 +161,7 @@ class Detail extends View
                 $columnsArr = array_slice($this->columns, $i + 1);
                 $this->columns = [];
                 $card = new Card();
+                $card->setAttr(':body-style','{padding: "0px 0px" }');
                 call_user_func($column['closure'], $this);
                 $component = $this->parsehasManData($column['relationMethod']);
                 $componentKey = 'component'.mt_rand(10000,99999);
