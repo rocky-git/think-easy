@@ -53,7 +53,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Cascader cascader(...$field, $label) 级联选择器
  * @method \thinkEasy\form\Transfer transfer($field, $label) 穿梭框
  * @method \thinkEasy\form\Icon icon($field, $label) 图标选择器
- * @method \thinkEasy\form\Iframe iframe($field, $label) 弹窗选择框
+ * @method \thinkEasy\form\IframeTag iframeTag($field, $label) 弹窗选择框
  */
 class Form extends View
 {
@@ -619,15 +619,11 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-
-
                 if($formItem instanceof Radio){
                     //单选框添加改变事件
                     $formItem->setAttr('@change',"(e)=>radioChange(e,\"{$formItem->getTag()}\",manyIndex)");
                 }
                 $render = $formItem->render();
-
-
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
@@ -872,6 +868,7 @@ EOF;
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
         $this->formData = array_merge($this->formData, $this->extraData);
+
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('formItemTags', json_encode($this->formItemTags, JSON_UNESCAPED_UNICODE));

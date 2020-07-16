@@ -96,7 +96,7 @@
                 default: false
             },
             iframeSelect:{
-                type: [Array,String,Number],
+                type: [Array,String,Number,Object],
             },
             iframeMultiple:{
                 type: Boolean,
@@ -338,7 +338,7 @@
             },
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
-                let url  = '{$submitUrl}'
+                let url  = '/{$submitUrl}'
                 if(type == 1){
                     url += '/create.rest'
                 }else if(type == 2){
@@ -368,18 +368,14 @@
             },
             //确认选中
             confirmSelect(){
-                let ids  =[]
-                this.selectionData.forEach((item)=>{
-                    ids.push(item.id)
-                })
-                this.$emit('update:iframeSelect', ids)
+                this.$emit('update:iframeSelect', this.selectionData)
                 this.$emit('update:iframeVisible', false)
 
             },
             //当某一行被点击时会触发该事件
             rowClick(row, column, event){
                 if(!this.iframeMultiple){
-                    this.$emit('update:iframeSelect', [row.id])
+                    this.$emit('update:iframeSelect', row)
                     this.$emit('update:iframeVisible', false)
                 }
             },
@@ -499,7 +495,6 @@
             },
             requestPageData(){
                 this.loading = true
-                //let url  = this.$route.path
                 let url  = '{$submitUrl}'
                 let requestParams = {
                     build_request_type:'page',
