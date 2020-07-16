@@ -25,8 +25,14 @@
             <!--{if !isset($hideTools)}-->
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
+                    <!--{if isset($quickSearch)}-->
+                    <el-input v-model="form.quickSearch" size="medium" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
+                    <el-button type="primary" size="medium" icon="el-icon-search" @click="handleFilter(true)">
+                        搜索
+                    </el-button>
+                    <!--{/if}-->
                 <!--{if !isset($hideAddButton)}-->
-                <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                <el-button type="primary" size="medium" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
                 <!--{/if}-->
                 <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
@@ -44,14 +50,14 @@
                 {$toolbar|raw}
                 <!--{/if}-->
                 <!--{if !isset($hideDeletesButton)}-->
-                <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                <el-button plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
                 <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                 <!--{/if}-->
                 <!--{notempty name="$filter"}-->
-                    <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="filterVisible=true">
-                        筛选
+                    <el-button size="medium"  type="primary"  @click="filterVisible=true">
+                        高级筛选
                     </el-button>
                 <!--{/notempty}-->
                 </el-col>
@@ -320,7 +326,7 @@
 
             },
             //查询过滤
-            handleFilter(){
+            handleFilter(quick = false){
                 this.page = 1
                 this.requestPageData()
             },

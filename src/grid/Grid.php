@@ -175,6 +175,13 @@ EOF;
     {
         $this->table->setFormDialog('', $fullscreen,$width);
     }
+
+    /**
+     * 快捷搜索
+     */
+    public function quickSearch(){
+        $this->table->setVar('quickSearch', true);
+    }
     /**
      * 对话框表单
      * @param $fullscreen 是否全屏
@@ -563,14 +570,19 @@ EOF;
      */
     public function view()
     {
-
+        //快捷搜索
+        if(Request::get('quickSearch')){
+            $keyword = Request::get('quickSearch');
+            $fields = implode('|',$this->tableFields);
+            $this->db->whereLike($fields,"%{$keyword}%");
+        }
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
             $count = $this->db->count();
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
-            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->fetchSql(true)->select();
         } else {
             $this->data = $this->db->select();
         }
