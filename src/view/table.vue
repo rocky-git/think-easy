@@ -287,7 +287,7 @@
                         this.tableData.splice(evt.newIndex, 0, targetRow)
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
-                                url: '{$submitUrl}/batch.rest',
+                                url: '{$submitUrl|default=""}/batch.rest',
                                 method: 'put',
                                 data:{
                                     action:'buldview_drag_sort',
@@ -338,7 +338,7 @@
             },
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
-                let url  = '/{$submitUrl}'
+                let url  = '/{$submitUrl|default=""}'
                 if(type == 1){
                     url += '/create.rest'
                 }else if(type == 2){
@@ -418,7 +418,7 @@
                     cancelButtonText: '取消',
                     type: 'info'
                 }).then(() => {
-                    let url  = '{$submitUrl}'
+                    let url  = '{$submitUrl|default=""}'
                     this.$request({
                         url: url +'/batch.rest',
                         method: 'put',
@@ -447,7 +447,7 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    let url  = '{$submitUrl}'
+                    let url  = '{$submitUrl|default=""}'
                     this.$request({
                         url: url+'/delete.rest',
                         method: 'delete',
@@ -495,7 +495,7 @@
             },
             requestPageData(){
                 this.loading = true
-                let url  = '{$submitUrl}'
+                let url  = '{$submitUrl|default=""}'
                 let requestParams = {
                     build_request_type:'page',
                     page:this.page,

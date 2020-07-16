@@ -1,22 +1,20 @@
 <template>
     <div>
-        <!--{notempty name="title"}-->
-        <el-card class="box-card" :body-style="{padding: '0px 0px' }">
-            <div slot="header" class="clearfix" >
-                <span>{$title}</span>
-            </div>
-            <el-row >
-                {$html|raw}
-            </el-row>
-        </el-card>
-        <!-- {else/}-->
         <el-row :gutter="10">
-            {$html|raw}
-        </el-row>
+        <!--{notempty name="title"}-->
+            <el-col :span="24">
+            <el-card class="box-card" :body-style="{padding: '0px 0px' }">
+                <div slot="header" class="clearfix" >
+                    <span>{$title}</span>
+                </div>
+                {$html|raw}
+            </el-card>
+            </el-col>
+        <!-- {else/}-->
+        {$html|raw}
         <!--{/notempty}-->
-
-
-
+        {$manyColumnHtml|raw|default=''}
+        </el-row>
     </div>
 </template>
 
@@ -41,5 +39,10 @@
 </script>
 
 <style scoped>
-
+    .el-col {
+        margin-bottom: 10px;
+    }
+    .el-card {
+        margin-bottom: 10px;
+    }
 </style>

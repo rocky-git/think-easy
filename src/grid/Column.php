@@ -101,10 +101,12 @@ class Column extends View
      * 列是否固定
      * @param string $fixed
      */
-    public function fixed($fixed='left'){
+    public function fixed($fixed = 'left')
+    {
         $this->setAttr('fixed', $fixed);
         return $this;
     }
+
     /**
      * 设置宽度
      * @param int $number
@@ -159,7 +161,7 @@ class Column extends View
         $this->usings = $usings;
         return $this;
     }
-    
+
     /**
      * 自定义显示
      * @param \Closure $closure
@@ -218,7 +220,7 @@ class Column extends View
     public function audio()
     {
         $this->display(function ($val, $data) {
-            if(empty($val)){
+            if (empty($val)) {
                 return '--';
             }
             if (is_array($val)) {
@@ -230,37 +232,42 @@ class Column extends View
         });
         return $this;
     }
+
     /**
      * 显示文件
      * @return $this
      */
-    public function file(){
+    public function file()
+    {
         $this->display(function ($val, $data) {
-            if(empty($val)){
+            if (empty($val)) {
                 return '--';
             }
             if (is_array($val)) {
                 $files = $val;
                 $htmlArr = [];
-                foreach ($files as $file){
+                foreach ($files as $file) {
                     $htmlArr[] = "<eadmin-download-file url='$file'></eadmin-download-file>";
                 }
-                return implode('<br>',$htmlArr);
+                return implode('<br>', $htmlArr);
             } else {
                 return "<eadmin-download-file url='$val'></eadmin-download-file>";
             }
-           
+
         });
         return $this;
     }
+
     /**
      * 显示视频
+     * @param int $width 宽度
+     * @param int $height 高度
      * @return $this
      */
-    public function video()
+    public function video($width = 0,$height = 0)
     {
-        $this->display(function ($val, $data) {
-            if(empty($val)){
+        $this->display(function ($val, $data) use ($width, $height) {
+            if (empty($val)) {
                 return '--';
             }
             if (is_array($val)) {
@@ -268,7 +275,11 @@ class Column extends View
             } else {
                 $videos = $val;
             }
-            return "<eadmin-video url='$videos'></eadmin-video>";
+            if($width && $height){
+                return "<eadmin-video style='width: {$width}px;height:{$height}px' url='$videos'></eadmin-video>";
+            }else{
+                return "<eadmin-video url='$videos'></eadmin-video>";
+            }
         });
         return $this;
     }
@@ -283,7 +294,7 @@ class Column extends View
     public function image($width = 80, $height = 80, $radius = 5)
     {
         $this->display(function ($val, $data) use ($width, $height, $radius) {
-            if(empty($val)){
+            if (empty($val)) {
                 return '--';
             }
             if (is_string($val)) {
@@ -470,7 +481,7 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;height:50px;line-height: 50px;'>" . $label . $this->display . "</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-top-width: 1px;border-top-style: solid;border-top-color: #f0f0f0;line-height: 50px;'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }

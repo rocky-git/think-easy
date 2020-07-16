@@ -144,3 +144,8 @@
         },
     }
 </script>
+<style scoped>
+    .el-row span{
+        font-size: 14px;
+    }
+</style>

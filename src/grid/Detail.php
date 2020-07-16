@@ -7,6 +7,8 @@ namespace thinkEasy\grid;
 use think\exception\HttpResponseException;
 use think\facade\Request;
 use think\Model;
+use think\model\relation\HasMany;
+use thinkEasy\layout\Card;
 use thinkEasy\View;
 
 class Detail extends View
@@ -26,6 +28,7 @@ class Detail extends View
     //列
     protected $columns = [];
     protected $cellComponent;
+    protected $component=[];
     protected $scriptArr = [];
     public function __construct(Model $model)
     {
@@ -62,6 +65,19 @@ class Detail extends View
         $this->title = $title;
         $this->setVar('title', $title);
     }
+
+    /**
+     * 布局
+     * @param $title 标题
+     * @param $md 占列
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function layout($title, $md, \Closure $closure)
+    {
+        array_push($this->columns, ['type' => 'layout', 'title' => $title, 'md' => $md, 'closure' => $closure]);
+        return $this;
+    }
     /**
      * 设置列
      * @Author: rocky
@@ -77,14 +93,96 @@ class Detail extends View
         return $column;
     }
 
-    public function view(){
-        $columnHtml = '';
+    /**
+     * 一对多
+     * @param $relationMethod 一对多方法
+     * @param $title 标题
+     * @param $md 占列
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function hasMany($relationMethod,$title, $md,\Closure $closure)
+    {
+        if (method_exists($this->model, $relationMethod)) {
+            if($this->model->$relationMethod() instanceof HasMany){
+                array_push($this->columns, ['type' => 'hasMany', 'title' => $title, 'md' => $md,'relationMethod'=>$relationMethod,  'closure' => $closure]);
+            }else{
+                abort(999,'关联方法不是一对多');
+            }
+        }else{
+            abort(999,'无效关联方法');
+        }
+        return $this;
+    }
+    /**
+     * 解析一对多
+     * @Author: rocky
+     * 2019/8/1 15:00
+     * @param $relationMethod 一对多关联方法
+     * @return string\
+     */
+    private function parsehasManData($relationMethod){
+        foreach ($this->data->$relationMethod as $rowIndex=>$val){
+            foreach ($this->columns as $column) {
+                $column->setData($val);
+            }
+        }
+        $table = new Table($this->columns, $this->data->$relationMethod->toArray());
+        return $table->view();
+    }
+
+    /**
+     * 解析布局
+     * @param $title 标题
+     * @param $md 占列
+     * @return string
+     */
+    private function paseLayout($title,$md){
+        $card = new Card();
+        $card->header($title);
+        $html = '';
         foreach ($this->columns as $i=>$column) {
             $column->setData($this->data);
             $this->cellComponent[] = $column->getDetailDisplay($i);
-            $columnHtml .= $column->detailRender();
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
+            $html .= $column->detailRender();
         }
+        $card->body($html);
+        return "<el-col :span='{$md}'>{$card->render()}</el-col>";
+    }
+    public function view(){
+        $columnHtml = '';
+        $manyColumnHtml = '';
+        foreach ($this->columns as $i=>$column) {
+            if($column instanceof Column){
+                $column->setData($this->data);
+                $this->cellComponent[] = $column->getDetailDisplay($i);
+                $columnHtml .= $column->detailRender();
+                $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
+            }elseif($column['type'] == 'hasMany'){
+                $columnsArr = array_slice($this->columns, $i + 1);
+                $this->columns = [];
+                $card = new Card();
+                call_user_func($column['closure'], $this);
+                $component = $this->parsehasManData($column['relationMethod']);
+                $componentKey = 'component'.mt_rand(10000,99999);
+                $this->component[$componentKey] = "() => new Promise(resolve => {
+                            resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
+                        })";
+                $card->header($column['title']);
+                $card->body('<component :is="'.$componentKey.'" />');
+                $manyColumnHtml .= "<el-col :span='{$column['md']}'>{$card->render()}</el-col>";
+
+                $this->columns = $columnsArr;
+            }elseif($column['type'] == 'layout'){
+                $columnsArr = array_slice($this->columns, $i + 1);
+                $this->columns = [];
+                call_user_func($column['closure'], $this);
+                $manyColumnHtml .= $this->paseLayout($column['title'],$column['md']);
+                $this->columns = $columnsArr;
+            }
+        }
+
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $scriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
@@ -95,7 +193,11 @@ class Detail extends View
         }
         $this->setVar('data',json_encode($this->data,JSON_UNESCAPED_UNICODE));
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
+        foreach ($this->component as $key=>$value){
+            $scriptVar .= "$key:$value,";
+        }
         $this->setVar('html', $columnHtml);
+        $this->setVar('manyColumnHtml', $manyColumnHtml);
         $this->setVar('scriptVar', $scriptVar);
         return $this->render();
     }
