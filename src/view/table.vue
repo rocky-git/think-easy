@@ -26,7 +26,7 @@
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
                     <!--{if isset($quickSearch)}-->
-                    <el-input v-model="form.quickSearch" size="medium" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
+                    <el-input v-model="quickSearch" size="medium" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
                     <el-button type="primary" size="medium" icon="el-icon-search" @click="handleFilter(true)">
                         搜索
                     </el-button>
@@ -111,6 +111,8 @@
         },
         data(){
             return {
+                quickSearch: '',
+                form:{},
                 filterVisible:false,
                 sortableParams:{},
                 sortable:null,
@@ -327,8 +329,11 @@
             },
             //查询过滤
             handleFilter(quick){
-                if(!quick){
-                    this.form.quickSearch = ''
+                if(quick){
+                    this.form = {}
+                    this.form.quickSearch = this.quickSearch
+                }else{
+                    this.quickSearch = ''
                 }
                 this.page = 1
                 this.requestPageData()
