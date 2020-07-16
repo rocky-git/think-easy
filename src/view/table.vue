@@ -6,7 +6,7 @@
                 <el-form label-width="80px" size="small" ref="form" @submit.native.prevent :model="form">
                     {$filter|raw|default=''}
                     <el-row :gutter="10">
-                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter">筛选</el-button></el-col>
+                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
                         <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
                     </el-row>
                 </el-form>
@@ -326,7 +326,10 @@
 
             },
             //查询过滤
-            handleFilter(quick = false){
+            handleFilter(quick){
+                if(!quick){
+                    this.form.quickSearch = ''
+                }
                 this.page = 1
                 this.requestPageData()
             },
