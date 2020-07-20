@@ -112,6 +112,4 @@ class Actions extends Column
         $this->hideEditButton = false;
         $this->hideDelButton = false;
     }
-
-
 }

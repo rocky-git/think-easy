@@ -166,7 +166,15 @@ EOF;
     {
         return $this->db;
     }
-
+    /**
+     * 设置添加按钮参数
+     * @Author: rocky
+     * 2019/11/27 16:50
+     * @param $params 格式：['id'=>1,'a'=>2]
+     */
+    public function setAddButtonParam(array $params){
+        $this->table->setVar('addButtonParam',$params);
+    }
     /**
      * 对话框表单
      * @param $fullscreen 是否全屏
@@ -174,6 +182,13 @@ EOF;
     public function setFormDialog($fullscreen = false,$width='40%')
     {
         $this->table->setFormDialog('', $fullscreen,$width);
+    }
+
+    /**
+     * 快捷搜索
+     */
+    public function quickSearch(){
+        $this->table->setVar('quickSearch', true);
     }
     /**
      * 对话框表单
@@ -450,21 +465,22 @@ EOF;
                 }
             } else {
                 if ($this->isSotfDelete && !$trueDelete) {
-                    $res = $this->db->whereIn($this->model->getPk(), $ids)->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
+                    $res = Db::name($this->model->getTable())->whereIn($this->model->getPk(), $ids)->update([$this->softDeleteField => date('Y-m-d H:i:s')]);
                 } else {
                     if ($ids === true) {
                         $this->deleteRelationData(true);
                     } else {
-                        $deleteDatas = $this->db->whereIn($this->model->getPk(), $ids)->select();
+                        $deleteDatas = Db::name($this->model->getTable())->whereIn($this->model->getPk(), $ids)->select();
                         $this->deleteRelationData($deleteDatas);
                     }
-                    $res = $this->db->delete($ids);
+                    $res = Db::name($this->model->getTable())->delete($ids);
                 }
             }
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
+
         }
         return $res;
     }
@@ -563,7 +579,12 @@ EOF;
      */
     public function view()
     {
-
+        //快捷搜索
+        if(Request::get('quickSearch')){
+            $keyword = Request::get('quickSearch');
+            $fields = implode('|',$this->tableFields);
+            $this->db->whereLike($fields,"%{$keyword}%");
+        }
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
@@ -571,6 +592,8 @@ EOF;
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
             $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+           // $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->fetchSql(true)->select();
+         //   halt($this->data);
         } else {
             $this->data = $this->db->select();
         }
@@ -618,6 +641,7 @@ EOF;
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $this->table->setVar('submitUrl', $submitUrl);
+        $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
             case 'page':
                 if (!$this->treeTable && $this->isPage) {

@@ -113,7 +113,7 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    let url  = this.$route.path
+                    let url  = '{$url}'
                     this.$request({
                         url: url+'/'+row.id+'.rest',
                         method: 'delete',

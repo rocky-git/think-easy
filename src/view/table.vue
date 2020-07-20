@@ -6,7 +6,7 @@
                 <el-form label-width="80px" size="small" ref="form" @submit.native.prevent :model="form">
                     {$filter|raw|default=''}
                     <el-row :gutter="10">
-                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter">筛选</el-button></el-col>
+                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
                         <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
                     </el-row>
                 </el-form>
@@ -25,8 +25,14 @@
             <!--{if !isset($hideTools)}-->
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
+                    <!--{if isset($quickSearch)}-->
+                    <el-input v-model="quickSearch" size="medium" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
+                    <el-button type="primary" size="medium" icon="el-icon-search" @click="handleFilter(true)">
+                        搜索
+                    </el-button>
+                    <!--{/if}-->
                 <!--{if !isset($hideAddButton)}-->
-                <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                <el-button type="primary" size="medium" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
                 <!--{/if}-->
                 <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
@@ -40,20 +46,21 @@
                         </el-dropdown-menu>
                     </el-dropdown>
                 <!--{/if}-->
+
+                <!--{if !isset($hideDeletesButton)}-->
+                <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                <!--{/if}-->
+                <!--{notempty name="$filter"}-->
+                    <el-button size="medium"  type="primary"  @click="filterVisible=true">
+                        高级筛选
+                    </el-button>
+                <!--{/notempty}-->
                 <!--{if isset($toolbar)}-->
                 {$toolbar|raw}
                 <!--{/if}-->
-                <!--{if !isset($hideDeletesButton)}-->
-                <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                <el-button plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
-                <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
-                <!--{/if}-->
-                <!--{notempty name="$filter"}-->
-                    <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="filterVisible=true">
-                        筛选
-                    </el-button>
-                <!--{/notempty}-->
                 </el-col>
              </el-row>
             <!--{/if}-->
@@ -72,7 +79,7 @@
         {$tableHtml|raw}
         <!--{/if}-->
 
-        <el-pagination class="pagination"
+        <el-pagination style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
                        v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -105,6 +112,8 @@
         },
         data(){
             return {
+                quickSearch: '',
+                form:{},
                 filterVisible:false,
                 sortableParams:{},
                 sortable:null,
@@ -320,7 +329,13 @@
 
             },
             //查询过滤
-            handleFilter(){
+            handleFilter(quick){
+                if(quick){
+                    this.form = {}
+                    this.form.quickSearch = this.quickSearch
+                }else{
+                    this.quickSearch = ''
+                }
                 this.page = 1
                 this.requestPageData()
             },
@@ -339,8 +354,21 @@
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
                 let url  = '/{$submitUrl|default=""}'
+                let params = {
+                    build_dialog:true
+                }
+                /*{if isset($submitParams)}*/
+                /*{foreach $submitParams as $key=>$value}*/
+                params['{$key}'] = '{$value}'
+                /*{/foreach}*/
+                /*{/if}*/
                 if(type == 1){
                     url += '/create.rest'
+                    /*{if isset($addButtonParam)}*/
+                    /*{foreach $addButtonParam as $key=>$value}*/
+                    params['{$key}'] = '{$value}'
+                    /*{/foreach}*/
+                    /*{/if}*/
                 }else if(type == 2){
                     url += '/'+this.showEditId+'/edit.rest'
                 }else if(type == 3){
@@ -350,9 +378,7 @@
                     this.$request({
                         url: url,
                         method: 'get',
-                        params: {
-                            build_dialog:true
-                        }
+                        params: params
                     }).then(response=>{
                         this.{$dialogTitleVar|default='isDialog'} = title
                         let cmponent = response.data
@@ -419,13 +445,20 @@
                     type: 'info'
                 }).then(() => {
                     let url  = '{$submitUrl|default=""}'
+                    let requestParams = {}
+                    /*{if isset($submitParams)}*/
+                    /*{foreach $submitParams as $key=>$value}*/
+                    requestParams['{$key}'] = '{$value}'
+                    /*{/foreach}*/
+                    /*{/if}*/
                     this.$request({
                         url: url +'/batch.rest',
                         method: 'put',
                         data:{
                             ids:ids,
                             delete_time:null,
-                        }
+                        },
+                        params:requestParams
                     }).then(res=>{
                         ids.forEach((id)=>{
                             this.deleteTreeData(this.tableData,id)
@@ -448,13 +481,20 @@
                     type: 'warning'
                 }).then(() => {
                     let url  = '{$submitUrl|default=""}'
+                    let requestParams = {}
+                    /*{if isset($submitParams)}*/
+                    /*{foreach $submitParams as $key=>$value}*/
+                    requestParams['{$key}'] = '{$value}'
+                    /*{/foreach}*/
+                    /*{/if}*/
                     this.$request({
                         url: url+'/delete.rest',
                         method: 'delete',
                         data:{
                             ids:deleteIds,
                             trueDelete:this.deleteColumnShow
-                        }
+                        },
+                        params:requestParams
                     }).then(res=>{
                         if(deleteIds == 'true'){
                             this.tableData= [];
@@ -501,6 +541,11 @@
                     page:this.page,
                     size:this.size,
                 }
+                /*{if isset($submitParams)}*/
+                /*{foreach $submitParams as $key=>$value}*/
+                requestParams['{$key}'] = '{$value}'
+                /*{/foreach}*/
+                /*{/if}*/
                 if(this.deleteColumnShow){
                     requestParams = Object.assign(requestParams,{'is_deleted':true})
                 }
@@ -542,11 +587,7 @@
         color: #fff!important;
         background: #2d8cf0!important;
     }
-    .pagination{
-        background: #fff;
-        padding: 20px 16px;
-        border-radius: 4px;
-    }
+
     .headContainer {
         background: #fff;
         position: relative;

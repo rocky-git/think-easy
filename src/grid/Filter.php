@@ -482,7 +482,7 @@ class Filter extends View
                     break;
                 case 'dateBetween':
                     list($startTime, $endTime) = $data[$field];
-                    $this->db->whereBetweenTime($dbField, $startTime, $endTime);
+                    $this->db->whereBetween($dbField, [$startTime, $endTime]);
                     break;
                 case 'between':
                     $betweenStart = $data[$field];
@@ -530,7 +530,6 @@ class Filter extends View
                     $this->db->whereFindInSet($dbField, $data[$field]);
                     break;
                 case 'in':
-
                     $this->db->whereIn($dbField, $data[$field]);
                     break;
                 case 'notIn':

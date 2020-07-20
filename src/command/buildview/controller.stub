@@ -22,6 +22,7 @@ class {%className%} extends BaseAdmin
         $grid = new Grid(new {%model%});
         $grid->indexColumn();
 {%grid%}
+        $grid->quickSearch();
         $grid->actions(function (Actions $action){
         	 $action->hideDetail();
         });

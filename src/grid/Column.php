@@ -26,6 +26,7 @@ class Column extends View
         'filters',
         'filter-method',
         'filtered-value',
+        'show-overflow-tooltip',
     ];
     protected $scopeTemplate = '<template slot-scope="scope">%s</template>';
     //自定义内容
@@ -459,7 +460,7 @@ class Column extends View
 
     public function detailRender()
     {
-        $label = "<span style='margin-left:20px;font-weight: bold;font-size: 14px;'>{$this->label}:</span>&nbsp;";
+        $label = "<span style='font-weight: bold;font-size: 14px;line-height: 50px;'>{$this->label}:</span>&nbsp;";
         $this->rowField = 'data.' . $this->field;
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
@@ -481,7 +482,7 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;line-height: 50px;'>" . $label . $this->display . "</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }

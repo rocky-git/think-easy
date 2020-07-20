@@ -17,7 +17,7 @@ class Field extends View
     public $field = '';
 
     public $fields = [];
-    
+
     //标签
     public $label = '';
 

@@ -16,5 +16,8 @@ class Cell extends View
     public function __construct()
     {
         $this->template = 'cell';
+        $submitUrl = app('http')->getName() . '/' . request()->controller();
+        $submitUrl = str_replace('.rest', '', $submitUrl);
+        $this->setVar('url',$submitUrl);
     }
 }

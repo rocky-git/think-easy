@@ -153,7 +153,14 @@ class Form extends View
     {
         $this->pkField = $field;
     }
-
+    /**
+     * 批量添加表单
+     * @param \Closure $closure
+     */
+    public function batch( \Closure $closure)
+    {
+        array_push($this->formItem, ['type' => 'batchAdd', 'closure' => $closure]);
+    }
     /**
      * 一对多
      * @param $label 标签
@@ -264,6 +271,13 @@ class Form extends View
                     }
                 }
             } else {
+                //批量添加
+                if(!empty($this->saveData['eadminBatchAdd'])){
+                    $this->model->saveAll($this->saveData['eadminBatchAdd']);
+                    Db::commit();
+                    return true;
+                }
+                
                 if (!is_null($id)) {
                     $this->data = $this->model->where($this->pkField, $id)->find();
                     $this->model = $this->model->where($this->pkField, $id)->find();
@@ -325,6 +339,7 @@ class Form extends View
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
+            halt($e->getMessage());
         }
         return $res;
     }
@@ -473,6 +488,21 @@ class Form extends View
                 $this->formItem = [];
                 call_user_func_array($formItem['closure'], [$this]);
                 switch ($formItem['type']) {
+                    case 'batchAdd':
+                        $this->hasManyRelation = 'eadminBatchAdd';
+                        $manyData = $this->getData($this->hasManyRelation);
+                        $formItemHtml .= "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
+                        $formItemHtml = $this->parseFormItem($formItemHtml);
+                        $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
+                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
+                        $formItemHtml .= "</div><el-divider></el-divider>";
+                        if (empty($manyData)) {
+                            $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
+                        } else {
+                            $this->formData[$this->hasManyRelation] = $manyData;
+                        }
+                        $this->hasManyRelation = null;
+                        break;
                     case 'hasMany':
                         $this->hasManyRelation = $formItem['relationMethod'];
                         $manyData = $this->getData($this->hasManyRelation);
@@ -528,6 +558,7 @@ class Form extends View
                         foreach ($formItem->fields as $field) {
                             $fieldValue[] = $this->getData($field);
                         }
+                        $fieldValue = array_filter($fieldValue);
                     } else {
                         $fieldValue = $this->getData($formItem->field);
                     }
@@ -558,12 +589,20 @@ class Form extends View
                         if (is_null($fieldValue)) {
                             $this->setData($formItem->field, $formItem->defaultValue);
                         } else {
-                            $this->setData($formItem->field, $fieldValue);
+                            if($formItem instanceof Select && $fieldValue === 0){
+                                $this->setData($formItem->field, '');
+                            }else{
+                                $this->setData($formItem->field, $fieldValue);
+                            }
                         }
                     } else {
 
                         if (is_array($fieldValue)) {
-                            $this->setData($formItem->field, $fieldValue);
+                            if(empty($fieldValue)){
+                                $this->setData($formItem->field, $formItem->defaultValue);
+                            }else{
+                                $this->setData($formItem->field, $fieldValue);
+                            }
                         } else {
                             $this->setData($formItem->field, $formItem->defaultValue);
                         }
@@ -862,6 +901,14 @@ EOF;
             $this->edit($this->extraData[$this->pkField]);
         }
         $formItem = $this->parseFormItem();
+        $findIndex = strpos($formItem, '<el-col');
+        if($findIndex !== false){
+            $formItem = substr_replace($formItem, "<el-row><el-col", $findIndex,7);
+        }
+        $findIndex = strrpos($formItem, '</el-col>');
+        if($findIndex !== false){
+            $formItem = substr_replace($formItem, "</el-col></el-row>",$findIndex,9);
+        }
         $scriptStr = implode(',', array_unique($this->scriptArr));
         list($attrStr, $formScriptVar) = $this->parseAttr();
         if (!empty($scriptStr)) {

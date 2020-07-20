@@ -21,7 +21,7 @@ class Button extends View
      * @param string $size 尺寸 medium / small / mini
      * @param string $icon 图标
      */
-    public function create($text='',$colorType='',$size='small',$icon='',$plain=false)
+    public function create($text='',$colorType='',$size='medium',$icon='',$plain=false)
     {
         $button = new self();
         $button->template  = 'button';
@@ -55,11 +55,15 @@ class Button extends View
      * @Author: rocky
      * 2019/9/11 10:02
      * @param $url 跳转链接
-     * @param string $type 跳转类型
+     * @param $type 打开方式 full全屏,modal弹窗,open内容页,drawer抽屉
+     * @param $refreshTable 刷新表格
      */
-    public function href($url,$type='open'){
+    public function href($url,$type='open',bool $refreshTable = false){
         $this->setAttr('url',$url);
         $this->setAttr('open-type',$type);
+        if($refreshTable){
+            $this->setAttr(':table-data-update.sync','tableDataUpdate');
+        }
         return $this->html();
     }
 
@@ -81,7 +85,7 @@ class Button extends View
      * @param array $updateData 更新数据
      * @param string $url
      * @param $confirm 操作提示
-     * @param $refresh 刷新当前页面 
+     * @param $refresh 刷新当前页面
      */
     public function save($id,array $data,$url='',$confirm='',$refresh = false){
         $this->setAttr('pk-id',$id);
@@ -125,6 +129,9 @@ class Button extends View
         $this->setAttr('mode',$mode);
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
+        $submitUrl = app('http')->getName() . '/' . request()->controller();
+        $submitUrl = str_replace('.rest', '', $submitUrl);
+        $this->setAttr('url',$submitUrl);
         return $this->html();
     }
     /**

@@ -272,6 +272,7 @@ class NodeService extends Service
             $moduleName = basename($module);
             //权限模块
             $authNoduleName = config('admin.authModule');
+
             if(isset($authNoduleName[$moduleName])){
                 $authNoduleTitle= $authNoduleName[$moduleName];
                 $this->treeArr[$moduleName] = [
