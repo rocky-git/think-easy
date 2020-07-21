@@ -277,7 +277,6 @@ class Form extends View
                     Db::commit();
                     return true;
                 }
-
                 if (!is_null($id)) {
                     $this->data = $this->model->where($this->pkField, $id)->find();
                     $this->model = $this->model->where($this->pkField, $id)->find();
@@ -602,7 +601,7 @@ class Form extends View
                     } else {
 
                         if (is_array($fieldValue)) {
-                            if(empty($fieldValue)){
+                            if(empty($fieldValue) && count($formItem->fields) > 1){
                                 $this->setData($formItem->field, $formItem->defaultValue);
                             }else{
                                 $this->setData($formItem->field, $fieldValue);

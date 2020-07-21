@@ -470,7 +470,7 @@ EOF;
                     if ($ids === true) {
                         $this->deleteRelationData(true);
                     } else {
-                        $deleteDatas = Db::name($this->model->getTable())->whereIn($this->model->getPk(), $ids)->select();
+                        $deleteDatas = $this->model->removeOption('where')->whereIn($this->model->getPk(), $ids)->select();
                         $this->deleteRelationData($deleteDatas);
                     }
                     $res = Db::name($this->model->getTable())->delete($ids);
@@ -480,7 +480,6 @@ EOF;
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-
         }
         return $res;
     }
@@ -510,7 +509,7 @@ EOF;
                             $deleteDatas = $this->model->select();
                         }
                         foreach ($deleteDatas as $deleteData) {
-                            $deleteData->$relation()->detach();
+                           $deleteData->$relation()->detach();
                         }
                     } elseif ($this->model->$relation() instanceof HasOne) {
                         if ($deleteDatas === true) {
