@@ -23,6 +23,7 @@
         name: "detail",
         data(){
             return {
+                tableData: [],
                 data:{$data|raw},
                 cellComponent:{$cellComponent|raw|default='[]'},
                 {$scriptVar|raw}
