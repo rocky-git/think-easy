@@ -58,12 +58,13 @@ class Button extends View
      * @param $type 打开方式 full全屏,modal弹窗,open内容页,drawer抽屉
      * @param $refreshTable 刷新表格
      */
-    public function href($url,$type='open',bool $refreshTable = false){
+    public function href($url,$type='open',bool $refreshTable = false,$refresh = false){
         $this->setAttr('url',$url);
         $this->setAttr('open-type',$type);
         if($refreshTable){
             $this->setAttr(':table-data-update.sync','tableDataUpdate');
         }
+        $this->setAttr('refresh',$refresh);
         return $this->html();
     }
 
@@ -86,8 +87,9 @@ class Button extends View
      * @param string $url
      * @param $confirm 操作提示
      * @param $refresh 刷新当前页面
+     * @param bool $prompt 输入框模式
      */
-    public function save($id,array $data,$url='',$confirm='',$refresh = false){
+    public function save($id,array $data,$url='',$confirm='',bool $refresh = false,bool $prompt = false){
         $this->setAttr('pk-id',$id);
         $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
         $this->setAttr('open-type','update');
@@ -95,6 +97,7 @@ class Button extends View
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
         $this->setAttr('refresh',$refresh);
+        $this->setAttr('prompt',$prompt);
         return $this->html();
     }
 
@@ -106,14 +109,16 @@ class Button extends View
      * @param array $updateData 更新数据
      * @param string $url
      * @param string $confirm 操作提示
+     * @param bool $prompt 输入框模式
      */
-    public function saveAll(array $data,$url,$confirm=''){
+    public function saveAll(array $data,$url,$confirm='',bool $prompt = false){
         $this->setAttr('update-data',json_encode($data,JSON_UNESCAPED_UNICODE));
         $this->setAttr('open-type','updateBatch');
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
         $this->setAttr(':tabledata.sync','tableData');
         $this->setAttr(':selectionData','selectionData');
+        $this->setAttr('prompt',$prompt);
         return $this->html();
     }
     /**

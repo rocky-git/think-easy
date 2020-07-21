@@ -277,7 +277,7 @@ class Form extends View
                     Db::commit();
                     return true;
                 }
-                
+
                 if (!is_null($id)) {
                     $this->data = $this->model->where($this->pkField, $id)->find();
                     $this->model = $this->model->where($this->pkField, $id)->find();
@@ -333,13 +333,13 @@ class Form extends View
             }
             //保存回后调
             if (!is_null($this->afterSave)) {
-                call_user_func_array($this->afterSave, [$this->saveData, $res]);
+                call_user_func_array($this->afterSave, [$this->saveData, $this->model]);
             }
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-            halt($e->getMessage());
+
         }
         return $res;
     }
@@ -541,6 +541,13 @@ class Form extends View
                 $this->formItem = $formItemArr;
 
             } else {
+                //隐藏域
+                $itemShow = 1;
+                if($formItem instanceof Input && $formItem->isHidden()){
+                    $itemShow = 0;
+                }
+
+
                 if ($formItem instanceof Tree) {
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
@@ -549,7 +556,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1 && 1 == {$itemShow}\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
 
 
                     //是否多个字段解析
@@ -562,8 +569,6 @@ class Form extends View
                     } else {
                         $fieldValue = $this->getData($formItem->field);
                     }
-
-
                     //级联选择器一对多关系单独解析获取值
                     if ($formItem instanceof Cascader) {
                         $relation = $formItem->getRelation();
@@ -583,7 +588,6 @@ class Form extends View
                             $formItem->setField($relation);
                         }
                     }
-
                     //设置默认值
                     if ($this->isEdit) {
                         if (is_null($fieldValue)) {
@@ -618,7 +622,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1 && 1 == {$itemShow}\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //一对多设置null，解析formItem初始值
                     $fieldValue = null;
                     //设置默认值
@@ -689,8 +693,6 @@ EOF;
                         }
                     }
                 }
-
-
                 if ($formItem instanceof Input && $formItem->isHidden()) {
                     $formItemTmp = $render;
                 } else {

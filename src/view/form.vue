@@ -18,9 +18,14 @@
 
 <script>
     export default {
+        inject: ['reload'],
         props:{
             dialogVisible:Boolean,
-            tableDataUpdate:Boolean
+            tableDataUpdate:Boolean,
+            refresh: {
+                type: String,
+                default: '0'
+            },
         },
         data(){
             let _self = this
@@ -128,6 +133,9 @@
                                 })
                                 this.$emit('update:dialogVisible', false)
                                 this.$emit('update:tableDataUpdate', true)
+                                if (this.refresh == 1) {
+                                    this.reload()
+                                }
                             }else if(response.code == 422){
                                 for(field in response.data){
                                     val = response.data[field]

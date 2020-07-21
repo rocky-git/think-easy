@@ -28,7 +28,7 @@ class Detail extends View
 
     //列
     protected $columns = [];
-    protected $cellComponent;
+    protected $cellComponent=[];
     protected $component=[];
     protected $scriptArr = [];
     public function __construct(Model $model)
@@ -56,6 +56,10 @@ class Detail extends View
             }
         }
         return $this;
+    }
+    public function data(){
+        $this->detailData(Request::param('id'));
+        return $this->data;
     }
     /**
      * 设置标题
@@ -136,12 +140,15 @@ class Detail extends View
      */
     private function paseLayout($title,$md){
         $card = new Card();
-        $card->setAttr(':body-style','{padding: "0px 0px" }');
-        $card->header($title);
+        $card->setAttr(':body-style','{padding: "0px 15px" }');
+
+        $card->header("<span style='font-weight: bold'>{$title}</span>");
         $html = '';
+
         foreach ($this->columns as $i=>$column) {
             $column->setData($this->data);
-            $this->cellComponent[] = $column->getDetailDisplay($i);
+
+            $this->cellComponent[] = $column->getDetailDisplay(count($this->cellComponent));
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
             $html .= $column->detailRender();
         }
@@ -153,6 +160,7 @@ class Detail extends View
         $manyColumnHtml = '';
         foreach ($this->columns as $i=>$column) {
             if($column instanceof Column){
+
                 $column->setData($this->data);
                 $this->cellComponent[] = $column->getDetailDisplay($i);
                 $columnHtml .= $column->detailRender();
@@ -161,14 +169,14 @@ class Detail extends View
                 $columnsArr = array_slice($this->columns, $i + 1);
                 $this->columns = [];
                 $card = new Card();
-                $card->setAttr(':body-style','{padding: "0px 0px" }');
+                $card->setAttr(':body-style','{padding: "0px 15px" }');
                 call_user_func($column['closure'], $this);
                 $component = $this->parsehasManData($column['relationMethod']);
                 $componentKey = 'component'.mt_rand(10000,99999);
                 $this->component[$componentKey] = "() => new Promise(resolve => {
                             resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
                         })";
-                $card->header($column['title']);
+                $card->header("<span style='font-weight: bold'>{$column['title']}</span>");
                 $card->body('<component :is="'.$componentKey.'" />');
                 $manyColumnHtml .= "<el-col :span='{$column['md']}'>{$card->render()}</el-col>";
 

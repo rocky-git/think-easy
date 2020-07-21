@@ -112,9 +112,9 @@ class NodeService extends Service
                 $doc = $method->getDocComment();
                 $res = $this->parseDocComment($doc);
                 if($method->isProtected()){
+                    $node = $moduleName.'/'.$controller;
+                    $node = strtolower($node);
                     if($method->name == 'grid'){
-                        $node = $moduleName.'/'.$controller;
-                        $node = strtolower($node);
                         if($res === false){
                             $auth = false;
                             $nodeData = [

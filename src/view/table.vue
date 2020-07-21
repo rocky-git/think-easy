@@ -108,7 +108,11 @@
             iframeMultiple:{
                 type: Boolean,
                 default: false
-            }
+            },
+            tableMaxHeight: {
+                type: Number,
+                default: 0
+            },
         },
         data(){
             return {
@@ -141,6 +145,10 @@
         },
         computed:{
             tableHeight(){
+                if(this.tableMaxHeight > 0){
+                    console.log(this.tableMaxHeight)
+                    return this.tableMaxHeight
+                }
                 if(this.iframeMode){
                     return window.innerHeight / 2
                 }
@@ -389,6 +397,7 @@
 
                     })
                 }else{
+                    console.log(url)
                     this.$router.push(url)
                 }
             },
@@ -552,12 +561,12 @@
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
+                this.tableData = []
                 this.$request({
                     url: url,
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
-                    this.tableData = []
                     this.filterVisible = false
                     this.loading = false
                     this.tableData = res.data.data

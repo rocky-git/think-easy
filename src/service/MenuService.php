@@ -126,6 +126,7 @@ class MenuService extends Service
                 $resourceRouter[] = $editRouter;
                 $resourceRouter[] = $detailRouter;
             }
+
             //追加节点方法到路由
             foreach (NodeService::instance()->all() as $node) {
                 $appendRouter = [];
@@ -134,7 +135,7 @@ class MenuService extends Service
                     $appendRouter['component'] = 'Layout';
                     $appendRouter['path'] = DIRECTORY_SEPARATOR . $node['rule'];
                     $appendRouter['name'] = 'tag_' . mt_rand(100000, 999999);
-
+                   
                     $append = true;
                     array_push($resourceRouter, $appendRouter);
 //                    foreach ($resourceRouter as $router){

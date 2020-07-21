@@ -592,8 +592,6 @@ EOF;
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
             $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
-           // $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->fetchSql(true)->select();
-         //   halt($this->data);
         } else {
             $this->data = $this->db->select();
         }

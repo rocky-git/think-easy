@@ -174,6 +174,16 @@ class Column extends View
         return $this;
     }
 
+    /**
+     * 显示html
+     * @return $this
+     */
+    public function html(){
+        $this->display(function ($val) {
+            return $val;
+        });
+        return $this;
+    }
     public function getClosure()
     {
         return $this->displayClosure;
@@ -331,7 +341,7 @@ class Column extends View
         } else {
             $id = 0;
         }
-        if (strpos($this->field, '.')) {
+        if (is_null($this->displayClosure) && strpos($this->field, '.')) {
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$val}</span>";
         }
         if (!is_null($this->displayClosure)) {
@@ -393,6 +403,7 @@ class Column extends View
      */
     public function getValue($data, $field = null)
     {
+
         if (is_null($field)) {
             $dataField = $this->field;
         } else {
@@ -401,6 +412,7 @@ class Column extends View
         if (empty($dataField)) {
             return null;
         }
+
         foreach (explode('.', $dataField) as $f) {
             if (isset($data[$f])) {
                 $data = $data[$f];
@@ -460,7 +472,7 @@ class Column extends View
 
     public function detailRender()
     {
-        $label = "<span style='font-weight: bold;font-size: 14px;line-height: 50px;'>{$this->label}:</span>&nbsp;";
+        $label = "<span style='font-size: 14px;line-height: 50px;'>{$this->label}:</span>&nbsp;";
         $this->rowField = 'data.' . $this->field;
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
