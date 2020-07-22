@@ -362,9 +362,7 @@
             //对话框表单 type=1添加，type=2编辑 ,type=3详情
             showDialog(title,type){
                 let url  = '/{$submitUrl|default=""}'
-                let params = {
-                    build_dialog:true
-                }
+                let params = {}
                 /*{if isset($submitParams)}*/
                 /*{foreach $submitParams as $key=>$value}*/
                 params['{$key}'] = '{$value}'
@@ -383,6 +381,7 @@
                     url += '/'+this.showDetailId+'.rest'
                 }
                 if(this.isDialog){
+                    params.build_dialog = true
                     this.$request({
                         url: url,
                         method: 'get',
@@ -397,8 +396,11 @@
 
                     })
                 }else{
-                    console.log(url)
-                    this.$router.push(url)
+                    console.log(this.$route.query)
+                    this.$router.push({
+                        path:url,
+                        query:params
+                    })
                 }
             },
             //确认选中

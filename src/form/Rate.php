@@ -83,7 +83,7 @@ class Rate extends Field
     public function render()
     {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
-        $html = "<el-rate {$attrStr}></el-rate>";
+        $html = "<div style='display: flex;align-items: center;height: 40px'><el-rate {$attrStr}></el-rate></div>";
         return $html;
     }
 }

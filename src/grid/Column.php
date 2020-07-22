@@ -143,9 +143,9 @@ class Column extends View
      * @param $color 标签颜色：success，info，warning，danger
      * @param $theme 主题：dark，light，plain
      */
-    public function tag($color = '', $theme = 'dark')
+    public function tag($color = '', $theme = 'dark',$size='mini')
     {
-        $this->tag = "<el-tag effect='{$theme}' type='{$color}'>%s</el-tag>";
+        $this->tag = "<el-tag effect='{$theme}' type='{$color}' size='{$size}'>%s</el-tag>";
         return $this;
     }
 
@@ -258,11 +258,11 @@ class Column extends View
                 $files = $val;
                 $htmlArr = [];
                 foreach ($files as $file) {
-                    $htmlArr[] = "<eadmin-download-file url='$file'></eadmin-download-file>";
+                    $htmlArr[] = "<eadmin-download-file style='margin: 5px' url='$file'></eadmin-download-file>";
                 }
-                return implode('<br>', $htmlArr);
+                return implode('', $htmlArr);
             } else {
-                return "<eadmin-download-file url='$val'></eadmin-download-file>";
+                return "<eadmin-download-file style='margin: 5px' url='$val'></eadmin-download-file>";
             }
 
         });

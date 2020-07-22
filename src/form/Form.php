@@ -338,7 +338,6 @@ class Form extends View
         } catch (\Exception $e) {
             Db::rollback();
             $res = false;
-
         }
         return $res;
     }
