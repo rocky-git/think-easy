@@ -20,6 +20,7 @@ class ServiceProvider extends Service
     {
         //注册上传路由
         $this->app->route->any('eadmin/upload', function () {
+
             $file = $this->app->request->file('file');
             $filename = $this->app->request->param('filename');
             $chunks = $this->app->request->param('totalChunks');
@@ -34,16 +35,15 @@ class ServiceProvider extends Service
             }else{
                 $isUniqidmd5 = false;
             }
+
             if($this->app->request->method() == 'POST' && empty($chunk)){
-                $res = FileService::instance()->upload($file,$upType);
+                $res = FileService::instance()->upload($file,$filename,'editor',$upType);
                 if (!$res) {
                     return json(['code'=>999,'message'=>'上传失败'],404);
                 } else{
                     return json(['code'=>200,'data'=>$res],200);
                 }
             }
-
-
             $res = FileService::instance()->chunkUpload($file, $filename, $chunk,$chunks, $chunkSize,$totalSize,$saveDir,$isUniqidmd5,$upType);
             if($this->app->request->method() == 'POST'){
                 if (!$res) {

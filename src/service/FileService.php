@@ -130,14 +130,18 @@ class FileService extends Service
      * @param $file 文件对象
      * @param $fileName 文件名
      * @param $saveDir 保存目录
+     * @param $upType disk
      * @return  bool|string
      */
-    public function upload($file, $fileName = null,$saveDir = 'editor')
+    public function upload($file, $fileName = null,$saveDir = '/',$upType='')
     {
+        if(empty($upType)){
+            $upType = $this->upType;
+        }
         if(empty($fileName)){
-            $saveName = Filesystem::disk($this->upType)->putFile($saveDir, $file, 'uniqid');
+            $saveName = Filesystem::disk($upType)->putFile($saveDir, $file, 'uniqid');
         }else{
-            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $fileName);
+            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $fileName);
         }
         if ($saveName) {
             return $this->url($saveName);
