@@ -132,6 +132,9 @@
                                     type: 'success',
                                     duration: 1500
                                 })
+                                if(!this.dialogVisible){
+                                    this.$router.go(-1)
+                                }
                                 this.$emit('update:dialogVisible', false)
                                 this.$emit('update:tableDataUpdate', true)
                                 if (this.refresh == 1) {
