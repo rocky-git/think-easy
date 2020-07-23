@@ -38,6 +38,7 @@ class Detail extends View
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
         $this->setTitle('详情');
+        $this->detailData(Request::param('id'));
     }
 
     /**
@@ -58,7 +59,6 @@ class Detail extends View
         return $this;
     }
     public function data(){
-        $this->detailData(Request::param('id'));
         return $this->data;
     }
     /**

@@ -481,7 +481,10 @@ class Column extends View
 
     public function detailRender()
     {
-        $label = "<span style='font-size: 14px;line-height: 50px;'>{$this->label}:</span>&nbsp;";
+        $label = '';
+        if(!empty($this->label)){
+            $label = "<span style='font-size: 14px;line-height: 50px;'>{$this->label}:</span>&nbsp;";
+        }
         $this->rowField = 'data.' . $this->field;
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
