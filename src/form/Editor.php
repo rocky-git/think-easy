@@ -24,7 +24,7 @@ class Editor extends Field
     {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         $html = "<eadmin-tinymce {$attrStr}></eadmin-tinymce>";
-        
+
         return $html;
     }
     /**
@@ -49,6 +49,8 @@ class Editor extends Field
             $this->setAttr('endpoint',$config['endpoint']);
             $this->setAttr('domain',$config['domain']);
             $this->setAttr('region',$config['region']);
+        }else{
+            $this->setAttr('domain',request()->domain());
         }
         return $this;
     }
@@ -58,7 +60,7 @@ class Editor extends Field
      */
     public function height($number){
         $this->setAttr('height',$number);
-        return $this;   
+        return $this;
     }
 
     /**
