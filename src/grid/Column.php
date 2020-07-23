@@ -99,6 +99,15 @@ class Column extends View
     }
 
     /**
+     * 评分显示
+     */
+    public function rate($max = 5){
+        $this->display(function ($val) use($max){
+            return "<el-rate v-model='data.{$this->field}' disabled :max='{$max}'></el-rate>";
+        });
+        return $this;
+    }
+    /**
      * 列是否固定
      * @param string $fixed
      */

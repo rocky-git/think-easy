@@ -29,6 +29,7 @@ class Input extends Field
      */
     public function hidden(){
         $this->setAttr('type', 'hidden');
+        $this->setAttr('style', 'display:none');
         $this->hidden = true;
         return $this;
     }

@@ -120,7 +120,8 @@
                         this.$request({
                             url: url,
                             method: method,
-                            data:this.form
+                            data:this.form,
+                            params:this.$route.query
                         }).then(response=>{
                             this.loading = false
                             this.disabledSubmit = false

@@ -444,8 +444,9 @@ class Form extends View
             case 'textarea':
                 $formItem->setAttr('type', 'textarea');
                 break;
-            case 'dateTime':
+            case 'datetime':
                 $formItem->setType('datetime');
+                break;
             case 'datetimeRange':
                 $formItem->setType('datetime')->range();;
                 break;
@@ -539,13 +540,6 @@ class Form extends View
                 $this->formItem = $formItemArr;
 
             } else {
-                //隐藏域
-                $itemShow = 1;
-                if($formItem instanceof Input && $formItem->isHidden()){
-                    $itemShow = 0;
-                }
-
-
                 if ($formItem instanceof Tree) {
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
 
@@ -554,7 +548,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1 && 1 == {$itemShow}\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
 
 
                     //是否多个字段解析
@@ -620,7 +614,7 @@ class Form extends View
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1 && 1 == {$itemShow}\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //一对多设置null，解析formItem初始值
                     $fieldValue = null;
                     //设置默认值
