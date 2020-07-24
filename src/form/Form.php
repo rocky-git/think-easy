@@ -124,6 +124,8 @@ class Form extends View
 
     protected $hasManyRowData = [];
 
+    protected $hasManyData = [];
+
     protected $hasManyIndex = 0;
 
     protected $pkField = 'id';
@@ -504,17 +506,17 @@ class Form extends View
                         break;
                     case 'hasMany':
                         $this->hasManyRelation = $formItem['relationMethod'];
-                        $manyData = $this->getData($this->hasManyRelation);
-                        $formItemHtml .= "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
+                        $this->hasManyData = $this->getData($this->hasManyRelation);
                         $formItemHtml .= "<el-divider content-position='left'>{$formItem['label']}</el-divider>";
+                        $formItemHtml .= "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
                         $formItemHtml = $this->parseFormItem($formItemHtml);
                         $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
-                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\">新增</el-button><el-button type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0'>上移</el-button><el-button v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
+                        $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\" size='mini' v-if='form.{$this->hasManyRelation}.length-1 == manyIndex'>新增</el-button><el-button size='mini' type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0' size='mini'>上移</el-button><el-button size='mini' v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
                         $formItemHtml .= "</div><el-divider></el-divider>";
-                        if (empty($manyData)) {
+                        if (empty($this->hasManyData)) {
                             $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
                         } else {
-                            $this->formData[$this->hasManyRelation] = $manyData;
+                            $this->formData[$this->hasManyRelation] = $this->hasManyData;
                         }
                         $this->hasManyRelation = null;
                         break;
@@ -615,21 +617,27 @@ class Form extends View
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
                     $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-                    //一对多设置null，解析formItem初始值
-                    $fieldValue = null;
+
                     //设置默认值
                     if ($this->isEdit) {
-                        if (is_null($fieldValue)) {
+                        if(count($formItem->getFileds()) > 1){
+                            $itemFields = $formItem->getFileds();
+                            $field = $formItem->getField();
+                            foreach ($this->hasManyData as &$val){
+                                $value = [];
+                                foreach ($itemFields as $key => $itemField) {
+                                    if (isset($val[$itemField])) {
+                                        $value[] = $val[$itemField];
+                                        unset($val[$itemField]);
+                                        $val[$field] = $value;
+                                    }
+                                }
+                            }
+                        }else{
                             $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
-                        } else {
-                            $this->hasManyRowData[$formItem->field] = $fieldValue;
                         }
                     } else {
-                        if (is_array($fieldValue)) {
-                            $this->hasManyRowData[$formItem->field] = $fieldValue;
-                        } else {
-                            $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
-                        }
+                        $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
                     }
                     //设置固定值
                     if (!is_null($formItem->value)) {
@@ -660,12 +668,14 @@ EOF;
                 }
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
+
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
                     $itemFields = $formItem->getFileds();
                     if(method_exists($this->model, $field) && $this->model->$field() instanceof HasMany){
                         //针对级联选择器多选解析保存一对多数据
                         $this->saveData[$field] = [];
+
                         foreach ($itemSaveValues as $index=>$itemSaveValue){
                             $saveHanyData = [];
                             foreach ($itemSaveValue as $key=>$value){
@@ -680,6 +690,21 @@ EOF;
                             foreach ($itemFields as $key => $itemField) {
                                 if (isset($itemSaveValues[$key])) {
                                     $this->saveData[$itemField] = $itemSaveValues[$key];
+                                }
+                            }
+                        }
+                    }
+
+                }elseif (count($formItem->getFileds()) > 1 && strpos($formItem->field,'.') !== false){
+                    //多个字段,关联方法解析
+                    $itemFields = $formItem->getFileds();
+                    list($reliatonMethod,$field) = explode('.',$formItem->field);
+                    if(isset($this->saveData[$reliatonMethod])){
+                        foreach ($this->saveData[$reliatonMethod] as &$val){
+                            $itemSaveValues = $val[$field];
+                            foreach ($itemFields as $key => $itemField) {
+                                if (isset($itemSaveValues[$key])) {
+                                    $val[$itemField] = $itemSaveValues[$key];
                                 }
                             }
                         }

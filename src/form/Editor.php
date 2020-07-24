@@ -24,7 +24,6 @@ class Editor extends Field
     {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         $html = "<eadmin-tinymce {$attrStr}></eadmin-tinymce>";
-
         return $html;
     }
     /**
