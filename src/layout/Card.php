@@ -59,6 +59,7 @@ class Card extends View
         $this->html .= $html;
         return $this;
     }
+   
     public function render(){
         list($attrStr, $scriptVar) = $this->parseAttr();
         return "<el-card $attrStr>{$this->html}</el-card>";

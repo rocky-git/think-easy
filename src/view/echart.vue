@@ -96,6 +96,9 @@
                 this.loading = true
                 this.params.date_type = type
                 this.params.ajax = true
+                /*{foreach :request()->param() as $key=>$value}*/
+                this.params['{$key}'] = '{$value}'
+                /*{/foreach}*/
                 this.$request({
                     url: '{$url|default=""}',
                     params:this.params

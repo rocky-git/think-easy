@@ -635,7 +635,7 @@ EOF;
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-        $submitUrl = app('http')->getName() . '/' . request()->controller();
+        $submitUrl = app('http')->getName() . '/' . request()->controller() ;
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $this->table->setVar('submitUrl', $submitUrl);
         $this->table->setVar('submitParams', request()->param());

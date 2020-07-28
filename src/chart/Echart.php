@@ -9,8 +9,10 @@
 namespace thinkEasy\chart;
 
 
+use think\db\Query;
 use think\facade\Db;
 use think\facade\Request;
+use think\Model;
 use thinkEasy\chart\echart\FunnelChart;
 use thinkEasy\chart\echart\LineChart;
 use thinkEasy\chart\echart\PieChart;

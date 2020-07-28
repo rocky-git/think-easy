@@ -655,8 +655,6 @@ EOF;
                     }
                     $formItem->setField("{$this->hasManyRelation}.$formItem->field");
                 }
-
-
                 //合并表单验证规则
                 list($rule, $msg) = $formItem->paseRule($formItem->createRules);
                 $this->setRules($rule, $msg, 1);
@@ -675,7 +673,6 @@ EOF;
                     if(method_exists($this->model, $field) && $this->model->$field() instanceof HasMany){
                         //针对级联选择器多选解析保存一对多数据
                         $this->saveData[$field] = [];
-
                         foreach ($itemSaveValues as $index=>$itemSaveValue){
                             $saveHanyData = [];
                             foreach ($itemSaveValue as $key=>$value){
