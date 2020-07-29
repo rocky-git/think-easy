@@ -59,7 +59,7 @@ class BuildView extends Make
     }
     protected function getTableInfo($model){
         $db = Db::name($model);
-        $tableInfo= $db->query('SHOW FULL COLUMNS FROM '.$db->getTable());
+        $tableInfo= Db::query('SHOW FULL COLUMNS FROM '.$db->getTable());
         $fields = $db->getTableFields();
         $grid = '';
         $detail = '';
