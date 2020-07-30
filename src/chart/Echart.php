@@ -42,6 +42,7 @@ class Echart extends View
     protected $radarData = [];
     protected $groupSeries = [];
     protected $radarMaxKey = -1;
+    protected $date_type = null;
     /**
      * Echart constructor.
      * @param $title 标题
@@ -54,6 +55,7 @@ class Echart extends View
         $this->setVar('title', $this->title);
         $this->setVar('height', $height);
         $this->chartType = $type;
+        $this->date_type = Request::get('date_type', 'today');
         if ($this->chartType == 'line' || $this->chartType == 'bar') {
             $this->chart = new LineChart($height, "100%", $this->chartType);
         } elseif ($this->chartType == 'pie') {
@@ -161,33 +163,7 @@ class Echart extends View
 
     protected function radarAnalyze($type, $field, $name, $max = 100, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
-        $db = clone $this->db;
-        if ($closure instanceof \Closure) {
-            call_user_func($closure, $db);
-        }
-        switch ($date_type) {
-            case 'yesterday':
-            case 'today':
-                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
-                break;
-            case 'week':
-                $value = $db->whereWeek($this->dateField)->$type($field);
-                break;
-            case 'month':
-                $months = DateTime::thisMonths();
-                $value = $db->whereMonth($this->dateField)->$type($field);
-                break;
-            case 'year':
-                $value = $db->whereYear($this->dateField)->$type($field);
-                break;
-            case 'range':
-                $start_date = Request::get('start_date');
-                $end_date = Request::get('end_date');
-                $dates = DateTime::rangeDates($start_date, $end_date);
-                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
-                break;
-        }
+        $value = $this->parse($type, $field, $closure, $date_type);
         $this->chart->indicator($name, $max);
         $key = $this->chart()->getIndicatorKey($name);
         if($this->radarMaxKey < $key){
@@ -198,33 +174,7 @@ class Echart extends View
 
     protected function pieAnalyze($type, $field, $name, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
-        $db = clone $this->db;
-        if ($closure instanceof \Closure) {
-            call_user_func($closure, $db);
-        }
-        switch ($date_type) {
-            case 'yesterday':
-            case 'today':
-                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
-                break;
-            case 'week':
-                $value = $db->whereWeek($this->dateField)->$type($field);
-                break;
-            case 'month':
-                $months = DateTime::thisMonths();
-                $value = $db->whereMonth($this->dateField)->$type($field);
-                break;
-            case 'year':
-                $value = $db->whereYear($this->dateField)->$type($field);
-                break;
-            case 'range':
-                $start_date = Request::get('start_date');
-                $end_date = Request::get('end_date');
-                $dates = DateTime::rangeDates($start_date, $end_date);
-                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
-                break;
-        }
+        $value = $this->parse($type, $field, $closure, $date_type);
         $this->seriesData[] = [
             'name' => $name,
             'value' => $value
@@ -234,10 +184,9 @@ class Echart extends View
 
     protected function lineAnalyze($type, $field, $name, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
         $series = [];
         $xAxis = [];
-        switch ($date_type) {
+        switch ($this->date_type) {
             case 'yesterday':
             case 'today':
                 if ($date_type == 'yesterday') {
@@ -348,5 +297,42 @@ class Echart extends View
         }
         $this->setVar('html', rawurlencode($html));
         return parent::render();
+    }
+
+    /**
+     * @param $type
+     * @param $field
+     * @param $closure
+     * @param $date_type
+     * @return mixed
+     */
+    protected function parse($type, $field, $closure, $date_type)
+    {
+        $db = clone $this->db;
+        if ($closure instanceof \Closure) {
+            call_user_func($closure, $db);
+        }
+        switch ($this->date_type) {
+            case 'yesterday':
+            case 'today':
+                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
+                break;
+            case 'week':
+                $value = $db->whereWeek($this->dateField)->$type($field);
+                break;
+            case 'month':
+                $value = $db->whereMonth($this->dateField)->$type($field);
+                break;
+            case 'year':
+                $value = $db->whereYear($this->dateField)->$type($field);
+                break;
+            case 'range':
+                $start_date = Request::get('start_date');
+                $end_date = Request::get('end_date');
+                $dates = DateTime::rangeDates($start_date, $end_date);
+                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
+                break;
+        }
+        return $value;
     }
 }

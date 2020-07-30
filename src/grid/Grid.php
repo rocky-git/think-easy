@@ -584,6 +584,10 @@ EOF;
             $fields = implode('|',$this->tableFields);
             $this->db->whereLike($fields,"%{$keyword}%");
         }
+        //排序
+        if (Request::has('sort_field')) {
+            $this->db->removeOption('order')->order(Request::get('sort_field'), Request::get('sort_by'));
+        }
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
@@ -641,12 +645,6 @@ EOF;
         $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
             case 'page':
-                if (!$this->treeTable && $this->isPage) {
-                    if (Request::has('sort_field')) {
-                        $this->db->removeOption('order')->order(Request::get('sort_field'), Request::get('sort_by'));
-                    }
-                    $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
-                }
                 $this->table->view();
                 $result['data'] = $this->data;
                 $result['total'] = $this->db->removeOption('page')->removeOption('limit')->count();
