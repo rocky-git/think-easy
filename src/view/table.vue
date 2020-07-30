@@ -365,6 +365,7 @@
                 let params = {}
                 /*{if isset($submitParams)}*/
                 /*{foreach $submitParams as $key=>$value}*/
+                /*{php}if(is_array($value))continue;{/php}*/
                 params['{$key}'] = '{$value}'
                 /*{/foreach}*/
                 /*{/if}*/
@@ -459,6 +460,7 @@
                     let requestParams = {}
                     /*{if isset($submitParams)}*/
                     /*{foreach $submitParams as $key=>$value}*/
+                    /*{php}if(is_array($value))continue;{/php}*/
                     requestParams['{$key}'] = '{$value}'
                     /*{/foreach}*/
                     /*{/if}*/
@@ -495,6 +497,7 @@
                     let requestParams = {}
                     /*{if isset($submitParams)}*/
                     /*{foreach $submitParams as $key=>$value}*/
+                    /*{php}if(is_array($value))continue;{/php}*/
                     requestParams['{$key}'] = '{$value}'
                     /*{/foreach}*/
                     /*{/if}*/
@@ -554,6 +557,7 @@
                 }
                 /*{if isset($submitParams)}*/
                 /*{foreach $submitParams as $key=>$value}*/
+                /*{php}if(is_array($value))continue;{/php}*/
                 requestParams['{$key}'] = '{$value}'
                 /*{/foreach}*/
                 /*{/if}*/
