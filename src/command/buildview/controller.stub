@@ -9,6 +9,12 @@ use thinkEasy\grid\Detail;
 use thinkEasy\grid\Filter;
 use thinkEasy\grid\Grid;
 use {%model_namespace%};
+
+/**
+ *
+ * Class {%className%}
+ * @package {%namespace%}
+ */
 class {%className%} extends BaseAdmin
 {
     /**
@@ -20,6 +26,7 @@ class {%className%} extends BaseAdmin
     protected function grid()
     {
         $grid = new Grid(new {%model%});
+        $grid->setTitle('列表');
         $grid->indexColumn();
 {%grid%}
         $grid->quickSearch();

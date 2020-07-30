@@ -11,6 +11,7 @@ namespace thinkEasy\form;
 
 use think\exception\HttpResponseException;
 use think\facade\Db;
+use think\facade\Log;
 use think\facade\Request;
 use think\facade\Validate;
 use think\helper\Str;
@@ -339,6 +340,7 @@ class Form extends View
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
+            Log::error($e->getMessage());
             $res = false;
         }
         return $res;

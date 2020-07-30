@@ -97,6 +97,7 @@
                 this.params.date_type = type
                 this.params.ajax = true
                 /*{foreach :request()->param() as $key=>$value}*/
+                /*{php}if(is_array($value))continue;{/php}*/
                 this.params['{$key}'] = '{$value}'
                 /*{/foreach}*/
                 this.$request({

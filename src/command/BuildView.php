@@ -10,6 +10,7 @@ use think\console\Output;
 use think\facade\App;
 use think\facade\Config;
 use think\facade\Db;
+use think\facade\Log;
 
 class BuildView extends Make
 {
@@ -64,28 +65,51 @@ class BuildView extends Make
         $grid = '';
         $detail = '';
         $form = '';
+        $imgType = ['cover', 'image', 'images', 'avatar', 'avatars', 'img', 'imgs', 'carousel', 'picture', 'pictures'];
+        $formFilter = ['status', 'create_at', 'update_at', 'create_time', 'update_time', 'id', 'sort'];
+        $gridFilter = ['id', 'sort'];
         foreach ($tableInfo as $val){
             $label = $val['Comment']?$val['Comment']:$val['Field'];
-            $grid .= "\t\t".'$grid->column(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+            if (!in_array($val['Field'], $gridFilter)) {
+                if (in_array($val['Field'], $imgType)) {
+                    $grid .= "\t\t" . '$grid->column(\'' . $val['Field'] . '\',\'' . $label . '\')->image();' . PHP_EOL;
+                } elseif(strpos($val['Field'], 'status') !== false) {
+                    $grid .= "\t\t" . '$grid->column(\'' . $val['Field'] . '\',\'' . $label . '\')->switch([1 => \'启用\'], [0 => \'禁用\']);' . PHP_EOL;
+                } else {
+                    $grid .= "\t\t" . '$grid->column(\'' . $val['Field'] . '\',\'' . $label . '\');' . PHP_EOL;
+                }
+            }
             $detail .= "\t\t".'$detail->column(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            if(strstr($val['Type'],'char')){
-                $form .= "\t\t".'$form->text(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'timestamp')){
-                $form .= "\t\t".'$form->datetime(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'datetime')){
-                $form .= "\t\t".'$form->datetime(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'date')){
-                $form .= "\t\t".'$form->date(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'time')){
-                $form .= "\t\t".'$form->time(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'tinyint')){
-                $form .= "\t\t".'$form->switch(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'int') || strstr($val['Type'],'decimal')){
-                $form .= "\t\t".'$form->number(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }elseif (strstr($val['Type'],'text')){
-                $form .= "\t\t".'$form->editor(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
-            }else{
-                $form .= "\t\t".'$form->text(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+            if (!in_array($val['Field'], $formFilter)) {
+                if(strstr($val['Type'],'varchar')){
+                    if (in_array($val['Field'], $imgType)) {
+                        if (strrpos($val['Field'], 's') !== false) {
+                            $form .= "\t\t".'$form->image(\''.$val['Field'].'\',\''.$label.'\')->multiple();'.PHP_EOL;
+                        } else {
+                            $form .= "\t\t".'$form->image(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                        }
+                    } else {
+                        $form .= "\t\t".'$form->text(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                    }
+                }elseif(strstr($val['Type'],'char')){
+                    $form .= "\t\t".'$form->text(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'timestamp')){
+                    $form .= "\t\t".'$form->datetime(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'datetime')){
+                    $form .= "\t\t".'$form->datetime(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'date')){
+                    $form .= "\t\t".'$form->date(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'time')){
+                    $form .= "\t\t".'$form->time(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'tinyint')){
+                    $form .= "\t\t".'$form->switch(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'int') || strstr($val['Type'],'decimal')){
+                    $form .= "\t\t".'$form->number(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }elseif (strstr($val['Type'],'text')){
+                    $form .= "\t\t".'$form->editor(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }else{
+                    $form .= "\t\t".'$form->text(\''.$val['Field'].'\',\''.$label.'\');'.PHP_EOL;
+                }
             }
         }
         if(in_array('create_time',$fields)){
