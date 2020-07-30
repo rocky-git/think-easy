@@ -146,10 +146,11 @@
         computed:{
             tableHeight(){
                 if(this.tableMaxHeight > 0){
-                    console.log(this.tableMaxHeight)
+
                     return this.tableMaxHeight
                 }
                 if(this.iframeMode){
+
                     return window.innerHeight / 2
                 }
                 /*{if isset($hideTools)}*/
@@ -159,15 +160,18 @@
                 /*{/if}*/
 
                 if(this.pageHide){
-                    height -= 70
+                    height -= 65
                 }
+
                 /*{if isset($trashed) && $trashed===true}*/
-                return window.innerHeight - 335 - height
+                return window.innerHeight - 340 - height
                 /*{/if}*/
                 /*{notempty name="title"}*/
-                return window.innerHeight - 340 - height
+
+                return window.innerHeight - 345 - height
                 /*{else/}*/
                 return window.innerHeight - 265 - height
+
                 /*{/notempty}*/
            }
        },
