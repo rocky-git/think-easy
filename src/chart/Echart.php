@@ -17,6 +17,7 @@ use thinkEasy\chart\echart\FunnelChart;
 use thinkEasy\chart\echart\LineChart;
 use thinkEasy\chart\echart\PieChart;
 use thinkEasy\chart\echart\RadarChart;
+use thinkEasy\grid\Column;
 use thinkEasy\grid\Filter;
 use thinkEasy\tools\DateTime;
 use thinkEasy\View;
@@ -43,6 +44,8 @@ class Echart extends View
     protected $groupSeries = [];
     protected $radarMaxKey = -1;
     protected $date_type = null;
+    protected $groupMode = false;
+
     /**
      * Echart constructor.
      * @param $title 标题
@@ -92,7 +95,7 @@ class Echart extends View
         }
         $this->dateField = $dateField;
     }
-
+    
     /**
      * 查询过滤
      * @param $callback
@@ -106,14 +109,18 @@ class Echart extends View
         }
 
     }
-
     public function __call($name, $arguments)
     {
         if ($name == 'count') {
             $text = array_shift($arguments);
             if ($this->chartType == 'line' || $this->chartType == 'bar') {
-                $this->lineAnalyze($name, $this->db->getPk(), $text, end($arguments));
-            } elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
+                if($this->groupMode){
+                    $this->lineAnalyzeGroup($name, $this->db->getPk(), $text, end($arguments));
+                }else{
+                    $this->lineAnalyze($name, $this->db->getPk(), $text, end($arguments));
+                }
+
+            }  elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
                 $this->pieAnalyze($name, $this->db->getPk(), $text, end($arguments));
             } elseif ($this->chartType == 'radar') {
                 $max = array_shift($arguments);
@@ -126,7 +133,11 @@ class Echart extends View
         } else {
             list($text, $field) = $arguments;
             if ($this->chartType == 'line' || $this->chartType == 'bar') {
-                $this->lineAnalyze($name, $field, $text, end($arguments));
+                if($this->groupMode){
+                    $this->lineAnalyzeGroup($name, $field, $text, end($arguments));
+                }else{
+                    $this->lineAnalyze($name, $field, $text, end($arguments));
+                }
             } elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
                 $this->pieAnalyze($name, $field, $text, end($arguments));
             } elseif ($this->chartType == 'radar') {
@@ -141,6 +152,12 @@ class Echart extends View
         return $this;
     }
 
+    /**
+     * 线形柱状图按数据分组
+     */
+    public function groupMode(){
+        $this->groupMode = true;
+    }
     /**
      * 分组
      * @param $name 组名
@@ -178,6 +195,13 @@ class Echart extends View
             'name' => $name,
             'value' => $value
         ];
+    }
+    protected function lineAnalyzeGroup($type, $field, $name, $closure = null)
+    {
+        $value = $this->parse($type, $field, $closure);
+        $this->xAxis[] = $name;
+        $this->chart->xAxis($this->xAxis);
+        $this->seriesData[] = $value;
     }
 
 
@@ -331,6 +355,7 @@ class Echart extends View
                 $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
                 break;
         }
+
         return $value;
     }
 }

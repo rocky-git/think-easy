@@ -139,6 +139,22 @@ class Button extends View
         $this->setAttr('url',$submitUrl);
         return $this->html();
     }
+
+    /**
+     * 上传
+     * @param $url
+     * @return string
+     */
+    public function upload($url){
+        list($attrStr, $scriptVar) = $this->parseAttr();
+        $preg = "/^(https?:)/";
+        if (!preg_match($preg, $url)) {
+            $url= request()->domain() . '/'.$url;
+        }
+        $this->setAttr('url',$url);
+        $html = "<eadmin-upload-button {$attrStr}></eadmin-upload-button>";
+        return $html;
+    }
     /**
      * 返回html
      * @return string
