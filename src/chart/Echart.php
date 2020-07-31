@@ -75,7 +75,6 @@ class Echart extends View
     {
         return $this->chart;
     }
-
     /**
      * 设置表名数据源
      * @param $table 模型或表名
@@ -163,7 +162,7 @@ class Echart extends View
 
     protected function radarAnalyze($type, $field, $name, $max = 100, $closure = null)
     {
-        $value = $this->parse($type, $field, $closure, $date_type);
+        $value = $this->parse($type, $field, $closure);
         $this->chart->indicator($name, $max);
         $key = $this->chart()->getIndicatorKey($name);
         if($this->radarMaxKey < $key){
@@ -174,7 +173,7 @@ class Echart extends View
 
     protected function pieAnalyze($type, $field, $name, $closure = null)
     {
-        $value = $this->parse($type, $field, $closure, $date_type);
+        $value = $this->parse($type, $field, $closure);
         $this->seriesData[] = [
             'name' => $name,
             'value' => $value
@@ -306,7 +305,7 @@ class Echart extends View
      * @param $date_type
      * @return mixed
      */
-    protected function parse($type, $field, $closure, $date_type)
+    protected function parse($type, $field, $closure)
     {
         $db = clone $this->db;
         if ($closure instanceof \Closure) {
@@ -315,7 +314,7 @@ class Echart extends View
         switch ($this->date_type) {
             case 'yesterday':
             case 'today':
-                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
+                $value = $db->whereDay($this->dateField, $this->date_type)->$type($field);
                 break;
             case 'week':
                 $value = $db->whereWeek($this->dateField)->$type($field);
