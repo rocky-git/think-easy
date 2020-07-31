@@ -188,7 +188,7 @@ class Echart extends View
         switch ($this->date_type) {
             case 'yesterday':
             case 'today':
-                if ($date_type == 'yesterday') {
+                if ($this->date_type == 'yesterday') {
                     $date = date('Y-m-d', strtotime(' -1 day'));
                 } else {
                     $date = date('Y-m-d');
@@ -302,7 +302,6 @@ class Echart extends View
      * @param $type
      * @param $field
      * @param $closure
-     * @param $date_type
      * @return mixed
      */
     protected function parse($type, $field, $closure)
