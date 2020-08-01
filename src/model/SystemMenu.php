@@ -14,18 +14,5 @@ use think\Model;
 
 class SystemMenu extends BaseModel
 {
-    public static function onAfterInsert(Model $model)
-    {
-        cache('eadmin_menu_list', null);
-    }
-
-    public static function onAfterUpdate(Model $model)
-    {
-        cache('eadmin_menu_list', null);
-    }
-
-    public static function onAfterDelete(Model $model)
-    {
-        cache('eadmin_menu_list', null);
-    }
+    
 }

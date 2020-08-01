@@ -18,9 +18,6 @@ use thinkEasy\Service;
  */
 class MenuService extends Service
 {
-    //菜单列表缓存key
-    protected $cacheKey = 'eadmin_menu_list';
-
     /**
      * 获取所有菜单
      * @return array|mixed
@@ -30,14 +27,8 @@ class MenuService extends Service
      */
     public function all()
     {
-
-        if ($this->app->cache->has($this->cacheKey)) {
-            return unserialize($this->app->cache->get($this->cacheKey));
-        } else {
-            $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select()->toArray();
-            $this->app->cache->set($this->cacheKey, serialize($data));
-            return $data;
-        }
+        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select()->toArray();
+        return $data;
     }
 
     /**

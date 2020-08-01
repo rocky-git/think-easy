@@ -11,6 +11,7 @@ namespace thinkEasy\model;
 
 use app\admin\model\SystemUserAuth;
 use app\admin\model\Test;
+use think\facade\Db;
 
 class AdminModel extends BaseModel
 {
@@ -24,7 +25,8 @@ class AdminModel extends BaseModel
     }
     //权限
     public function permissions(){
-        return SystemAuthNode::whereIn('auth',$this->roles()->column('system_auth.id'))->select();
+        $roleIds = Db::name('system_user_auth')->where('user_id',$this->id)->column('role_id');
+        return SystemAuthNode::whereIn('auth',$roleIds)->select();
     }
 
     //角色组
