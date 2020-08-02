@@ -167,7 +167,8 @@ class Select extends Field
         }
     }
     public function inOptions($val){
-        if(in_array($val,$this->options)){
+        $keys = array_keys($this->options);
+        if(in_array($val,$keys)){
             return true;
         }else{
             return false;
