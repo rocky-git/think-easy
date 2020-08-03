@@ -58,6 +58,7 @@ class BuildView extends Make
             $form
         ], $stub);
     }
+
     protected function getTableInfo($model){
         $db = Db::name($model);
         $tableInfo= Db::query('SHOW FULL COLUMNS FROM '.$db->getTable());
