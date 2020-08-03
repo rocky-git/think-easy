@@ -19,7 +19,8 @@ use thinkEasy\View;
 class TimeLine extends View
 {
     protected $html = '';
-
+    protected $placement = '';
+    protected $datas = [];
     /**
      * 创建
      * @param array $datas
@@ -35,11 +36,17 @@ class TimeLine extends View
      * @param array $datas
      */
     public function data(array $datas){
-        foreach ($datas as $value){
-            $this->html .= "<el-timeline-item timestamp='{$value['time']}'>{$value['content']}</el-timeline-item>";
-        }
+        $this->datas = $datas;
     }
 
+    /**
+     * 时间戳置于内容之上
+     * @return $this
+     */
+    public function timeTop(){
+        $this->placement = "placement='top'";
+        return $this;
+    }
     /**
      * 小到大排序
      */
@@ -48,6 +55,9 @@ class TimeLine extends View
         return $this;
     }
     public function render(){
+        foreach ($this->datas as $value){
+            $this->html .= "<el-timeline-item {$this->placement} timestamp='{$value['time']}'>{$value['content']}</el-timeline-item>";
+        }
         list($attrStr, $scriptVar) = $this->parseAttr();
         return "<el-timeline $attrStr>{$this->html}</el-timeline>";
     }

@@ -18,9 +18,6 @@ use thinkEasy\Service;
  */
 class MenuService extends Service
 {
-    //菜单列表缓存key
-    protected $cacheKey = 'eadmin_menu_list';
-
     /**
      * 获取所有菜单
      * @return array|mixed
@@ -30,14 +27,8 @@ class MenuService extends Service
      */
     public function all()
     {
-
-        if ($this->app->cache->has($this->cacheKey)) {
-            return unserialize($this->app->cache->get($this->cacheKey));
-        } else {
-            $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select()->toArray();
-            $this->app->cache->set($this->cacheKey, serialize($data));
-            return $data;
-        }
+        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select()->toArray();
+        return $data;
     }
 
     /**
@@ -97,7 +88,7 @@ class MenuService extends Service
                     if (preg_match($preg, $v['url'])) {
                         $v['path'] = $v['url'];
                     } else {
-                        $v['path'] = DIRECTORY_SEPARATOR . $v['url'];
+                        $v['path'] = '/' . $v['url'];
                     }
                 }
                 $newList[$v['id']] = $v;
@@ -133,21 +124,11 @@ class MenuService extends Service
                 if ($node['method'] == 'get' || $node['method'] == 'any') {
                     $appendRouter['meta'] = ['title' => $node['label'], 'icon' => '', 'id' => -1, 'pid' => -1, 'params' => ''];
                     $appendRouter['component'] = 'Layout';
-                    $appendRouter['path'] = DIRECTORY_SEPARATOR . $node['rule'];
+                    $appendRouter['path'] = '/' . $node['rule'];
                     $appendRouter['name'] = 'tag_' . mt_rand(100000, 999999);
                    
                     $append = true;
                     array_push($resourceRouter, $appendRouter);
-//                    foreach ($resourceRouter as $router){
-//                        if(isset($router['url']) && $appendRouter['path']  == DIRECTORY_SEPARATOR.$router['url']){
-//                            $append=false;
-//                            break;
-//                        }
-//                    }
-//                    if($append){
-//                        array_push($resourceRouter, $appendRouter);
-//                    }
-
                 }
             }
 

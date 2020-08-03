@@ -589,7 +589,7 @@ class Form extends View
                         if (is_null($fieldValue)) {
                             $this->setData($formItem->field, $formItem->defaultValue);
                         } else {
-                            if($formItem instanceof Select && $fieldValue === 0){
+                            if($formItem instanceof Select && !$formItem->inOptions($fieldValue)){
                                 $this->setData($formItem->field, '');
                             }else{
                                 $this->setData($formItem->field, $fieldValue);

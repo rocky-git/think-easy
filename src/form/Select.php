@@ -166,6 +166,14 @@ class Select extends Field
             $this->setAttr('data', $groupOptions);
         }
     }
+    public function inOptions($val){
+        $keys = array_keys($this->options);
+        if(in_array($val,$keys)){
+            return true;
+        }else{
+            return false;
+        }
+    }
     public function render()
     {
         $this->parseOptions();

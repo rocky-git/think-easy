@@ -17,6 +17,7 @@ use thinkEasy\chart\echart\FunnelChart;
 use thinkEasy\chart\echart\LineChart;
 use thinkEasy\chart\echart\PieChart;
 use thinkEasy\chart\echart\RadarChart;
+use thinkEasy\grid\Column;
 use thinkEasy\grid\Filter;
 use thinkEasy\tools\DateTime;
 use thinkEasy\View;
@@ -42,6 +43,9 @@ class Echart extends View
     protected $radarData = [];
     protected $groupSeries = [];
     protected $radarMaxKey = -1;
+    protected $date_type = null;
+    protected $groupMode = false;
+
     /**
      * Echart constructor.
      * @param $title 标题
@@ -54,6 +58,7 @@ class Echart extends View
         $this->setVar('title', $this->title);
         $this->setVar('height', $height);
         $this->chartType = $type;
+        $this->date_type = Request::get('date_type', 'today');
         if ($this->chartType == 'line' || $this->chartType == 'bar') {
             $this->chart = new LineChart($height, "100%", $this->chartType);
         } elseif ($this->chartType == 'pie') {
@@ -73,7 +78,6 @@ class Echart extends View
     {
         return $this->chart;
     }
-
     /**
      * 设置表名数据源
      * @param $table 模型或表名
@@ -91,7 +95,7 @@ class Echart extends View
         }
         $this->dateField = $dateField;
     }
-
+    
     /**
      * 查询过滤
      * @param $callback
@@ -105,14 +109,18 @@ class Echart extends View
         }
 
     }
-
     public function __call($name, $arguments)
     {
         if ($name == 'count') {
             $text = array_shift($arguments);
             if ($this->chartType == 'line' || $this->chartType == 'bar') {
-                $this->lineAnalyze($name, $this->db->getPk(), $text, end($arguments));
-            } elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
+                if($this->groupMode){
+                    $this->lineAnalyzeGroup($name, $this->db->getPk(), $text, end($arguments));
+                }else{
+                    $this->lineAnalyze($name, $this->db->getPk(), $text, end($arguments));
+                }
+
+            }  elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
                 $this->pieAnalyze($name, $this->db->getPk(), $text, end($arguments));
             } elseif ($this->chartType == 'radar') {
                 $max = array_shift($arguments);
@@ -125,7 +133,11 @@ class Echart extends View
         } else {
             list($text, $field) = $arguments;
             if ($this->chartType == 'line' || $this->chartType == 'bar') {
-                $this->lineAnalyze($name, $field, $text, end($arguments));
+                if($this->groupMode){
+                    $this->lineAnalyzeGroup($name, $field, $text, end($arguments));
+                }else{
+                    $this->lineAnalyze($name, $field, $text, end($arguments));
+                }
             } elseif ($this->chartType == 'pie' || $this->chartType == 'funnel') {
                 $this->pieAnalyze($name, $field, $text, end($arguments));
             } elseif ($this->chartType == 'radar') {
@@ -140,6 +152,12 @@ class Echart extends View
         return $this;
     }
 
+    /**
+     * 线形柱状图按数据分组
+     */
+    public function groupMode(){
+        $this->groupMode = true;
+    }
     /**
      * 分组
      * @param $name 组名
@@ -161,33 +179,7 @@ class Echart extends View
 
     protected function radarAnalyze($type, $field, $name, $max = 100, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
-        $db = clone $this->db;
-        if ($closure instanceof \Closure) {
-            call_user_func($closure, $db);
-        }
-        switch ($date_type) {
-            case 'yesterday':
-            case 'today':
-                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
-                break;
-            case 'week':
-                $value = $db->whereWeek($this->dateField)->$type($field);
-                break;
-            case 'month':
-                $months = DateTime::thisMonths();
-                $value = $db->whereMonth($this->dateField)->$type($field);
-                break;
-            case 'year':
-                $value = $db->whereYear($this->dateField)->$type($field);
-                break;
-            case 'range':
-                $start_date = Request::get('start_date');
-                $end_date = Request::get('end_date');
-                $dates = DateTime::rangeDates($start_date, $end_date);
-                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
-                break;
-        }
+        $value = $this->parse($type, $field, $closure);
         $this->chart->indicator($name, $max);
         $key = $this->chart()->getIndicatorKey($name);
         if($this->radarMaxKey < $key){
@@ -198,49 +190,29 @@ class Echart extends View
 
     protected function pieAnalyze($type, $field, $name, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
-        $db = clone $this->db;
-        if ($closure instanceof \Closure) {
-            call_user_func($closure, $db);
-        }
-        switch ($date_type) {
-            case 'yesterday':
-            case 'today':
-                $value = $db->whereDay($this->dateField, $date_type)->$type($field);
-                break;
-            case 'week':
-                $value = $db->whereWeek($this->dateField)->$type($field);
-                break;
-            case 'month':
-                $months = DateTime::thisMonths();
-                $value = $db->whereMonth($this->dateField)->$type($field);
-                break;
-            case 'year':
-                $value = $db->whereYear($this->dateField)->$type($field);
-                break;
-            case 'range':
-                $start_date = Request::get('start_date');
-                $end_date = Request::get('end_date');
-                $dates = DateTime::rangeDates($start_date, $end_date);
-                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
-                break;
-        }
+        $value = $this->parse($type, $field, $closure);
         $this->seriesData[] = [
             'name' => $name,
             'value' => $value
         ];
     }
+    protected function lineAnalyzeGroup($type, $field, $name, $closure = null)
+    {
+        $value = $this->parse($type, $field, $closure);
+        $this->xAxis[] = $name;
+        $this->chart->xAxis($this->xAxis);
+        $this->seriesData[] = $value;
+    }
 
 
     protected function lineAnalyze($type, $field, $name, $closure = null)
     {
-        $date_type = Request::get('date_type', 'today');
         $series = [];
         $xAxis = [];
-        switch ($date_type) {
+        switch ($this->date_type) {
             case 'yesterday':
             case 'today':
-                if ($date_type == 'yesterday') {
+                if ($this->date_type == 'yesterday') {
                     $date = date('Y-m-d', strtotime(' -1 day'));
                 } else {
                     $date = date('Y-m-d');
@@ -348,5 +320,42 @@ class Echart extends View
         }
         $this->setVar('html', rawurlencode($html));
         return parent::render();
+    }
+
+    /**
+     * @param $type
+     * @param $field
+     * @param $closure
+     * @return mixed
+     */
+    protected function parse($type, $field, $closure)
+    {
+        $db = clone $this->db;
+        if ($closure instanceof \Closure) {
+            call_user_func($closure, $db);
+        }
+        switch ($this->date_type) {
+            case 'yesterday':
+            case 'today':
+                $value = $db->whereDay($this->dateField, $this->date_type)->$type($field);
+                break;
+            case 'week':
+                $value = $db->whereWeek($this->dateField)->$type($field);
+                break;
+            case 'month':
+                $value = $db->whereMonth($this->dateField)->$type($field);
+                break;
+            case 'year':
+                $value = $db->whereYear($this->dateField)->$type($field);
+                break;
+            case 'range':
+                $start_date = Request::get('start_date');
+                $end_date = Request::get('end_date');
+                $dates = DateTime::rangeDates($start_date, $end_date);
+                $value = $db->whereBetweenTime($this->dateField, $start_date, $end_date)->$type($field);
+                break;
+        }
+
+        return $value;
     }
 }
