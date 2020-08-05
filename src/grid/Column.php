@@ -33,7 +33,7 @@ class Column extends View
     protected $display = '';
 
     //字段
-    protected $field = '';
+    public $field = '';
 
     public $label = '';
 
@@ -362,7 +362,7 @@ class Column extends View
                 if ($res instanceof self) {
                     $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
                 }
-                
+
                 $this->exportValue = $res;
             }
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";

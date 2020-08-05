@@ -336,7 +336,7 @@ EOF;
                 foreach ($this->columns as $column) {
                     $field = $column->getField();
                     $column->setData($rows);
-                    $this->exportData[$key][$field] = $column->getExportValue();
+                    $this->exportData[$key][$column->field] = $column->getExportValue();
                     if ($column->isTotal()) {
                         $rows[$field . 'isTotalRow'] = true;
                         $rows[$field . 'totalText'] = $column->totalText;
@@ -541,7 +541,9 @@ EOF;
         $moudel = app('http')->getName();
         $node = $moudel . '/' . request()->pathinfo();
         $token = TokenService::instance()->get();
-        $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token));
+        $params = http_build_query(request()->param());
+
+        $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token).'&'.$params);
         $this->exportFileName = empty($fileName) ? date('Ymd') : $fileName;
     }
 
@@ -550,7 +552,7 @@ EOF;
     {
         if (Request::get('build_request_type') == 'export') {
             foreach ($this->columns as $column) {
-                $field = $column->getField();
+                $field = $column->field;
                 if (!$column->closeExport && !empty($field && $field != 'actionColumn')) {
                     $columnTitle[$field] = $column->label;
                 }
@@ -563,11 +565,13 @@ EOF;
                     Excel::export($columnTitle, $this->exportData, $this->exportFileName);
                     $this->exportData = [];
                 });
+
                 exit;
             } elseif (Request::get('export_type') == 'select') {
                 $this->data = $this->model->whereIn($this->model->getPk(), Request::get('ids'))->select();
             }
             $this->parseColumn();
+
             Excel::export($columnTitle, $this->exportData, $this->exportFileName);
             exit;
         }
@@ -598,6 +602,7 @@ EOF;
         } else {
             $this->data = $this->db->select();
         }
+
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {

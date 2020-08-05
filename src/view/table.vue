@@ -246,15 +246,15 @@
             //导出
             exportData(type){
                 if(type == 0){
-                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=all"
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all"
                 }else if(type == 1){
-                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size
                 }else if(type == 2){
                     let ids  =[]
                     this.selectionData.forEach((item)=>{
                         ids.push(item.id)
                     })
-                    location.href = "{$exportUrl|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',')
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',')
                 }
             },
             //合计
