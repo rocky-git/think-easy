@@ -142,16 +142,17 @@ class Button extends View
 
     /**
      * 上传
-     * @param $url
+     * @param $url 上传的地址
+     * @param $name 上传的文件字段名
      * @return string
      */
-    public function upload($url){
-        list($attrStr, $scriptVar) = $this->parseAttr();
+    public function upload($url,$name='file'){
         $preg = "/^(https?:)/";
         if (!preg_match($preg, $url)) {
             $url= request()->domain() . '/'.$url;
         }
         $this->setAttr('url',$url);
+        list($attrStr, $scriptVar) = $this->parseAttr();
         $html = "<eadmin-upload-button {$attrStr}></eadmin-upload-button>";
         return $html;
     }
