@@ -340,7 +340,11 @@ class Form extends View
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
-            Log::error($e->getMessage());
+            if(env('APP_DEBUG')){
+                abort(999,$e->getMessage());
+            }else{
+                Log::error($e->getMessage());
+            }
             $res = false;
         }
         return $res;

@@ -124,7 +124,7 @@ class Input extends Field
      */
     public function step($num)
     {
-        $this->setAttr('mistepn', $num);
+        $this->setAttr('step', $num);
         return $this;
     }
 
