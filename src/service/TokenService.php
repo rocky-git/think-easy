@@ -100,7 +100,7 @@ class TokenService extends Service
         if (isset($data['id'])) {
             $cacheKey = 'last_auth_token_' . $data['id'];
             //开启唯一登录就将上次token加入黑名单
-            if (Cache::has($cacheKey) && config('token_unique', false)) {
+            if (Cache::has($cacheKey) && config('admin.token_unique', false)) {
                 $logoutToken = Cache::get($cacheKey);
                 $this->logout($logoutToken);
             }
@@ -128,9 +128,7 @@ class TokenService extends Service
                 $token = rawurldecode(Request::get('Authorization'));
             }
         }
-       
         $str = openssl_decrypt($token, 'aes-256-cbc', $this->key, 0, self::IV);
-
         if ($str === false) {
             return false;
         } else {

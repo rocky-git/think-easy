@@ -230,7 +230,7 @@ class Echart extends View
                 }
                 break;
             case 'week':
-                $start_week = date('Y-m-d', strtotime('this week'));;
+                $start_week = date('Y-m-d', strtotime('this week'));
                 for ($i = 0; $i <= 6; $i++) {
                     $week = DateTime::afterDate($i, $start_week);
                     $xAxis[] = $week;

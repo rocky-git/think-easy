@@ -103,6 +103,18 @@ class Filter extends View
     }
 
     /**
+     * findIn查询
+     * @param $field 字段
+     * @param $label 标签
+     * @return $this
+     */
+    public function findIn($field, $label)
+    {
+        $this->paseFilter(__FUNCTION__, $field);
+        $this->formItem($field, $label);
+        return $this;
+    }
+    /**
      * 不等于查询
      * @param $field 字段
      * @param $label 标签
@@ -315,7 +327,7 @@ class Filter extends View
     public function notBetween($field, $label)
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field . '__between_start', $label)->prepend('不存在区间');;
+        $this->formItem($field . '__between_start', $label)->prepend('不存在区间');
         $this->formItem($field . '__between_end', '-')->placeholder("请输入$label");
         return $this;
     }

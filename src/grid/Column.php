@@ -100,6 +100,8 @@ class Column extends View
 
     /**
      * 评分显示
+     * @param int $max 最大长度
+     * @return $this
      */
     public function rate($max = 5){
         $this->display(function ($val) use($max){
@@ -151,6 +153,7 @@ class Column extends View
      * 标签显示
      * @param $color 标签颜色：success，info，warning，danger
      * @param $theme 主题：dark，light，plain
+     * @param $size 尺寸:medium，small，mini
      */
     public function tag($color = '', $theme = 'dark',$size='mini')
     {
@@ -201,7 +204,7 @@ class Column extends View
     /**
      * switch开关
      * @param array $active 开启状态 [1=>'开启']
-     * @param array $inactive 关闭状态 [0=>'关闭]
+     * @param array $inactive 关闭状态 [0=>'关闭']
      */
     public function switch(array $active = [], array $inactive = [])
     {

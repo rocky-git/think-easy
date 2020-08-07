@@ -456,13 +456,13 @@ class Form extends View
                 $formItem->setType('datetime');
                 break;
             case 'datetimeRange':
-                $formItem->setType('datetime')->range();;
+                $formItem->setType('datetime')->range();
                 break;
             case 'dateRange':
-                $formItem->setType('date')->range();;
+                $formItem->setType('date')->range();
                 break;
             case 'timeRange':
-                $formItem->setType('time')->range();;
+                $formItem->setType('time')->range();
                 break;
             case 'time':
                 $formItem->setType('time');
