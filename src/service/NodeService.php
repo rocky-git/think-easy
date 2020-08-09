@@ -21,7 +21,8 @@ class NodeService extends Service
     protected $cacheKey = 'eadmin_node_list';
     protected $treeArr = [];
     public function all(){
-        if($this->app->cache->has($this->cacheKey)){
+
+        if($this->app->cache->has($this->cacheKey) && !env('APP_DEBUG')){
             return unserialize($this->app->cache->get($this->cacheKey));
         }else{
             $files = $this->getControllerFiles();

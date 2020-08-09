@@ -15,7 +15,7 @@
     }
   ],
   "require": {
-	"php": ">=7.1.0",
+  "php": ">=7.1.0",
     "iidestiny/flysystem-oss": "^2.0",
     "overtrue/flysystem-qiniu": "^1.0",
     "overtrue/wechat": "~4.0"
@@ -23,6 +23,9 @@
   "autoload": {
     "psr-4": {
       "thinkEasy\\": "src"
+    },
+    "psr-0": {
+      "": "src/filesystem"
     }
   },
   "extra": {
