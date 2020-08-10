@@ -26,10 +26,13 @@ class TokenService extends Service
     protected $expire = 7200;
     //当前token
     protected static $token = '';
-
+    protected $model = '';
+    protected $unique = false;
     public function __construct()
     {
         $key = config('admin.token_key', 'QoYEClMJsgOSWUBkSCq26yWkApqSuH3');
+        $this->model = config('admin.token_model');
+        $this->unique = config('admin.token_unique',false);
         $this->key = substr(md5($key), 8, 16);
         $this->expire = config('admin.token_expire', 7200);
     }
@@ -100,7 +103,7 @@ class TokenService extends Service
         if (isset($data['id'])) {
             $cacheKey = 'last_auth_token_' . $data['id'];
             //开启唯一登录就将上次token加入黑名单
-            if (Cache::has($cacheKey) && config('admin.token_unique', false)) {
+            if (Cache::has($cacheKey) && $this->unique) {
                 $logoutToken = Cache::get($cacheKey);
                 $this->logout($logoutToken);
             }
@@ -158,11 +161,10 @@ class TokenService extends Service
      * @param $token 需要验证的token
      * @return bool|\think\response\Json 通过返回真
      */
-    public function auth()
+    public function auth($token = null)
     {
-        $token = self::$token ? self::$token : Request::header('Authorization');
-        if(Request::has('Authorization')){
-            $token = rawurldecode(Request::get('Authorization'));
+        if(is_null($token)){
+            $token = self::$token ? self::$token : Request::header('Authorization');
         }
         if (empty($token)) {
             $this->errorCode(4000, '请先登陆再访问');
@@ -215,7 +217,7 @@ class TokenService extends Service
         if (is_null($this->id())) {
             return null;
         }
-        $user = new AdminModel();
+        $user = new $this->model;
         return $user->lock($lock)->find($this->id());
     }
 }
