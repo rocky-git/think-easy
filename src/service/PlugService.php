@@ -33,7 +33,6 @@ class PlugService extends Service
             }
         }
         $infos = [];
-        //扫描存在配置权限模块控制器下所有文件
         foreach ($plugins as $plugin) {
             foreach (glob($plugin . '/*Plug.php') as $file) {
                 if (is_file($file)) {
@@ -43,6 +42,7 @@ class PlugService extends Service
                     $plug = new $class;
                     $info = $plug->getInfo();
                     $info['class'] = $class;
+                    $info['is_install'] = $this->isInstall($class);
                     $infos[] = $info;
                 }
             }
@@ -50,6 +50,18 @@ class PlugService extends Service
         return $infos;
     }
 
+    /**
+     * 判断是否已安装
+     * @param $class 插件类名
+     * @return bool
+     */
+    public function isInstall($class){
+        if(file_exists($this->getPath($class) . '/install.lock')){
+            return true;
+        }else{
+            return false;
+        }
+    }
     /**
      * 安装
      * @param $class 插件类名
@@ -59,14 +71,22 @@ class PlugService extends Service
     {
         $plug = new $class;
         $result = $plug->install();
-        $classArr = explode('\\', $class);
-        $plugDir = $this->plugPath  . $classArr[2];
         if ($result) {
-            file_put_contents($plugDir . '/install.lock','');
+            file_put_contents($this->getPath($class) . '/install.lock','');
         }
         return $result;
     }
 
+    /**
+     * 获取插件目录
+     * @param $class 插件类名
+     * @return string
+     */
+    public function getPath($class){
+        $classArr = explode('\\', $class);
+        $plugDir = $this->plugPath  . $classArr[2];
+        return $plugDir;
+    }
     /**
      * 卸载
      * @param $class
@@ -74,9 +94,7 @@ class PlugService extends Service
     public function uninstall($class)
     {
         $plug = new $class;
-        $classArr = explode('\\', $class);
-        $plugDir = $this->plugPath  . $classArr[2];
-        @unlink($plugDir . '/install.lock');
+        @unlink($this->getPath($class) . '/install.lock');
         return $plug->uninstall();
     }
 }
