@@ -27,6 +27,7 @@ class PlugService extends Service
     public function all()
     {
         $pluginDir = $this->app->getRootPath() . '/plugins/';
+        $plugins = [];
         foreach (glob($pluginDir . '*') as $file) {
             if (is_dir($file)) {
                 $plugins[] = $file;

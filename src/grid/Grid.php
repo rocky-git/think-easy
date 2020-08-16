@@ -88,7 +88,7 @@ class Grid extends View
         $this->actionColumn = new Actions('actionColumn', '操作');
         $this->table = new Table($this->columns, []);
         $this->table->setAttr(':max-height', 'tableHeight');
-        $this->table->setAttr('style','z-index:0');
+        $this->table->setAttr('style', 'z-index:0');
         if (in_array($this->softDeleteField, $this->tableFields)) {
             $this->isSotfDelete = true;
             if (request()->has('is_deleted')) {
@@ -99,7 +99,7 @@ class Grid extends View
             }
             $this->trashed(true);
         }
-        $this->table->setVar('grid',true);
+        $this->table->setVar('grid', true);
     }
 
     /**
@@ -166,38 +166,44 @@ EOF;
     {
         return $this->db;
     }
+
     /**
      * 设置添加按钮参数
      * @Author: rocky
      * 2019/11/27 16:50
      * @param $params 格式：['id'=>1,'a'=>2]
      */
-    public function setAddButtonParam(array $params){
-        $this->table->setVar('addButtonParam',$params);
+    public function setAddButtonParam(array $params)
+    {
+        $this->table->setVar('addButtonParam', $params);
     }
+
     /**
      * 对话框表单
      * @param $fullscreen 是否全屏
      */
-    public function setFormDialog($fullscreen = false,$width='40%')
+    public function setFormDialog($fullscreen = false, $width = '40%')
     {
-        $this->table->setFormDialog('', $fullscreen,$width);
+        $this->table->setFormDialog('', $fullscreen, $width);
     }
 
     /**
      * 快捷搜索
      */
-    public function quickSearch(){
+    public function quickSearch()
+    {
         $this->table->setVar('quickSearch', true);
     }
+
     /**
      * 对话框表单
      * @param $fullscreen 是否全屏
      */
-    public function setFormDrawer($direction='rtl',$size = '30%')
+    public function setFormDrawer($direction = 'rtl', $size = '30%')
     {
-        $this->table->setFormDrawer('', $direction,$size);
+        $this->table->setFormDrawer('', $direction, $size);
     }
+
     /**
      * 开启树形表格
      * @param string $pid 父级字段
@@ -378,9 +384,10 @@ EOF;
             $this->model->where($this->model->getPk(), $sortable_data['id'])->update([$this->sortField => $sortable_data['sort']]);
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
         } else {
-            return $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(),$ids)->update($data);
+            return $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(), $ids)->update($data);
         }
     }
+
     /**
      * 隐藏工具栏
      */
@@ -388,6 +395,7 @@ EOF;
     {
         $this->table->setVar('hideTools', true);
     }
+
     /**
      * 隐藏添加按钮
      */
@@ -509,7 +517,7 @@ EOF;
                             $deleteDatas = $this->model->select();
                         }
                         foreach ($deleteDatas as $deleteData) {
-                           $deleteData->$relation()->detach();
+                            $deleteData->$relation()->detach();
                         }
                     } elseif ($this->model->$relation() instanceof HasOne) {
                         if ($deleteDatas === true) {
@@ -543,7 +551,7 @@ EOF;
         $token = TokenService::instance()->get();
         $params = http_build_query(request()->param());
 
-        $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token).'&'.$params);
+        $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token) . '&' . $params);
         $this->exportFileName = empty($fileName) ? date('Ymd') : $fileName;
     }
 
@@ -577,16 +585,31 @@ EOF;
         }
     }
 
+    private function permissionCheck()
+    {
+        $pathinfo = Request::pathinfo();
+        $moudel = app('http')->getName();
+        $node = $moudel . '/' . $pathinfo;
+        //添加权限判断
+        if (!AdminService::instance()->check($node.'.rest', 'post')){
+            $this->hideAddButton();
+        }
+        //删除权限判断
+        if (!AdminService::instance()->check($node.'/:id.rest', 'delete')){
+            $this->hideDeleteButton();
+        }
+    }
+
     /**
      * 视图渲染
      */
     public function view()
     {
         //快捷搜索
-        if(Request::get('quickSearch')){
+        if (Request::get('quickSearch')) {
             $keyword = Request::get('quickSearch');
-            $fields = implode('|',$this->tableFields);
-            $this->db->whereLike($fields,"%{$keyword}%");
+            $fields = implode('|', $this->tableFields);
+            $this->db->whereLike($fields, "%{$keyword}%");
         }
         //排序
         if (Request::has('sort_field')) {
@@ -622,6 +645,8 @@ EOF;
         }
         //如果是导出数据
         $this->exportData();
+        //权限控制按钮
+        $this->permissionCheck();
         //解析列
         $this->parseColumn();
         $this->table->setAttr('data', $this->getDataArray());
@@ -644,10 +669,11 @@ EOF;
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-        $submitUrl = app('http')->getName() . '/' . request()->controller() ;
+        $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $this->table->setVar('submitUrl', $submitUrl);
         $this->table->setVar('submitParams', request()->param());
+
         switch ($build_request_type) {
             case 'page':
                 $this->table->view();

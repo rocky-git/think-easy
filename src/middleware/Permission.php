@@ -19,6 +19,10 @@ class Permission
     public function handle(Request $request, \Closure $next)
     {
         $pathinfo = $request->pathinfo();
+        if($request->has('submitFromMethod')) {
+            $method = $request->param('submitFromMethod');
+            $pathinfo = $request->controller().'/'.$method;
+        }
         $moudel = app('http')->getName() ;
         $node = $moudel. '/' . $pathinfo;
         if (empty($pathinfo) || $pathinfo == 'apiBaseUrl' || $node == 'admin/eadmin/upload') {

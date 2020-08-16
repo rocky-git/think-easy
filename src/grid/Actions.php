@@ -9,6 +9,8 @@
 namespace thinkEasy\grid;
 
 
+use thinkEasy\service\AdminService;
+
 class Actions extends Column
 {
     //隐藏详情按钮
@@ -65,7 +67,6 @@ class Actions extends Column
     {
         $this->prependArr[] = $val;
     }
-
     /**
      * 追加尾部
      * @param $val
@@ -87,13 +88,16 @@ class Actions extends Column
             }
         }
         $html = '';
-        if (!$this->hideDetailButton) {
+        $pathinfo = request()->pathinfo();
+        $moudel = app('http')->getName();
+        $node = $moudel . '/' . $pathinfo;
+        if (!$this->hideDetailButton && AdminService::instance()->check($node.'/:id.rest', 'get')) {
             $html .= $this->detailButton;
         }
-        if (!$this->hideEditButton) {
+        if (!$this->hideEditButton && AdminService::instance()->check($node.'/:id.rest', 'put')) {
             $html .= $this->editButton;
         }
-        if (!$this->hideDelButton) {
+        if (!$this->hideDelButton && AdminService::instance()->check($node.'/:id.rest', 'delete')) {
             $html .= $this->delButton;
         }
         foreach ($this->prependArr as $val) {
