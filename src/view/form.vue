@@ -132,8 +132,10 @@
                                     type: 'success',
                                     duration: 1500
                                 })
-                                if(!this.dialogVisible){
+                                if(response.data.url && response.data.url == 'back'){
                                     this.$router.go(-1)
+                                }else if(response.data.url){
+                                    this.$router.push(response.data.url)
                                 }
                                 this.$emit('update:dialogVisible', false)
                                 this.$emit('update:tableDataUpdate', true)

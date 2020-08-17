@@ -20,14 +20,14 @@ trait  ApiJson
      * 返回成功json
      * @Author: rocky
      * 2019/7/11 16:02
-     * @param $code
      * @param $data 输出数据
+     * @param $code 错误代码
      * @param $msg 提示信息
      * @return \think\response\Json
      */
-    public function successCode($data = [],$code=200,$msg='')
+    public function successCode($data = [], $code = 200, $msg = '')
     {
-        $response =  $this->responseJsonData($data, $code,$msg);
+        $response = $this->responseJsonData($data, $code, $msg);
         throw new HttpResponseException($response);
     }
 
@@ -35,13 +35,15 @@ trait  ApiJson
      * 返回失败json
      * @Author: rocky
      * 2019/7/11 16:02
-     * @param $code
-     * @param $msg
+     * @param $code 错误代码
+     * @param $msg 错误信息
+     * @param $data 输出数据
+     * @param $http_code http状态码
      * @return \think\response\Json
      */
-    public function errorCode($code = 999, $msg = '',$http_code=200)
+    public function errorCode($code = 999, $msg = '',$data=[], $http_code = 200)
     {
-        $response =  $this->responseJsonData([], $code, $msg,$http_code);
+        $response = $this->responseJsonData([], $code, $msg, $http_code);
         throw new HttpResponseException($response);
     }
 

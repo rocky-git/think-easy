@@ -15,6 +15,7 @@
         <!--{/notempty}-->
         {$manyColumnHtml|raw|default=''}
         </el-row>
+
     </div>
 </template>
 

@@ -37,12 +37,14 @@ class BaseAdmin extends Controller
     public function save(Request $request)
     {
         $submitFromMethod = $request->post('submitFromMethod');
-        $res = $this->$submitFromMethod()->save($request->post());
+        $form = $this->$submitFromMethod();
+        $res = $form->save($request->post());
         if ($res !== false) {
-            $this->successCode([], 200, '数据保存成功');
+            $this->successCode(['url'=>$form->getRedirectUrl()], 200, '数据保存成功');
         } else {
             $this->errorCode(999, '数据保存失败');
         }
+
 
     }
 
@@ -78,16 +80,18 @@ class BaseAdmin extends Controller
      */
     public function update(Request $request, $id)
     {
-
+        $url = '';
         if ($id == 'batch') {
             $ids = $request->put('ids');
             $res = $this->grid()->update($ids, $request->put());
         } else {
             $submitFromMethod = $request->put('submitFromMethod');
-            $res = $this->$submitFromMethod()->update($id, $request->put());
+            $form = $this->$submitFromMethod();
+            $res = $form->update($id, $request->put());
+            $url = $form->getRedirectUrl();
         }
         if ($res !== false) {
-            $this->successCode([], 200, '数据更新成功');
+            $this->successCode(['url'=>$url], 200, '数据更新成功');
         } else {
             $this->errorCode(999, '数据保存失败');
         }

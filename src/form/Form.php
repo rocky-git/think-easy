@@ -130,7 +130,8 @@ class Form extends View
     protected $hasManyIndex = 0;
 
     protected $pkField = 'id';
-
+    //保存修改成功后跳转的url
+    protected $redirectUrl = '';
     public function __construct($model = null)
     {
         if ($model instanceof Model) {
@@ -148,6 +149,27 @@ class Form extends View
         }
     }
 
+    /**
+     * 设置保存修改成功后跳转的url
+     * @param $url
+     */
+    public function redirectUrl($url){
+        $this->redirectUrl = $url;
+    }
+    /**
+     * 修改成功后后退
+     * @return string
+     */
+    public function redirectBack(){
+        $this->redirectUrl = 'back';
+    }
+    /**
+     * 获取修改成功后跳转的url
+     * @return string
+     */
+    public function getRedirectUrl(){
+        return $this->redirectUrl;
+    }
     /**
      * 设置主键字段
      * @param $field
