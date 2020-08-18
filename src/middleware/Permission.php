@@ -21,7 +21,9 @@ class Permission
         $pathinfo = $request->pathinfo();
         if($request->has('submitFromMethod')) {
             $method = $request->param('submitFromMethod');
-            $pathinfo = $request->controller().'/'.$method;
+            if($method != 'form'){
+                $pathinfo = $request->controller().'/'.$method;
+            }
         }
         $moudel = app('http')->getName() ;
         $node = $moudel. '/' . $pathinfo;

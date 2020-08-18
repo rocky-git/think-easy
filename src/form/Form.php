@@ -320,6 +320,7 @@ class Form extends View
                             $relationData = $value;
                             $this->model->$field()->detach();
                             if (is_string($relationData)) {
+
                                 $relationData = explode(',', $relationData);
                                 $relationData = array_filter($relationData);
                             }
@@ -335,6 +336,7 @@ class Form extends View
                             }
 
                         } elseif ($this->model->$field() instanceof HasMany) {
+
                             $realtionUpdateIds = array_column($value, 'id');
                             if(!empty($this->data->$field)){
                                 $deleteIds = $this->data->$field->column('id');
