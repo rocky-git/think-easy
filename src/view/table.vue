@@ -16,10 +16,10 @@
         <!--{if isset($grid)}-->
         <div class="headContainer">
             <!--{notempty name="title"}-->
-                <!--{if !isset($trashed) || $trashed===false}-->
-                <div style="padding-top: 10px;">{$title}</div>
+            <!--{if !isset($trashed) || $trashed===false}-->
+            <div style="padding-top: 10px;">{$title}</div>
             <el-divider style="padding-bottom: 20px"></el-divider>
-                <!--{/if}-->
+            <!--{/if}-->
             <!--{/notempty}-->
 
             <!--{if !isset($hideTools)}-->
@@ -31,10 +31,10 @@
                         搜索
                     </el-button>
                     <!--{/if}-->
-                <!--{if !isset($hideAddButton)}-->
-                <el-button type="primary" size="medium" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
-                <!--{/if}-->
-                <!--{if isset($exportOpen)}-->
+                    <!--{if !isset($hideAddButton)}-->
+                    <el-button type="primary" size="medium" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                    <!--{/if}-->
+                    <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
                         <el-button type="primary" size="small" icon="el-icon-download">
                             导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -45,24 +45,24 @@
                             <el-dropdown-item @click.native="exportData(0)">导出全部</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
-                <!--{/if}-->
+                    <!--{/if}-->
 
-                <!--{if !isset($hideDeletesButton)}-->
-                <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
-                <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
-                <!--{/if}-->
-                <!--{notempty name="$filter"}-->
+                    <!--{if !isset($hideDeletesButton)}-->
+                    <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                    <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                    <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                    <!--{/if}-->
+                    <!--{notempty name="$filter"}-->
                     <el-button size="medium"  type="primary"  @click="filterVisible=true">
                         高级筛选
                     </el-button>
-                <!--{/notempty}-->
-                <!--{if isset($toolbar)}-->
-                {$toolbar|raw}
-                <!--{/if}-->
+                    <!--{/notempty}-->
+                    <!--{if isset($toolbar)}-->
+                    {$toolbar|raw}
+                    <!--{/if}-->
                 </el-col>
-             </el-row>
+            </el-row>
             <!--{/if}-->
         </div>
         <!--{/if}-->
@@ -76,7 +76,9 @@
             </el-tab-pane>
         </el-tabs>
         <!--{else/}-->
-        {$tableHtml|raw}
+        <div style="position: relative;z-index: 10;">
+            {$tableHtml|raw}
+        </div>
         <!--{/if}-->
 
         <el-pagination style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
@@ -135,13 +137,13 @@
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 pageHide:{$pageHide|default='true'},
-                page:1,
+            page:1,
                 pagesize:[],
                 total:{$pageTotal|default=0},
-                size:{$pageSize|default=20},
-                selectionData:[],
-                {$tableScriptVar|raw}
-            }
+            size:{$pageSize|default=20},
+            selectionData:[],
+            {$tableScriptVar|raw}
+        }
         },
         computed:{
             tableHeight(){
@@ -173,10 +175,10 @@
                 return window.innerHeight - 265 - height
 
                 /*{/notempty}*/
-           }
-       },
-       created(){
-           /*{if isset($dialogVar)}*/
+            }
+        },
+        created(){
+            /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
             let i = 10
@@ -221,9 +223,9 @@
                 }
             },
             tableDataUpdate(val){
-              if(val){
-                  this.requestPageData()
-              }
+                if(val){
+                    this.requestPageData()
+                }
             },
             dialogVisible(val){
                 if(!val){
@@ -273,7 +275,7 @@
                     if(sums[index]){
                         sums[index] += data[0][column.property + 'totalText']
                     }
-                 })
+                })
                 return sums;
             },
             //排序
@@ -619,6 +621,8 @@
         position: relative;
         padding: 10px 16px;
         border-radius: 4px;
+        position: relative;
+        z-index: 10;
     }
     .filter {
         background: #fff;
@@ -628,5 +632,8 @@
     }
     :focus{
         outline:0;
+    }
+    .el-tabs__nav-wrap{
+        z-index: 0;
     }
 </style>

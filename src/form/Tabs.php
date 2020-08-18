@@ -16,6 +16,7 @@ class Tabs extends View
     protected $tabPane = [];
     public function __construct(array $tabPanes = [])
     {
+
         foreach ($tabPanes as $tabPane){
             $this->tabPane[] = "<el-tab-pane label='{$tabPane['label']}'>{$tabPane['content']}</el-tab-pane>";
         }

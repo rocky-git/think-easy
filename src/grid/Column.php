@@ -326,8 +326,9 @@ class Column extends View
                 $images = $val;
             }
             $html = '';
+            $jsonImage = json_encode($images);
             foreach ($images as $image) {
-                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit'></el-image>&nbsp;";
+                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
             }
             return $html;
         });
