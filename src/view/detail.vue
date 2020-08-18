@@ -50,4 +50,7 @@
     .el-card {
         margin-bottom: 10px;
     }
+	img{
+        max-width: 100%;
+    }
 </style>
