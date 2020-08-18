@@ -767,11 +767,23 @@ EOF;
                 }
                 foreach ($whenTags as $whenVal => $tags) {
                     $hideTags = array_diff($whenTagsAll, $tags);
+                    $defalutHideTags = array_map(function ($v) {
+                        return "'{$v}' + manyIndex";
+                    }, $tags);
                     $hideTags = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $hideTags);
                     $hideTags = implode(',', $hideTags);
-                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$hideTags})}" . PHP_EOL;
+                    $defalutHideTags = implode(',', $defalutHideTags);
+                    $defalutHideTagsJs = '';
+                    $hideTagsJs = '';
+                    if(!empty($defalutHideTags)){
+                        $defalutHideTagsJs.="this.formItemTags.splice(-1,0,{$defalutHideTags});";
+                    }
+                    if(!empty($hideTags)){
+                        $hideTagsJs.="this.formItemTags.splice(-1,0,{$hideTags});";
+                    }
+                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}'){this.formItemTags = [];{$hideTagsJs};}else{{$defalutHideTagsJs}}" . PHP_EOL;
                 }
             }
         }
