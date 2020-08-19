@@ -36,7 +36,7 @@
                     <!--{/if}-->
                     <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
-                        <el-button type="primary" size="small" icon="el-icon-download">
+                        <el-button type="primary" size="medium" icon="el-icon-download">
                             导出<i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
                         <el-dropdown-menu slot="dropdown">
@@ -50,7 +50,7 @@
                     <!--{if !isset($hideDeletesButton)}-->
                     <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
                     <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
-                    <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                    <el-button plain type="primary" size="medium" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                     <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                     <!--{/if}-->
                     <!--{notempty name="$filter"}-->
