@@ -21,13 +21,15 @@ class Actions extends Column
     protected $hideDelButton = false;
 
     protected $closure = null;
-    protected $detailButton = '<el-dropdown-item icon="el-icon-info" @click.native="handleDetail(data,index)">详情</el-dropdown-item>';
-    protected $editButton = '<el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(data,index)">编辑</el-dropdown-item>';
-    protected $delButton = '<el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(data,index)">删除</el-dropdown-item>';
+    protected $detailButton = '<el-button size="small" icon="el-icon-info" @click="handleDetail(data,index)" data-title="详情">详情</el-button>';
+    protected $editButton = '<el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(data,index)" data-title="编辑" >编辑</el-button>';
+    protected $delButton = '<el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(data,index)" >删除</el-button>';
+
 
     protected $prependArr = [];
 
     protected $appendArr = [];
+    protected $mode = 'button';
     public $row = [];
     public function __construct(string $field = '', string $label = '')
     {
@@ -35,7 +37,13 @@ class Actions extends Column
         $this->setAttr('fixed', 'right');
 
     }
-
+    //下拉菜单模式
+    public function dropdown(){
+        $this->mode = 'dropdown';
+        $this->detailButton = '<el-dropdown-item icon="el-icon-info" @click.native="handleDetail(data,index)">详情</el-dropdown-item>';
+        $this->editButton = '<el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(data,index)">编辑</el-dropdown-item>';
+        $this->delButton = '<el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(data,index)">删除</el-dropdown-item>';
+    }
     public function setClosure(\Closure $closure)
     {
         $this->closure = $closure;
@@ -109,8 +117,13 @@ class Actions extends Column
         }
         $this->appendArr = [];
         $this->prependArr = [];
-        $this->display(function () use ($html) {
-            return '
+        if($this->mode == 'button'){
+            $this->display(function () use ($html) {
+               return $html;
+            });
+        }elseif ($this->mode == 'dropdown'){
+            $this->display(function () use ($html) {
+                return '
 <el-dropdown>
   <span class="el-dropdown-link">
     <i class="el-icon-more" style="cursor: pointer;padding:0 10px" >
@@ -118,7 +131,8 @@ class Actions extends Column
   <el-dropdown-menu slot="dropdown">'.$html.'
   </el-dropdown-menu>
 </el-dropdown></i>';
-        });
+            });
+        }
         parent::setData($data);
         $this->hideDetailButton = false;
         $this->hideEditButton = false;
