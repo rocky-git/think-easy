@@ -35,6 +35,22 @@ class Button extends View
         }
         return $button;
     }
+
+    /**
+     * 创建下拉按钮元素
+     * @param $text
+     * @param string $icon
+     * @return Button
+     */
+    public function dropdown($text,$icon=''){
+        $button = new self();
+        $button->template  = 'button';
+        $button->text  = $text;
+        $button->setAttr('btn-type','dropdown');
+        $button->setAttr('icon',$icon);
+        $button->setAttr('text',$text);
+        return $button;
+    }
     //禁用状态
     public function disabled(){
         $this->setAttr('disabled','true');
