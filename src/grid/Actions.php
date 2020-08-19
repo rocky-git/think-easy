@@ -129,12 +129,11 @@ class Actions extends Column
   <span class="el-dropdown-link">
   <el-button size="mini">
     操作<i class="el-icon-arrow-down el-icon--right"></i>
-  </el-button>
-    
+  </el-button>    
   </span>
   <el-dropdown-menu slot="dropdown">'.$html.'
   </el-dropdown-menu>
-</el-dropdown></i>';
+</el-dropdown>';
             });
         }
         parent::setData($data);
