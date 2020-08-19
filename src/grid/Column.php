@@ -99,6 +99,26 @@ class Column extends View
     }
 
     /**
+     * 弹出框
+     * @param $val 显示的内容
+     * @param $content 弹出内容
+     * @param int $width 弹出宽度
+     * @param string $placement  弹出方向
+     * @return $this
+     */
+    public function popover($val,$content,$width=200,$placement='top-start'){
+        $this->display(function () use($val,$content,$placement,$width){
+            return "<el-popover
+    placement='{$placement}'
+    width='{$width}'
+    trigger='hover'>
+    {$content}
+    <span slot='reference'>{$val}</span>
+  </el-popover>";
+        });
+        return $this;
+    }
+    /**
      * 评分显示
      * @param int $max 最大长度
      * @return $this

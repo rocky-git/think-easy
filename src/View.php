@@ -97,6 +97,22 @@ abstract class View
 
     }
     /**
+     * 获取定义模板变量
+     * @return array
+     */
+    public function getvars($name = ''){
+        if (empty($name)) {
+            return $this->vars;
+        } else {
+            if (isset($this->vars[$name])) {
+                return $this->vars[$name];
+            } else {
+                return null;
+            }
+        }
+
+    }
+    /**
      * 获取定义变量属性
      * @return array
      */
