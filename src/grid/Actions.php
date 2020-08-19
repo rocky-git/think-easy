@@ -125,7 +125,7 @@ class Actions extends Column
         }elseif ($this->mode == 'dropdown'){
             $this->display(function () use ($html) {
                 return '
-<el-dropdown>
+<el-dropdown trigger="click">
   <span class="el-dropdown-link">
   <el-button size="mini">
     操作<i class="el-icon-arrow-down el-icon--right"></i>
