@@ -85,7 +85,7 @@ class Grid extends View
         $this->model = $model;
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
-        $this->actionColumn = new Actions('actionColumn', '操作');
+        $this->actionColumn = new Actions('actionColumn', '');
         $this->table = new Table($this->columns, []);
         $this->table->setAttr(':max-height', 'tableHeight');
         $this->table->setAttr('style', 'z-index:0');

@@ -40,6 +40,7 @@ class Actions extends Column
     //下拉菜单模式
     public function dropdown(){
         $this->mode = 'dropdown';
+
         $this->detailButton = '<el-dropdown-item icon="el-icon-info" @click.native="handleDetail(data,index)">详情</el-dropdown-item>';
         $this->editButton = '<el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(data,index)">编辑</el-dropdown-item>';
         $this->delButton = '<el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(data,index)">删除</el-dropdown-item>';
@@ -126,7 +127,10 @@ class Actions extends Column
                 return '
 <el-dropdown>
   <span class="el-dropdown-link">
-    <i class="el-icon-more" style="cursor: pointer;padding:0 10px" >
+  <el-button size="mini">
+    操作<i class="el-icon-arrow-down el-icon--right"></i>
+  </el-button>
+    
   </span>
   <el-dropdown-menu slot="dropdown">'.$html.'
   </el-dropdown-menu>
