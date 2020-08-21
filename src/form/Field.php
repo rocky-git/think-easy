@@ -116,7 +116,6 @@ class Field extends View
      */
     public function required()
     {
-        $this->setAttr('@blur',"clearValidate(\"{$this->field}\")");
         $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label,'trigger'=>'blur']], JSON_UNESCAPED_UNICODE);
         return $this;
     }

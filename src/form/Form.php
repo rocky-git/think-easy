@@ -581,8 +581,6 @@ class Form extends View
                     $this->formValidate["{$valdateField}ErrorMsg"] = '';
                     $this->formValidate["{$valdateField}ErrorShow"] = false;
                     $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-
-
                     //是否多个字段解析
                     if (count($formItem->fields) > 1) {
                         $fieldValue = [];
@@ -641,13 +639,10 @@ class Form extends View
                     }
                 } else {
                     //一对多解析
-                    $formItem->setAttr('@blur', "clearValidateArr(\"{$formItem->field}\",manyIndex)");
+                    $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
                     $formItem->setAttr('v-model', 'manyItem.' . $formItem->field);
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
-                    $this->formValidate["{$valdateField}ErrorMsg"] = '';
-                    $this->formValidate["{$valdateField}ErrorShow"] = false;
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' :show-message='validates.{$valdateField}ErrorShow' label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
-
+                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error=\"validates['{$valdateField}'+manyIndex+'ErrorMsg']\"  label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //设置默认值
                     if ($this->isEdit) {
                         if(count($formItem->getFileds()) > 1){
@@ -895,20 +890,31 @@ EOF;
         if ($this->isEdit) {
             //更新
             $validate = Validate::rule($this->updateRules['rule'])->message($this->updateRules['msg']);
+            $rules = $this->updateRules['rule'];
         } else {
             //新增
             $validate = Validate::rule($this->createRules['rule'])->message($this->createRules['msg']);
+            $rules = $this->createRules['rule'];
         }
         foreach ($datas as $field => $data) {
             if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany) {
-                foreach ($data as $value) {
-                    $valdateData[$field] = $value;
-                    $result = $validate->batch(true)->check($valdateData);
-                    if (!$result) {
-                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
+                $validateFields = [];
+                $removeFields = [];
+                $manyValidate = clone $validate;
+                foreach ($rules as $key=>$rule){
+                    if(strstr($key,$field.'.')){
+                        $validateFields[] = $key;
+                        $removeFields[$key] = true;
                     }
                 }
-
+                foreach ($data as $index=>$value) {
+                    $valdateData[$field] = $value;
+                    $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);
+                    if (!$result) {
+                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(),'index'=>(string)$index]));
+                    }
+                }
+                $validate->remove($removeFields);
             }
         }
         $result = $validate->batch(true)->check($datas);

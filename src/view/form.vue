@@ -91,9 +91,9 @@
                 this.validates[formName+'ErrorMsg'] = ''
             },
             //一对多移除错误
-            clearValidateArr(formName,index){
+            clearValidateArr(relation,formName,index){
                 this.$refs[formName][index].clearValidate();
-                this.validates[formName+'ErrorMsg'] = ''
+                this.validates[relation+'_'+formName+'ErrorMsg'] = ''
             },
             handleCheckChange(data){
                 let field = this.$refs.tree.$attrs.field
@@ -143,11 +143,16 @@
                                     this.reload()
                                 }
                             }else if(response.code == 422){
+                                let index
+                                if(response.index){
+                                    index = response.index
+                                }else{
+                                    index = ''
+                                }
                                 for(field in response.data){
                                     val = response.data[field]
                                     field = field.replace('.','_')
-                                    this.validates[field+'ErrorShow'] = true
-                                    this.validates[field+'ErrorMsg'] = val
+                                    this.validates[field+index+'ErrorMsg'] = val
                                 }
                             }
                         }).catch(res=>{

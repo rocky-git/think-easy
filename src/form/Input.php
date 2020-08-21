@@ -24,6 +24,12 @@ class Input extends Field
         'readonly',
     ];
     protected $hidden = false;
+    public function __construct($field, $label, $arguments = [])
+    {
+        parent::__construct($field, $label, $arguments);
+        $this->setAttr('@blur',"clearValidate(\"{$this->field}\")");
+    }
+
     /**
      * 隐藏域
      */
