@@ -17,9 +17,10 @@ class Button extends View
     /**
      * Button constructor.
      * @param $text 按钮文字
-     * @param string $type 颜色类型 primary / success / warning / danger / info / text
+     * @param string $colorType 颜色类型 primary / success / warning / danger / info / text
      * @param string $size 尺寸 medium / small / mini
      * @param string $icon 图标
+     * @param bool $plain 朴素按钮
      */
     public function create($text='',$colorType='',$size='medium',$icon='',$plain=false)
     {
@@ -31,7 +32,7 @@ class Button extends View
         $button->setAttr('icon',$icon);
         $button->setAttr('text',$text);
         if($plain){
-            $button->setAttr('plain','true');
+            $button->setAttr(':plain','true');
         }
         return $button;
     }
@@ -53,17 +54,17 @@ class Button extends View
     }
     //禁用状态
     public function disabled(){
-        $this->setAttr('disabled','true');
+        $this->setAttr(':disabled','true');
         return $this;
     }
     //圆形按钮
     public function circle(){
-        $this->setAttr('circle','true');
+        $this->setAttr(':circle','true');
         return $this;
     }
     //圆角按钮
     public function round(){
-        $this->setAttr('round','true');
+        $this->setAttr(':round','true');
         return $this;
     }
     /**
