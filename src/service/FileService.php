@@ -8,7 +8,7 @@
 
 namespace thinkEasy\service;
 
-
+use Intervention\Image\ImageManagerStatic;
 use think\facade\Cache;
 use think\facade\Filesystem;
 use thinkEasy\Service;
@@ -144,6 +144,8 @@ class FileService extends Service
             $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $fileName);
         }
         if ($saveName) {
+            $filename = Filesystem::disk($this->upType)->path($saveName);
+            $this->compressImage($filename);
             return $this->url($saveName);
         } else {
             return false;
@@ -228,6 +230,7 @@ class FileService extends Service
     {
         set_time_limit(0);
         $dir = Filesystem::disk($this->upType)->path('');
+
         $chunkSaveDir = $dir . $chunkSaveDir;
         $extend = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         if ($isUniqidmd5 == 'true') {
@@ -235,7 +238,7 @@ class FileService extends Service
         } else {
             $saveName = $saveDir . $filename;
         }
-        $put_filename = $dir . DIRECTORY_SEPARATOR . $saveName;
+        $put_filename = $dir . $saveName;
         if (file_exists($put_filename)) {
             unlink($put_filename);
         }
@@ -249,9 +252,28 @@ class FileService extends Service
         array_map('unlink', glob("{$chunkSaveDir}/*"));
         rmdir($chunkSaveDir);
         if ($res) {
+            $this->compressImage($put_filename);
             return $this->url($saveName);
         } else {
             return false;
         }
+    }
+
+    /**
+     * 压缩图片
+     * @param $filename 文件路径
+     */
+    private function compressImage($filename){
+       $type =  exif_imagetype($filename);
+       if($type > 1 && $type < 17){
+           $image = ImageManagerStatic::make($filename);
+           $filesize = $image->filesize();
+           $tmp_file = Filesystem::disk($this->upType)->path('').time().'image_tmp.'.$image->extension;
+           $image->save($tmp_file);
+           if(filesize($tmp_file) < $filesize){
+                copy($tmp_file,$filename);
+           }
+           unlink($tmp_file);
+       }
     }
 }
