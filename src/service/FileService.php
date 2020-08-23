@@ -258,22 +258,22 @@ class FileService extends Service
             return false;
         }
     }
-
     /**
      * 压缩图片
      * @param $filename 文件路径
      */
     private function compressImage($filename){
-       $type =  exif_imagetype($filename);
+       list($width, $height, $type, $attr) = getimagesize($filename);
        if($type > 1 && $type < 17){
-           $image = ImageManagerStatic::make($filename);
-           $filesize = $image->filesize();
-           $tmp_file = Filesystem::disk($this->upType)->path('').time().'image_tmp.'.$image->extension;
-           $image->save($tmp_file);
-           if(filesize($tmp_file) < $filesize){
-                copy($tmp_file,$filename);
-           }
-           unlink($tmp_file);
+           $extension = image_type_to_extension($type,false);
+           $fun = "imagecreatefrom".$extension;
+           $image = $fun($filename);
+           $image_thump = imagecreatetruecolor($width,$height);
+           imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
+           imagedestroy($image);
+           $funcs = "image".$extension;
+           $funcs($image_thump,$filename);
+           imagedestroy($image_thump);
        }
     }
 }
