@@ -269,6 +269,11 @@ class FileService extends Service
            $fun = "imagecreatefrom".$extension;
            $image = $fun($filename);
            $image_thump = imagecreatetruecolor($width,$height);
+           if($type == 3){
+               $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
+               imagefill($image_thump, 0, 0, $alpha);
+               imagesavealpha($image_thump, true);
+           }
            imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
            imagedestroy($image);
            $funcs = "image".$extension;
