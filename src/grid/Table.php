@@ -30,8 +30,6 @@ class Table extends View
         'cell-style',
         'header-row-class-name',
         'header-row-style',
-        'header-cell-class-name',
-        'header-cell-style',
         'default-expand-all',
         'expand-row-keys',
         'default-sort',
@@ -57,6 +55,7 @@ class Table extends View
         $this->setAttr('@row-click', 'rowClick');
         $this->setAttr('ref', 'dragTable');
         $this->setAttr('v-loading', 'loading');
+        $this->setAttr(':header-cell-style', '{color:"#606266"}');
     }
 
     //获取自定义内容组件

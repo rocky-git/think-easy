@@ -240,7 +240,7 @@ EOF;
         $column = $this->column($headimg, $label);
         return $column->display(function ($val, $data) use ($column, $nickname) {
             $nicknameValue = $column->getValue($data, $nickname);
-            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit' :preview-src-list='[\"{$val}\"]'></el-image><br>{$nicknameValue}";
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit' :preview-src-list='[\"{$val}\"]' lazy></el-image><br>{$nicknameValue}";
         })->align('center');
     }
 

@@ -19,6 +19,7 @@ class Checkbox extends Field
     public function __construct($field, $label, array $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
+        $this->default([]);
     }
     /**
      * 设置选项数据

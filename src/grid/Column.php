@@ -66,16 +66,12 @@ class Column extends View
 
     public function __construct($field = '', $label = '')
     {
-
         $this->label = $label;
         if (!empty($field)) {
             $this->field = $field;
             $field = $this->getField($field);
             $this->rowField = "scope.row.{$field}";
             $this->setAttr('prop', $field);
-        }
-        if (!empty($label)) {
-            $this->setAttr('label', $label);
         }
     }
 
@@ -348,7 +344,7 @@ class Column extends View
             $html = '';
             $jsonImage = json_encode($images);
             foreach ($images as $image) {
-                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
+                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}' lazy></el-image>&nbsp;";
             }
             return $html;
         });
@@ -567,6 +563,6 @@ class Column extends View
         }
         list($attrStr, $dataStr) = $this->parseAttr();
 
-        return "<el-table-column $attrStr>" . $this->display . "</el-table-column>";
+        return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">$this->label</template>" . $this->display . "</el-table-column>";
     }
 }

@@ -462,7 +462,7 @@ class Form extends View
         $formItem = new $class($field, $label, $arguments);
         switch ($name) {
             case 'image':
-                $formItem->displayType('image')->imageExt()->size(120, 120)->saveDir('images')->isUniqidmd5();
+                $formItem->displayType('image')->imageExt()->size(120, 120)->isUniqidmd5();
                 break;
             case 'number':
                 $formItem->setAttr('type', 'number');
