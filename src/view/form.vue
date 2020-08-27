@@ -30,6 +30,7 @@
         data(){
             let _self = this
             return {
+
                 loading:false,
                 disabledSubmit:false,
                 auto:'',

@@ -55,6 +55,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Transfer transfer($field, $label) 穿梭框
  * @method \thinkEasy\form\Icon icon($field, $label) 图标选择器
  * @method \thinkEasy\form\IframeTag iframeTag($field, $label) 弹窗选择框
+ * @method \thinkEasy\form\Map map($lng,$lat,$address, $label) 高德地图
  */
 class Form extends View
 {
