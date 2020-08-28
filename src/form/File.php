@@ -97,7 +97,7 @@ class File extends Field
      * @param $auto 是否自动居中裁剪,否显示界面手动裁剪
      * @return $this
      */
-    public function crop($width,$height,$auto = true){
+    public function crop($width,$height,$auto = false){
         $this->setAttr(':crop-width',$width);
         $this->setAttr(':crop-height',$height);
         $this->setAttr(':cropper-on','true');

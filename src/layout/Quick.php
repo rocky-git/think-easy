@@ -24,7 +24,7 @@ class Quick extends View
         return $this;
     }
     public function href($url){
-        $this->html = "<eadmin-link to-path='{$url}'>{$this->html}</eadmin-link>";
+        $this->html = "<eadmin-link url='{$url}'>{$this->html}</eadmin-link>";
         return $this;
     }
     public function render()
