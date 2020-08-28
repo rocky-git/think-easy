@@ -9,6 +9,7 @@
 namespace thinkEasy\form;
 
 
+use think\helper\Str;
 use thinkEasy\View;
 
 class Field extends View
@@ -46,28 +47,34 @@ class Field extends View
     public $helpText = '';
 
     protected $whenItem = [];
+
     /**
      * Input constructor.
      * @param $field 字段
      * @param $label 标签
      */
-    public function __construct($field, $label,$arguments=[])
+    public function __construct($field, $label, $arguments = [])
     {
         $this->field = $field;
-        $this->fields =  $arguments;
-        array_unshift( $this->fields ,$this->field);
+        $this->fields = $arguments;
+        array_unshift($this->fields, $this->field);
         $this->label = $label;
         $this->rule = json_encode([], JSON_UNESCAPED_UNICODE);
         $this->setAttr('v-model', 'form.' . $field);
         $this->setAttr('placeholder', '请输入' . $label);
     }
-    public function getField(){
-        $fields = explode('.',$this->field);
+
+    public function getField()
+    {
+        $fields = explode('.', $this->field);
         return end($fields);
     }
-    public function getFileds(){
+
+    public function getFileds()
+    {
         return $this->fields;
     }
+
     /**
      * 禁用
      */
@@ -116,7 +123,7 @@ class Field extends View
      */
     public function required()
     {
-        $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label,'trigger'=>'blur']], JSON_UNESCAPED_UNICODE);
+        $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label, 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
         return $this;
     }
 
@@ -216,22 +223,36 @@ class Field extends View
      * @param mixed ...$conditon
      * @return $this
      */
-    public function when(...$conditon){
-        if(count($conditon) == 3){
-            list($val,$operator,$closure) = $conditon;
-        }elseif (count($conditon) == 2){
+    public function when(...$conditon)
+    {
+        if (count($conditon) == 3) {
+            list($val, $operator, $closure) = $conditon;
+        } elseif (count($conditon) == 2) {
             $operator = '=';
-            list($val,$closure) = $conditon;
+            list($val, $closure) = $conditon;
         }
         $this->whenItem[] = [
-            'value'=>$val,
-            'operator'=>$operator,
-            'closure'=>$closure,
+            'value' => $val,
+            'operator' => $operator,
+            'closure' => $closure,
         ];
-        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0)".PHP_EOL;
+        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0)" . PHP_EOL;
         return $this;
     }
-    public function getWhenItem(){
+
+    public function getWhenItem()
+    {
         return $this->whenItem;
+    }
+
+    protected function buildComponent($component)
+    {
+        $key = Str::random(10,0);
+
+        list($attrStr, $tableScriptVar) = $this->parseAttr();
+        $this->scriptVar[] = "$key : () => new Promise(resolve => {
+                            resolve(this.\$splitCode(decodeURIComponent('" . rawurlencode($component) . "')))
+                        })";
+        return "<component :is=\"{$key}\" {$attrStr}></component>";
     }
 }
