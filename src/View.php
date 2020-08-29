@@ -217,9 +217,7 @@ abstract class View
         if (file_exists($path)) {
             $content = file_get_contents($path);
         } else {
-            $path = App::getAppPath() . 'view/build_view/' . $this->template . '.vue';
-
-            $content = file_get_contents($path);
+            abort(999,$path.'不存在');
         }
         return \think\facade\View::display($content, array_merge($this->attrVars, $this->vars), ['strip_space' => false]);
     }

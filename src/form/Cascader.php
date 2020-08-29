@@ -92,7 +92,7 @@ class Cascader extends Field
      * @param $relationMethod 一对多关联方法
      * @return $this
      */
-    public function multiple($relationMethod){
+    public function multiple($relationMethod=''){
         $this->relationMany = $relationMethod;
         $this->props('multiple',true);
         return $this;

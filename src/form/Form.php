@@ -133,6 +133,7 @@ class Form extends View
     protected $pkField = 'id';
     //保存修改成功后跳转的url
     protected $redirectUrl = '';
+    protected static $extend = [];
     public function __construct($model = null)
     {
         if ($model instanceof Model) {
@@ -459,6 +460,9 @@ class Form extends View
             $class .= 'File';
         } else {
             $class .= ucfirst($name);
+        }
+        if(array_key_exists($name,self::$extend)){
+            $class = self::$extend[$name];
         }
         $formItem = new $class($field, $label, $arguments);
         switch ($name) {
@@ -995,7 +999,14 @@ EOF;
         }
         return $this->render();
     }
-
+    /**
+     * 组件扩展
+     * @param $name 名称
+     * @param $class 组件类
+     */
+    public static function extend($name,$class){
+        self::$extend[$name] = $class;
+    }
     public function __call($name, $arguments)
     {
         return $this->formItem($name, $arguments[0], array_slice($arguments, 1));

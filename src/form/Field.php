@@ -10,7 +10,7 @@ namespace thinkEasy\form;
 
 
 use thinkEasy\View;
-
+use think\helper\Str;
 class Field extends View
 {
     //字段
@@ -243,4 +243,15 @@ class Field extends View
     {
         return $this->whenItem;
     }
+    protected function buildComponent($component)
+    {
+        $key = Str::random(10,0);
+
+        list($attrStr, $tableScriptVar) = $this->parseAttr();
+        $this->scriptVar[] = "$key : () => new Promise(resolve => {
+                            resolve(this.\$splitCode(decodeURIComponent('" . rawurlencode($component) . "')))
+                        })";
+        return "<component :is=\"{$key}\" {$attrStr}></component>";
+    }
+
 }
