@@ -9,7 +9,6 @@
 namespace thinkEasy\form;
 
 
-use think\helper\Str;
 use thinkEasy\View;
 
 class Field extends View
@@ -123,10 +122,10 @@ class Field extends View
      */
     public function required()
     {
+        $this->rule(['require'=>'请输入'.$this->label]);
         $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label, 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
         return $this;
     }
-
     /**
      * 输入框inline
      */
@@ -164,8 +163,8 @@ class Field extends View
      */
     public function rule(array $rule)
     {
-        $this->createRules = $rule;
-        $this->updateRules = $rule;
+        $this->createRules = array_merge($this->createRules, $rule);
+        $this->updateRules = array_merge($this->updateRules, $rule);
         return $this;
     }
 
@@ -177,7 +176,7 @@ class Field extends View
      */
     public function createRule(array $rule)
     {
-        $this->createRules = $rule;
+        $this->createRules = array_merge($this->createRules, $rule);
         return $this;
     }
 
@@ -189,7 +188,7 @@ class Field extends View
      */
     public function updateRule(array $rule)
     {
-        $this->updateRules = $rule;
+        $this->updateRules = array_merge($this->updateRules, $rule);
         return $this;
     }
 
@@ -243,16 +242,5 @@ class Field extends View
     public function getWhenItem()
     {
         return $this->whenItem;
-    }
-
-    protected function buildComponent($component)
-    {
-        $key = Str::random(10,0);
-
-        list($attrStr, $tableScriptVar) = $this->parseAttr();
-        $this->scriptVar[] = "$key : () => new Promise(resolve => {
-                            resolve(this.\$splitCode(decodeURIComponent('" . rawurlencode($component) . "')))
-                        })";
-        return "<component :is=\"{$key}\" {$attrStr}></component>";
     }
 }

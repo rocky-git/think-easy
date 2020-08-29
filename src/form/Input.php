@@ -142,6 +142,7 @@ class Input extends Field
     public function max($num)
     {
         $this->setAttr('max', $num);
+        $this->rule(['elt:'.$num=>'输入不能大于'.$num]);
         return $this;
     }
 
@@ -153,6 +154,7 @@ class Input extends Field
     public function min($num)
     {
         $this->setAttr('min', $num);
+        $this->rule(['egt:'.$num=>'输入不能小于'.$num]);
         return $this;
     }
 

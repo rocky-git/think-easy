@@ -52,6 +52,7 @@ abstract class View
     {
 
         $this->scriptVar = [];
+
         foreach ($this->attrVars as $var => $value) {
             $attr = $this->varAttrName($var);
             if (in_array($attr, $this->attrs)) {
@@ -216,7 +217,9 @@ abstract class View
         if (file_exists($path)) {
             $content = file_get_contents($path);
         } else {
-            abort(999,$path.'不存在');
+            $path = App::getAppPath() . 'view/build_view/' . $this->template . '.vue';
+
+            $content = file_get_contents($path);
         }
         return \think\facade\View::display($content, array_merge($this->attrVars, $this->vars), ['strip_space' => false]);
     }

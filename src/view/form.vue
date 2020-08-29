@@ -113,57 +113,54 @@
                     url = url +'/'+this.form.id+'.rest'
                     method = 'put'
                 }
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        this.loading = true
-                        this.$emit('update:tableDataUpdate', false)
-                        this.disabledSubmit = true
-                        this.$request({
-                            url: url,
-                            method: method,
-                            data:this.form,
-                            params:this.$route.query
-                        }).then(response=>{
-                            this.loading = false
-                            this.disabledSubmit = false
-                            if(response.code == 200){
-                                this.$notify({
-                                    title: '操作完成',
-                                    message: response.message,
-                                    type: 'success',
-                                    duration: 1500
-                                })
-                                if(response.data.url && response.data.url == 'back'){
-                                    this.$router.go(-1)
-                                }else if(response.data.url){
-                                    this.$router.push(response.data.url)
-                                }
-                                this.$emit('update:dialogVisible', false)
-                                this.$emit('update:tableDataUpdate', true)
-                                if (this.refresh == 1) {
-                                    this.reload()
-                                }
-                            }else if(response.code == 422){
-                                let index
-                                if(response.index){
-                                    index = response.index
-                                }else{
-                                    index = ''
-                                }
-                                for(field in response.data){
-                                    val = response.data[field]
-                                    field = field.replace('.','_')
-                                    this.validates[field+index+'ErrorMsg'] = val
-                                }
-                            }
-                        }).catch(res=>{
-                            this.loading = false
-                            this.disabledSubmit = false
+                this.loading = true
+                this.$emit('update:tableDataUpdate', false)
+                this.disabledSubmit = true
+                this.$request({
+                    url: url,
+                    method: method,
+                    data:this.form,
+                    params:this.$route.query
+                }).then(response=>{
+                    this.loading = false
+                    this.disabledSubmit = false
+                    if(response.code == 200){
+                        this.$notify({
+                            title: '操作完成',
+                            message: response.message,
+                            type: 'success',
+                            duration: 1500
                         })
-                    } else {
-                        return false;
+                        if(response.data.url && response.data.url == 'back'){
+                            this.$router.go(-1)
+                        }else if(response.data.url){
+                            this.$router.push(response.data.url)
+                        }
+                        this.$emit('update:dialogVisible', false)
+                        this.$emit('update:tableDataUpdate', true)
+                        if (this.refresh == 1) {
+                            this.reload()
+                        }
+                    }else if(response.code == 422){
+
+                        let index
+                        if(response.index){
+                            index = response.index
+                        }else{
+                            index = ''
+                        }
+                        for(field in response.data){
+                            val = response.data[field]
+                            field = field.replace('.','_')
+                            this.validates[field+index+'ErrorMsg'] = val
+
+                        }
+                        console.log(this.validates)
                     }
-                });
+                }).catch(res=>{
+                    this.loading = false
+                    this.disabledSubmit = false
+                })
             },
             resetForm(formName) {
                 this.$refs[formName].resetFields();
