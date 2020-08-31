@@ -188,11 +188,10 @@ class Filter extends View
     public function between($field, $label)
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field . '__between_start', $label);
-        $this->formItem($field . '__between_end', '-')->placeholder("请输入$label");
+        $this->formItem($field . '__between_start', $label)->placeholder("请输入开始$label");
+        $this->formItem($field . '__between_end', '-')->placeholder("请输入结束$label");
         return $this;
     }
-
     /**
      * 日期筛选
      * @param $field 字段

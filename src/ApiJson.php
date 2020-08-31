@@ -62,7 +62,8 @@ trait  ApiJson
         if (!empty($errMsg)) {
             $return['message'] = $errMsg;
         } else {
-            $return['message'] = config('apiCode')[$code];
+            $message = isset(config('apiCode')[$code])?config('apiCode')[$code]:'';
+            $return['message'] = $message;
         }
         $return['data'] = $data;
         return json($return, $http_code);

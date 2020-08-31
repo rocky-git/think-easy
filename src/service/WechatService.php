@@ -31,7 +31,6 @@ class WechatService
         $config = array_merge($config, $options);
         return Factory::officialAccount($config);
     }
-
     /**
      * 微信支付
      * @param array $options

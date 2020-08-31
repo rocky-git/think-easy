@@ -208,4 +208,18 @@ class Detail extends View
         $this->setVar('scriptVar', $scriptVar);
         return $this->render();
     }
+    //头像昵称列
+    public function userInfo($headimg = 'headimg', $nickname = 'nickname')
+    {
+        $column = $this->column($headimg, '');
+        return $column->display(function ($val, $data) use ($column, $nickname) {
+            $nicknameValue = $column->getValue($data, $nickname);
+            $html = <<<EOF
+<el-card style="margin-top: 10px;" :body-style="{padding: '10px'}">
+ <div style='text-align: center;line-height: 25px'><el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit' :preview-src-list='["{$val}"]' lazy></el-image><br>{$nicknameValue}</div>
+</el-card>
+EOF;
+            return $html;
+        });
+    }
 }

@@ -122,8 +122,8 @@ class Field extends View
      */
     public function required()
     {
-        $this->rule(['require'=>'请输入'.$this->label]);
-        $this->rule = json_encode([['required' => true, 'message' => '请输入' . $this->label, 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
+        $this->rule(['require'=>$this->label.'不能为空']);
+        $this->rule = json_encode([['required' => true, 'message' => $this->label.'不能为空', 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
         return $this;
     }
     /**

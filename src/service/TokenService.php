@@ -146,8 +146,10 @@ class TokenService extends Service
      */
     public function refresh($token = '')
     {
+        $token = $token ? $token : Request::header('Authorization');
         $data = $this->decode($token);
         if ($data) {
+            $this->logout($token);
             return $this->encode($data);
         } else {
             return false;

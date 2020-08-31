@@ -281,6 +281,7 @@ class Form extends View
                     $this->saveData = array_merge($this->saveData, $beforePost);
                 }
             }
+
             if (is_null($this->model)) {
                 foreach ($this->saveData as $name => $value) {
                     if ($name == 'empty' || $name == 'submitFromMethod') {
@@ -564,13 +565,14 @@ class Form extends View
                     case 'tabs':
                         if (is_null($this->tabs)) {
                             $this->tabs = new Tabs();
+                            $this->tabs->tempHtml = $formItemHtml;
                         }
                         if (!empty($formItem['style'])) {
                             $this->tabs->setAttr('type', 'card');
                         }
                         $this->tabs->setAttr('tab-position', $formItem['position']);
                         $this->tabs->push($formItem['label'], $this->parseFormItem());
-                        $formItemHtml = $this->tabs->render();
+                        $formItemHtml = $this->tabs->tempHtml.$this->tabs->render();
                         $this->scriptArr = array_merge($this->scriptArr, $this->tabs->getScriptVar());
                         break;
                 }
@@ -970,6 +972,7 @@ EOF;
         $formItem = $this->parseFormItem();
         $findIndex = strpos($formItem, '<el-col');
         if($findIndex !== false){
+
             $formItem = substr_replace($formItem, "<el-row><el-col", $findIndex,7);
         }
         $findIndex = strrpos($formItem, '</el-col>');

@@ -328,11 +328,12 @@ class Column extends View
      * @param int $width 宽度
      * @param int $height 高度
      * @param int $radius 圆角
+     * @param int $multi 是否显示多图
      * @return $this
      */
-    public function image($width = 80, $height = 80, $radius = 5)
+    public function image($width = 80, $height = 80, $radius = 5,$multi = false)
     {
-        $this->display(function ($val, $data) use ($width, $height, $radius) {
+        $this->display(function ($val, $data) use ($width, $height, $radius,$multi) {
             if (empty($val)) {
                 return '--';
             }
@@ -343,14 +344,28 @@ class Column extends View
             }
             $html = '';
             $jsonImage = json_encode($images);
-            foreach ($images as $image) {
-                $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}' lazy></el-image>&nbsp;";
+            if($multi){
+                foreach ($images as $image){
+                    $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}' lazy></el-image>&nbsp;";
+                }
+            }else{
+                $html = "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$images[0]}' fit='fit' :preview-src-list='{$jsonImage}' lazy></el-image>&nbsp;";
             }
             return $html;
         });
         return $this;
     }
 
+    /**
+     * 显示多图片
+     * @param int $width 宽度
+     * @param int $height 高度
+     * @param int $radius 圆角
+     * @return $this
+     */
+    public function images($width = 80, $height = 80, $radius = 5){
+        $this->image($width,$height,$radius,true);
+    }
     /**
      * 设置数据
      * @param $data
@@ -527,7 +542,7 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;'>" . $label . $this->display . "</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;display: flex;align-items: center'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }

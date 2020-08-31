@@ -9,6 +9,7 @@
 namespace thinkEasy\model;
 
 
+use app\model\User;
 use think\facade\Request;
 use think\Model;
 
@@ -42,5 +43,8 @@ class BaseModel extends Model
         $page = Request::param('page', $page);
         $size = Request::param('size', $size);
         $query->page($page, $size);
+    }
+    public function user(){
+        return $this->belongsTo(User::class,'uid');
     }
 }
