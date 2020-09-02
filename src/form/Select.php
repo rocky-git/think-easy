@@ -167,11 +167,19 @@ class Select extends Field
         }
     }
     public function inOptions($val){
-        $keys = array_keys($this->options);
-        if(in_array($val,$keys)){
-            return true;
+        if(is_array($val)){
+            if(count($val) > 0){
+                return true;
+            }else{
+                return false;
+            }
         }else{
-            return false;
+            $keys = array_keys($this->options);
+            if(in_array($val,$keys)){
+                return true;
+            }else{
+                return false;
+            }
         }
     }
     public function render()

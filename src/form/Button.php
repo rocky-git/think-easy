@@ -41,13 +41,15 @@ class Button extends View
      * 创建下拉按钮元素
      * @param $text
      * @param string $icon
+     * @param bool $divided
      * @return Button
      */
-    public function dropdown($text,$icon=''){
+    public function dropdown($text,$icon='',$divided = false){
         $button = new self();
         $button->template  = 'button';
         $button->text  = $text;
         $button->setAttr('btn-type','dropdown');
+        $button->setAttr(':divided','true');
         $button->setAttr('icon',$icon);
         $button->setAttr('text',$text);
         return $button;
@@ -169,6 +171,7 @@ class Button extends View
             $url= request()->domain() . '/'.$url;
         }
         $this->setAttr('url',$url);
+        $this->setAttr('name',$name);
         list($attrStr, $scriptVar) = $this->parseAttr();
         $html = "<eadmin-upload-button {$attrStr}></eadmin-upload-button>";
         return $html;

@@ -129,9 +129,9 @@ class Field extends View
     /**
      * 输入框inline
      */
-    public function inline()
+    public function inline($span = 4)
     {
-        $this->inline = "<el-col :span='4'>%s</el-col>";
+        $this->inline = "<el-col :span='$span'>%s</el-col>";
         return $this;
     }
 
