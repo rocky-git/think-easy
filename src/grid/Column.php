@@ -70,7 +70,7 @@ class Column extends View
         if (!empty($field)) {
             $this->field = $field;
             $field = $this->getField($field);
-            $this->rowField = "scope.row.{$field}";
+            $this->rowField = "scope.row.{$this->field}";
             $this->setAttr('prop', $field);
         }
     }
@@ -190,7 +190,9 @@ class Column extends View
         $this->usings = $usings;
         return $this;
     }
-
+    public function getUsings(){
+        return $this->usings;
+    }
     /**
      * 自定义显示
      * @param \Closure $closure
@@ -385,9 +387,6 @@ class Column extends View
         } else {
             $id = 0;
         }
-        if (is_null($this->displayClosure) && strpos($this->field, '.')) {
-            $this->cellVue .= "<span v-if='data.id == {$id}'>{$val}</span>";
-        }
         if (!is_null($this->displayClosure)) {
             if (empty($rowData)) {
                 $res = '';
@@ -549,7 +548,9 @@ class Column extends View
 
     public function render()
     {
+
         if (empty($this->display)) {
+
             if (!empty($this->tag)) {
                 $html = sprintf($this->tag, "{{{$this->rowField}}}");
                 $this->display = sprintf($this->scopeTemplate, $html);
@@ -568,9 +569,11 @@ class Column extends View
                     }
                     $html = sprintf($html, $value);
                 }
+
                 $this->display = sprintf($this->scopeTemplate, $html);
             }
         } else {
+
             $this->display = sprintf($this->scopeTemplate, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {

@@ -608,47 +608,92 @@ EOF;
     }
     protected function quickFilter()
     {
-        $keyword = Request::get('quickSearch');
-        //快捷搜索
-        $relationWhereSqls = [];
-        foreach ($this->relations as $relation) {
-            $sql = $this->model->hasWhere($relation)->buildSql();
-            $relation = $this->model->$relation();
-            $tableFields = $relation->getTableFields();
-            $fields = implode('|', $tableFields);
-            $relation_table = $relation->getTable();
-            $sqlArr = explode('ON ', $sql);
-            $str = array_pop($sqlArr);
-            preg_match_all("/`(.*)`/U", $str, $arr);
-            if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
-                $foreignKey = $arr[1][1];
-                $pk = $arr[1][3];
-            }
-            if ($relation instanceof HasOne) {
-                $pk = $arr[1][1];
-                $foreignKey = $arr[1][3];
-            }
-            $db = null;
-            if ($relation instanceof HasMany) {
-                $db = $relation->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}");
-            } elseif ($relation instanceof BelongsTo) {
-                $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
-            } else if ($relation instanceof HasOne) {
-                $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
-            }
-            if($db){
-                $sql = $db->whereLike($fields, "%{$keyword}%")->buildSql();
-                $relationWhereSqls[] = $sql;
-            }
+        $keyword = Request::get('quickSearch','',['trim']);
+        if($keyword){
+            $whereFields = [];
+            $whereOr = [];
+            $relationWhereFields = [];
+            $relationWhereOr = [];
+            foreach ($this->columns as $column){
+                $fields = explode('.',  $column->field);
+                $field = $column->getField();
+                $usings = $column->getUsings();
+                if (count($fields) > 1) {
+                    $relation = array_shift($fields);
+                    if(empty($usings)){
+                        $relationWhereFields[$relation][] = $field;
+                    }else{
+                        foreach ($usings as $key=>$value){
+                            if(strpos($value,$keyword) !== false){
+                                $relationWhereOr[$relation][$field] = $key;
+                            }
+                        }
+                    }
 
-        }
-        $fields = implode('|', $this->tableFields);
-        $this->db->where(function ($q) use($relationWhereSqls,$fields,$keyword){
-            $q->whereLike($fields, "%{$keyword}%",'OR');
-            foreach ($relationWhereSqls as $sql){
-                $q->whereExists($sql, 'OR');
+                }else{
+                    if(in_array($column->getField(),$this->tableFields)){
+                        if(empty($usings)){
+                            $whereFields[] = $field;
+                        }else{
+                            foreach ($usings as $key=>$value){
+                                if(strpos($value,$keyword) !== false){
+                                    $whereOr[$field] = $key;
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        });
+            //快捷搜索
+            $relationWhereSqls = [];
+            foreach ($this->relations as $relationName) {
+                $sql = $this->model->hasWhere($relationName)->buildSql();
+                $relation = $this->model->$relationName();
+                $relation_table = $relation->getTable();
+                $sqlArr = explode('ON ', $sql);
+                $str = array_pop($sqlArr);
+                preg_match_all("/`(.*)`/U", $str, $arr);
+                if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
+                    $foreignKey = $arr[1][1];
+                    $pk = $arr[1][3];
+                }
+                if ($relation instanceof HasOne) {
+                    $pk = $arr[1][1];
+                    $foreignKey = $arr[1][3];
+                }
+                $db = null;
+                if ($relation instanceof HasMany) {
+                    $db = $relation->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}");
+                } elseif ($relation instanceof BelongsTo) {
+                    $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
+                } else if ($relation instanceof HasOne) {
+                    $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
+                }
+                if($db){
+                    $fields = implode('|', $relationWhereFields[$relationName]);
+                    $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
+                    $sql = $db->where(function ($q) use($fields,$keyword,$relationWhereCondtion){
+                        foreach ($relationWhereCondtion as $field=>$value){
+                            $q->whereOr($field, $value);
+                        }
+                        $q->whereLike($fields, "%{$keyword}%",'OR');
+                    })->buildSql();
+                    $relationWhereSqls[] = $sql;
+                }
+
+            }
+            $fields = implode('|', $whereFields);
+            $this->db->where(function ($q) use($relationWhereSqls,$fields,$keyword,$whereOr){
+                $q->whereLike($fields, "%{$keyword}%",'OR');
+                foreach ($whereOr as $field=>$value){
+                    $q->whereOr($field, $value);
+                }
+                foreach ($relationWhereSqls as $sql){
+                    $q->whereExists($sql, 'OR');
+                }
+            });
+        }
+
     }
 
     /**
@@ -657,9 +702,7 @@ EOF;
     public function view()
     {
         //快捷搜索
-        if (Request::has('quickSearch')) {
-            $this->quickFilter();
-        }
+        $this->quickFilter();
         //排序
         if (Request::has('sort_field')) {
             $this->db->removeOption('order')->order(Request::get('sort_field'), Request::get('sort_by'));
