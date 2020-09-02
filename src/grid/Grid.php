@@ -10,7 +10,9 @@ namespace thinkEasy\grid;
 
 
 use think\facade\Db;
+use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
+use think\model\relation\HasMany;
 use think\model\relation\HasOne;
 use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
@@ -79,6 +81,7 @@ class Grid extends View
     protected $exportData = [];
     //导出文件名
     protected $exportFileName = null;
+    protected $relations = [];
 
     public function __construct(Model $model)
     {
@@ -311,6 +314,10 @@ EOF;
     public function column($field, $label)
     {
         $column = new Column($field, $label);
+        $fields = explode('.', $field);
+        if (count($fields) > 1) {
+            $this->relations[] = array_shift($fields);
+        }
         array_push($this->columns, $column);
         return $column;
     }
@@ -591,13 +598,57 @@ EOF;
         $moudel = app('http')->getName();
         $node = $moudel . '/' . $pathinfo;
         //添加权限判断
-        if (!AdminService::instance()->check($node.'.rest', 'post')){
+        if (!AdminService::instance()->check($node . '.rest', 'post')) {
             $this->hideAddButton();
         }
         //删除权限判断
-        if (!AdminService::instance()->check($node.'/:id.rest', 'delete')){
+        if (!AdminService::instance()->check($node . '/:id.rest', 'delete')) {
             $this->hideDeleteButton();
         }
+    }
+    protected function quickFilter()
+    {
+        $keyword = Request::get('quickSearch');
+        //快捷搜索
+        $relationWhereSqls = [];
+        foreach ($this->relations as $relation) {
+            $sql = $this->model->hasWhere($relation)->buildSql();
+            $relation = $this->model->$relation();
+            $tableFields = $relation->getTableFields();
+            $fields = implode('|', $tableFields);
+            $relation_table = $relation->getTable();
+            $sqlArr = explode('ON ', $sql);
+            $str = array_pop($sqlArr);
+            preg_match_all("/`(.*)`/U", $str, $arr);
+            if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
+                $foreignKey = $arr[1][1];
+                $pk = $arr[1][3];
+            }
+            if ($relation instanceof HasOne) {
+                $pk = $arr[1][1];
+                $foreignKey = $arr[1][3];
+            }
+            $db = null;
+            if ($relation instanceof HasMany) {
+                $db = $relation->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}");
+            } elseif ($relation instanceof BelongsTo) {
+                $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
+            } else if ($relation instanceof HasOne) {
+                $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
+            }
+            if($db){
+                $sql = $db->whereLike($fields, "%{$keyword}%")->buildSql();
+                $relationWhereSqls[] = $sql;
+            }
+
+        }
+        $fields = implode('|', $this->tableFields);
+        $this->db->where(function ($q) use($relationWhereSqls,$fields,$keyword){
+            $q->whereLike($fields, "%{$keyword}%",'OR');
+            foreach ($relationWhereSqls as $sql){
+                $q->whereExists($sql, 'OR');
+            }
+        });
     }
 
     /**
@@ -606,10 +657,8 @@ EOF;
     public function view()
     {
         //快捷搜索
-        if (Request::get('quickSearch')) {
-            $keyword = Request::get('quickSearch');
-            $fields = implode('|', $this->tableFields);
-            $this->db->whereLike($fields, "%{$keyword}%");
+        if (Request::has('quickSearch')) {
+            $this->quickFilter();
         }
         //排序
         if (Request::has('sort_field')) {
