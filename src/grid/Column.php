@@ -39,6 +39,7 @@ class Column extends View
 
     //组件行字段
     protected $rowField = '';
+    protected $relationRowField = '';
 
     //内容颜射
     protected $usings = [];
@@ -71,6 +72,9 @@ class Column extends View
             $this->field = $field;
             $field = $this->getField($field);
             $this->rowField = "scope.row.{$this->field}";
+            $fields = explode('.',$this->field);
+            $relation = array_shift($fields);
+            $this->relationRowField = "scope.row.{$relation}";
             $this->setAttr('prop', $field);
         }
     }
@@ -83,7 +87,6 @@ class Column extends View
         $fields = explode('.', $field);
         return end($fields);
     }
-
     /**
      * 设置当内容过长被隐藏时显示
      * @return $this
@@ -559,9 +562,9 @@ class Column extends View
                 $html = '';
                 foreach ($this->usings as $key => $value) {
                     if (is_string($key)) {
-                        $html .= "<span v-if=\"{$this->rowField} == '{$key}'\">%s</span>";
+                        $html .= "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} == '{$key}'\">%s</span>";
                     } else {
-                        $html .= "<span v-if='{$this->rowField} == {$key}'>%s</span>";
+                        $html .= "<span v-if='{$this->relationRowField} === null || {$this->rowField} == {$key}'>%s</span>";
                     }
                     if (isset($this->tagColor[$key])) {
                         $this->tag($this->tagColor[$key], $this->tagTheme);
@@ -577,7 +580,7 @@ class Column extends View
             $this->display = sprintf($this->scopeTemplate, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {
-            $this->display = sprintf($this->scopeTemplate, "<span v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
+            $this->display = sprintf($this->scopeTemplate, "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
         }
         list($attrStr, $dataStr) = $this->parseAttr();
 

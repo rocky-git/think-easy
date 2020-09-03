@@ -636,7 +636,7 @@ EOF;
                             $whereFields[] = $field;
                         }else{
                             foreach ($usings as $key=>$value){
-                                if(strpos($value,$keyword) !== false){
+                                if(stripos($value,$keyword) !== false){
                                     $whereOr[$field] = $key;
                                 }
                             }
@@ -732,7 +732,6 @@ EOF;
                 });
             } else {
                 $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow');
-
             }
         }
         //如果是导出数据
@@ -752,7 +751,6 @@ EOF;
         if ($this->treeTable) {
             $treeData = $this->tree($this->getDataArray());
             $this->data = $treeData;
-
             $this->table->setAttr('data', $treeData);
             $this->table->setAttr('default-expand-all', true);
             $this->table->setAttr('tree-props', [
