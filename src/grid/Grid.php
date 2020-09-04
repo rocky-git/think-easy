@@ -136,7 +136,7 @@ EOF;
         $this->sortField = $field;
         $this->column('sort', $label)->display(function ($val, $data) use ($field) {
             $html = <<<EOF
-<el-input v-model="data.{$field}" @input="sortInput(data,'{$field}',data.{$field})"></el-input>
+<el-input v-model="data.{$field}" @change="sortInput(data,'{$field}',data.{$field})"></el-input>
 EOF;
             return $html;
         })->width(80)->align('center');

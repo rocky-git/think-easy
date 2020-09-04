@@ -27,7 +27,7 @@ class MenuService extends Service
      */
     public function all()
     {
-        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select()->toArray();
+        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id desc')->select()->toArray();
         return $data;
     }
 
@@ -126,7 +126,7 @@ class MenuService extends Service
                     $appendRouter['component'] = 'Layout';
                     $appendRouter['path'] = '/' . $node['rule'];
                     $appendRouter['name'] = 'tag_' . mt_rand(100000, 999999);
-                   
+
                     $append = true;
                     array_push($resourceRouter, $appendRouter);
                 }
