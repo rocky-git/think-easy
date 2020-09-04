@@ -48,8 +48,13 @@ class Button extends View
         $button = new self();
         $button->template  = 'button';
         $button->text  = $text;
+        if($divided){
+            $divided = 'true';
+        }else{
+            $divided = 'false';
+        }
         $button->setAttr('btn-type','dropdown');
-        $button->setAttr(':divided','true');
+        $button->setAttr(':divided',$divided);
         $button->setAttr('icon',$icon);
         $button->setAttr('text',$text);
         return $button;

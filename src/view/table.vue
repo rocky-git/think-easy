@@ -3,10 +3,10 @@
         <!--{notempty name="$filter"}-->
         <el-drawer title="筛选" size="25%" :append-to-body="true" :visible.sync="filterVisible" >
             <div class="filter" style="margin-bottom: 5px">
-                <el-form label-width="80px" size="small" ref="form" @submit.native.prevent :model="form">
+                <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
                     {$filter|raw|default=''}
                     <el-row :gutter="10">
-                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
+                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary"  native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
                         <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
                     </el-row>
                 </el-form>

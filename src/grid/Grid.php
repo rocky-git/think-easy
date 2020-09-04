@@ -240,10 +240,10 @@ EOF;
     //头像昵称列
     public function userInfo($headimg = 'headimg', $nickname = 'nickname', $label = '会员信息')
     {
-        $column = $this->column($headimg, $label);
-        return $column->display(function ($val, $data) use ($column, $nickname) {
-            $nicknameValue = $column->getValue($data, $nickname);
-            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$val}' fit='fit' :preview-src-list='[\"{$val}\"]' lazy></el-image><br>{$nicknameValue}";
+        $column = $this->column($nickname, $label);
+        return $column->display(function ($val, $data) use ($column, $headimg) {
+            $headimgValue = $column->getValue($data, $headimg);
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$headimgValue}' fit='fit' :preview-src-list='[\"{$headimgValue}\"]'></el-image><br>{$val}";
         })->align('center');
     }
 

@@ -12,7 +12,7 @@ use think\Facade;
  * Class Button
  * @package \thinkEasy\form\Button
  * @method \thinkEasy\form\Button create($text='',$colorType='',$size='medium',$icon='',$plain=false) static 创建按钮
- * @method \thinkEasy\form\Button dropdown($text='',$icon='') static 创建下拉按钮元素
+ * @method \thinkEasy\form\Button dropdown($text='',$icon='',$divided=false) static 创建下拉按钮元素
  */
 class Button extends Facade
 {

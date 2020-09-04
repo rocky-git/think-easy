@@ -31,6 +31,8 @@ class Detail extends View
     protected $cellComponent=[];
     protected $component=[];
     protected $scriptArr = [];
+    protected $manyColumnHtml = '';
+    protected $columnHtml = '';
     public function __construct(Model $model)
     {
         $this->template = 'detail';
@@ -141,26 +143,15 @@ class Detail extends View
     private function paseLayout($title,$md){
         $card = new Card();
         $card->setAttr(':body-style','{padding: "0px 15px" }');
-
         $card->header("<span style='font-weight: bold'>{$title}</span>");
-        $html = '';
-
-        foreach ($this->columns as $i=>$column) {
-            $column->setData($this->data);
-
-            $this->cellComponent[] = $column->getDetailDisplay(count($this->cellComponent));
-            $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
-            $html .= $column->detailRender();
-        }
+        $html = $this->parseColumn();
         $card->body($html);
         return "<el-col :span='{$md}'>{$card->render()}</el-col>";
     }
-    public function view(){
+    protected function parseColumn(){
         $columnHtml = '';
-        $manyColumnHtml = '';
         foreach ($this->columns as $i=>$column) {
             if($column instanceof Column){
-
                 $column->setData($this->data);
                 $this->cellComponent[] = $column->getDetailDisplay($i);
                 $columnHtml .= $column->detailRender();
@@ -178,18 +169,21 @@ class Detail extends View
                         })";
                 $card->header("<span style='font-weight: bold'>{$column['title']}</span>");
                 $card->body('<component :is="'.$componentKey.'" />');
-                $manyColumnHtml .= "<el-col :span='{$column['md']}'>{$card->render()}</el-col>";
+                $this->manyColumnHtml .= "<el-col :span='{$column['md']}'>{$card->render()}</el-col>";
 
                 $this->columns = $columnsArr;
             }elseif($column['type'] == 'layout'){
                 $columnsArr = array_slice($this->columns, $i + 1);
                 $this->columns = [];
                 call_user_func($column['closure'], $this);
-                $manyColumnHtml .= $this->paseLayout($column['title'],$column['md']);
+                $this->manyColumnHtml .= $this->paseLayout($column['title'],$column['md']);
                 $this->columns = $columnsArr;
             }
         }
-
+        return $columnHtml;
+    }
+    public function view(){
+        $this->columnHtml = $this->parseColumn();
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $scriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
@@ -203,15 +197,15 @@ class Detail extends View
         foreach ($this->component as $key=>$value){
             $scriptVar .= "$key:$value,";
         }
-        $this->setVar('html', $columnHtml);
-        $this->setVar('manyColumnHtml', $manyColumnHtml);
+        $this->setVar('html', $this->columnHtml);
+        $this->setVar('manyColumnHtml', $this->manyColumnHtml);
         $this->setVar('scriptVar', $scriptVar);
         return $this->render();
     }
     //头像昵称列
-    public function userInfo($headimg = 'headimg', $nickname = 'nickname')
+    public function userInfo($headimg = 'headimg', $nickname = 'nickname',$label = '')
     {
-        $column = $this->column($headimg, '');
+        $column = $this->column($headimg, $label);
         return $column->display(function ($val, $data) use ($column, $nickname) {
             $nicknameValue = $column->getValue($data, $nickname);
             $html = <<<EOF
