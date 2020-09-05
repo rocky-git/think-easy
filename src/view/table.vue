@@ -1,24 +1,11 @@
 <template>
     <div>
-        <!--{notempty name="$filter"}-->
-        <el-drawer title="筛选" size="25%" :append-to-body="true" :visible.sync="filterVisible" >
-            <div class="filter" style="margin-bottom: 5px">
-                <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
-                    {$filter|raw|default=''}
-                    <el-row :gutter="10">
-                        <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary"  native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
-                        <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
-                    </el-row>
-                </el-form>
-            </div>
-        </el-drawer>
-        <!--{/notempty}-->
         <!--{if isset($grid)}-->
         <div class="headContainer">
             <!--{notempty name="title"}-->
             <!--{if !isset($trashed) || $trashed===false}-->
             <div style="padding-top: 10px;">{$title}</div>
-            <el-divider style="padding-bottom: 20px"></el-divider>
+            <hr style="border: none;height: 1px;background-color: #e5e5e5;">
             <!--{/if}-->
             <!--{/notempty}-->
 
@@ -26,17 +13,17 @@
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
                     <!--{if isset($quickSearch)}-->
-                    <el-input v-model="quickSearch" size="medium" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
-                    <el-button type="primary" size="medium" icon="el-icon-search" @click="handleFilter(true)">
+                    <el-input v-model="quickSearch" clearable size="small" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
+                    <el-button type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">
                         搜索
                     </el-button>
                     <!--{/if}-->
                     <!--{if !isset($hideAddButton)}-->
-                    <el-button type="primary" size="medium" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                    <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
                     <!--{/if}-->
                     <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
-                        <el-button type="primary" size="medium" icon="el-icon-download">
+                        <el-button type="primary" size="small" icon="el-icon-download">
                             导出<i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
                         <el-dropdown-menu slot="dropdown">
@@ -48,15 +35,29 @@
                     <!--{/if}-->
 
                     <!--{if !isset($hideDeletesButton)}-->
-                    <el-button plain size="medium" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                    <el-button plain size="medium" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
-                    <el-button plain type="primary" size="medium" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                    <el-button type="danger" size="medium" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                    <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                    <el-button plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                    <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                     <!--{/if}-->
                     <!--{notempty name="$filter"}-->
-                    <el-button size="medium"  type="primary"  @click="filterVisible=true">
-                        高级筛选
-                    </el-button>
+                    <el-popover
+                            placement="right-start"
+                            trigger="click">
+                        <div>
+                            <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
+                                {$filter|raw|default=''}
+                                <el-row :gutter="10">
+                                    <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary"  native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
+                                    <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
+                                </el-row>
+                            </el-form>
+                        </div>
+                        <el-button slot="reference" size="small"  type="primary" style="margin-left: 10px;">
+                            高级筛选
+                        </el-button>
+                    </el-popover>
+
                     <!--{/notempty}-->
                     <!--{if isset($toolbar)}-->
                     {$toolbar|raw}
@@ -170,7 +171,7 @@
                 /*{/if}*/
                 /*{notempty name="title"}*/
 
-                return window.innerHeight - 345 - height
+                return window.innerHeight - 305 - height
                 /*{else/}*/
                 return window.innerHeight - 265 - height
 
@@ -623,12 +624,6 @@
         border-radius: 4px;
         position: relative;
         z-index: 10;
-    }
-    .filter {
-        background: #fff;
-        position: relative;
-        padding: 20px 16px 0px;
-        border-radius: 4px;
     }
     :focus{
         outline:0;

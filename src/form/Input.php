@@ -28,6 +28,7 @@ class Input extends Field
     {
         parent::__construct($field, $label, $arguments);
         $this->setAttr('@blur',"clearValidate(\"{$this->field}\")");
+        $this->setAttr('clearable',"");
     }
 
     /**

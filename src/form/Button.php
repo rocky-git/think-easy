@@ -22,7 +22,7 @@ class Button extends View
      * @param string $icon 图标
      * @param bool $plain 朴素按钮
      */
-    public function create($text='',$colorType='',$size='medium',$icon='',$plain=false)
+    public function create($text='',$colorType='',$size='small',$icon='',$plain=false)
     {
         $button = new self();
         $button->template  = 'button';
