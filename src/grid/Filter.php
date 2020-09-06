@@ -15,6 +15,7 @@ use think\model\Relation;
 use think\model\relation\BelongsTo;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use thinkEasy\form\Input;
 use thinkEasy\View;
 
 class Filter extends View
@@ -383,6 +384,9 @@ class Filter extends View
         $class = "thinkEasy\\form\\" . ucfirst($name);
         $field = str_replace('.', '__', $field);
         $formItem = new $class($field, $label, $arguments);
+        if($formItem instanceof Input){
+            $formItem->prefixIcon('el-icon-search');
+        }
         $this->formItem[] = $formItem;
         if ($name == 'checkbox') {
             $this->fields[$field] = [];

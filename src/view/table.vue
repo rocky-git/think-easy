@@ -1,5 +1,21 @@
 <template>
     <div>
+        <!--{notempty name="$filter"}-->
+        <el-drawer :with-header="false" size="25%" :append-to-body="true" :visible.sync="filterVisible" :modal="false">
+            <div class="filter">
+
+                <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
+                    <div>
+                        <el-button size="small" type="primary" native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button>
+                        <el-button size="small" icon="el-icon-refresh" @click="filterReset" style="box-shadow: 0px 2px 3px #cccccc">重置</el-button>
+                    </div>
+                    <el-divider></el-divider>
+                    {$filter|raw|default=''}
+                </el-form>
+            </div>
+        </el-drawer>
+        <!--{/notempty}-->
+
         <!--{if isset($grid)}-->
         <div class="headContainer">
             <!--{notempty name="title"}-->
@@ -13,10 +29,8 @@
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
                     <!--{if isset($quickSearch)}-->
-                    <el-input v-model="quickSearch" clearable size="small" style="width: 200px;" placeholder="请输入关键字"  @keyup.enter.native="handleFilter(true)"></el-input>
-                    <el-button type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">
-                        搜索
-                    </el-button>
+                    <el-input v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
+                    <el-button type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
                     <!--{/if}-->
                     <!--{if !isset($hideAddButton)}-->
                     <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
@@ -41,27 +55,12 @@
                     <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                     <!--{/if}-->
                     <!--{notempty name="$filter"}-->
-                    <el-popover
-                            placement="right-start"
-                            trigger="click">
-                        <div>
-                            <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
-                                {$filter|raw|default=''}
-                                <el-row :gutter="10">
-                                    <el-col :span="12"> <el-button size="small" style="width: 100%" type="primary"  native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button></el-col>
-                                    <el-col :span="12"> <el-button size="small" style="width: 100%" icon="el-icon-refresh" @click="filterReset">重置</el-button></el-col>
-                                </el-row>
-                            </el-form>
-                        </div>
-                        <el-button slot="reference" size="small"  type="primary" style="margin-left: 10px;">
-                            高级筛选
-                        </el-button>
-                    </el-popover>
-
+                    <el-button size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
                     <!--{/notempty}-->
                     <!--{if isset($toolbar)}-->
                     {$toolbar|raw}
                     <!--{/if}-->
+                    <el-button icon="el-icon-refresh" size="small" circle style="float: right;margin-right: 10px" @click="requestPageData"></el-button>
                 </el-col>
             </el-row>
             <!--{/if}-->
@@ -580,7 +579,6 @@
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
-                    this.filterVisible = false
                     this.loading = false
                     this.tableData = res.data.data
                     this.total = res.data.total
@@ -608,6 +606,12 @@
         opacity: .8;
         color: #fff!important;
         background: #2d8cf0!important;
+    }
+    .filter {
+        background: #fff;
+        position: relative;
+        padding: 20px 16px 0px;
+        border-radius: 4px;
     }
 
     .headContainer {
