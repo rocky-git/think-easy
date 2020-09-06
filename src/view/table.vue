@@ -62,7 +62,7 @@
                     <!--{/if}-->
                     <div style="float: right;margin-right: 15px">
                         <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
-                        <el-dropdown trigger="click">
+                        <el-dropdown trigger="click" :hide-on-click="false">
                             <el-button icon="el-icon-s-grid" size="mini"></el-button>
                             <el-dropdown-menu slot="dropdown">
                                 <el-checkbox-group v-model="checkboxColumn">
