@@ -7,8 +7,6 @@
  */
 
 namespace thinkEasy\grid;
-
-
 use thinkEasy\form\Dialog;
 use think\helper\Str;
 use thinkEasy\form\Drawer;
@@ -127,12 +125,21 @@ class Table extends View
             } else {
                 $column = new Column($field, $label);
             }
+            if($column->label == '删除时间'){
+                $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1 && deleteColumnShow");
+            }else{
+                $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1");
+            }
             $this->cellComponent[] = $column->getDisplay($i, 'tableData');
             $i++;
             $columnHtml .= $column->render();
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
+            $checkboxOptions[] = [
+                'field'=>$column->field,
+                'label'=>$column->label,
+            ];
+            $checkboxColumn[] = $column->field;
         }
-
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
@@ -144,6 +151,8 @@ class Table extends View
         $this->setVar('tableHtml', $tableHtml);
         $this->setVar('tableDataScriptVar', 'tableData' . $this->varMark);
         $this->setVar('tableScriptVar', $tableScriptVar);
+        $this->setVar('checkboxOptions', json_encode($checkboxOptions,JSON_UNESCAPED_UNICODE));
+        $this->setVar('checkboxColumn', json_encode($checkboxColumn,JSON_UNESCAPED_UNICODE));
         return $this->render();
     }
 

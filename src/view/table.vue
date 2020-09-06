@@ -60,7 +60,19 @@
                     <!--{if isset($toolbar)}-->
                     {$toolbar|raw}
                     <!--{/if}-->
-                    <el-button icon="el-icon-refresh" size="small" circle style="float: right;margin-right: 10px" @click="requestPageData"></el-button>
+                    <div style="float: right;margin-right: 15px">
+                        <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
+                        <el-dropdown trigger="click">
+                            <el-button icon="el-icon-s-grid" size="mini"></el-button>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-checkbox-group v-model="checkboxColumn">
+                                    <el-dropdown-item v-for="(item,index) in checkboxOptions">
+                                        <el-checkbox  :label="item.field" v-if="item.label">{{item.label}}</el-checkbox>
+                                    </el-dropdown-item>
+                                </el-checkbox-group>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </div>
                 </el-col>
             </el-row>
             <!--{/if}-->
@@ -136,6 +148,8 @@
                 plugDialog:null,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
+                checkboxOptions:{$checkboxOptions|raw|default='[]'},
+                checkboxColumn:{$checkboxColumn|raw|default='[]'},
                 pageHide:{$pageHide|default='true'},
             page:1,
                 pagesize:[],
