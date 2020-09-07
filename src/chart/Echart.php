@@ -87,7 +87,7 @@ class Echart extends View
     {
         $this->template = 'echart';
         if ($table instanceof Model) {
-            $this->db = $table;
+            $this->db = $table->db();
         } elseif ($table instanceof Query) {
             $this->db = $table;
         } else {
@@ -95,7 +95,7 @@ class Echart extends View
         }
         $this->dateField = $dateField;
     }
-    
+
     /**
      * 查询过滤
      * @param $callback
@@ -276,7 +276,8 @@ class Echart extends View
                 }
                 break;
         }
-        $this->chart->xAxis($xAxis)->series($name, $series);
+        $total = array_sum($series);
+        $this->chart->xAxis($xAxis)->series($name. " ($total)", $series);
     }
 
     /**
@@ -319,6 +320,7 @@ class Echart extends View
             return $html;
         }
         $this->setVar('html', rawurlencode($html));
+        $this->setVar('headerTotal', rawurlencode($html));
         return parent::render();
     }
 
@@ -332,6 +334,7 @@ class Echart extends View
     {
         $db = clone $this->db;
         if ($closure instanceof \Closure) {
+
             call_user_func($closure, $db);
         }
         switch ($this->date_type) {

@@ -47,8 +47,6 @@
             </el-form>
             <!--{/notempty}-->
             <component v-loading="loading" :is="component"></component>
-
-
     </el-card>
 </template>
 
