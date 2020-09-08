@@ -53,7 +53,7 @@ class Table extends View
         $this->setAttr('@row-click', 'rowClick');
         $this->setAttr('ref', 'dragTable');
         $this->setAttr('v-loading', 'loading');
-        $this->setAttr(':header-cell-style', '{color:"#606266"}');
+        $this->setAttr(':header-cell-style', '{background:"linear-gradient(to top,#fafafa,#ffffff)",color:"#606266",borderTop:"solid 1px #ededed"}');
     }
 
     //获取自定义内容组件
