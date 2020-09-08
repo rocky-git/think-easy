@@ -155,6 +155,7 @@ class Detail extends View
             if($column instanceof Column){
                 $column->setData($this->data);
                 $this->cellComponent[] = $column->getDetailDisplay($index);
+				$index++;
                 $columnHtml .= $column->detailRender();
                 $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
             }elseif($column['type'] == 'hasMany'){
