@@ -150,10 +150,11 @@ class Detail extends View
     }
     protected function parseColumn(){
         $columnHtml = '';
+		static $index = 0;
         foreach ($this->columns as $i=>$column) {
             if($column instanceof Column){
                 $column->setData($this->data);
-                $this->cellComponent[] = $column->getDetailDisplay($i);
+                $this->cellComponent[] = $column->getDetailDisplay($index);
                 $columnHtml .= $column->detailRender();
                 $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
             }elseif($column['type'] == 'hasMany'){

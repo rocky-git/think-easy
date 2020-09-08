@@ -521,7 +521,7 @@ class Column extends View
     {
         $label = '';
         if(!empty($this->label)){
-            $label = "<span style='font-size: 14px;line-height: 50px;color: #888888'>{$this->label}:</span>&nbsp;";
+            $label = "<span style='font-size: 14px;color: #888888'>{$this->label}:</span>&nbsp;";
         }
         $this->rowField = 'data.' . $this->field;
         if (!empty($this->tag)) {
@@ -544,7 +544,7 @@ class Column extends View
         } elseif (empty($this->display) && !empty($this->field)) {
             $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
-        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px;border-bottom-style: solid;border-bottom-color: #f0f0f0;display: flex;align-items: center'>" . $label . $this->display . "</el-col>";
+        $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px; padding-top: 15px;padding-bottom: 15px;border-bottom-style: solid;border-bottom-color: #f0f0f0;display: flex;align-items: center'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
         return $this->display;
     }
