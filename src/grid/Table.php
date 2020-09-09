@@ -118,6 +118,7 @@ class Table extends View
     public function view()
     {
         $columnHtml = '';
+        $mobileHtml = '';
         $i = 0;
         foreach ($this->headers as $field => $label) {
             if ($label instanceof Column) {
@@ -133,6 +134,7 @@ class Table extends View
             $this->cellComponent[] = $column->getDisplay($i, 'tableData');
             $i++;
             $columnHtml .= $column->render();
+            $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
             $checkboxOptions[] = [
                 'field'=>$column->field,
@@ -145,8 +147,8 @@ class Table extends View
         if (!empty($columnScriptVar)) {
             $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
         }
-
-        $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' . $columnHtml . '</el-table>';
+        $mobileHtml = "<el-table-column type='expand' v-if=\"device === 'mobile'\"><template slot-scope=\"scope\"><el-form label-position='left'>$mobileHtml</el-form></template></el-table-column>";
+        $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' .$mobileHtml. $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);
         $this->setVar('tableDataScriptVar', 'tableData' . $this->varMark);

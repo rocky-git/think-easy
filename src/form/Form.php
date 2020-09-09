@@ -67,7 +67,6 @@ class Form extends View
         'show-message',
         'inline-message',
         'status-icon',
-        'label-position',
         'validate-on-rule-change',
         'disabled',
         'unlink-panels',
@@ -143,6 +142,7 @@ class Form extends View
         }
         $this->template = 'form';
         $this->labelPosition('right');
+        $this->setAttr(':label-position',"labelPosition");
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
@@ -970,15 +970,6 @@ EOF;
             $this->edit($this->extraData[$this->pkField]);
         }
         $formItem = $this->parseFormItem();
-        $findIndex = strpos($formItem, '<el-col');
-        if($findIndex !== false){
-
-            $formItem = substr_replace($formItem, "<el-row><el-col", $findIndex,7);
-        }
-        $findIndex = strrpos($formItem, '</el-col>');
-        if($findIndex !== false){
-            $formItem = substr_replace($formItem, "</el-col></el-row>",$findIndex,9);
-        }
         $scriptStr = implode(',', array_unique($this->scriptArr));
         list($attrStr, $formScriptVar) = $this->parseAttr();
         if (!empty($scriptStr)) {

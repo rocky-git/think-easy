@@ -5,7 +5,9 @@
             <hr style="border: none;height: 1px;background-color: #e5e5e5;">
             <!--{/notempty}-->
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
+                <el-row>
                 {$formItem|raw}
+                </el-row>
                 <el-form-item>
                     <el-button type="primary" :disabled="disabledSubmit" native-type="submit" :loading="loading" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
@@ -46,6 +48,15 @@
         },
         created(){
             this.init()
+        },
+        computed: {
+            labelPosition() {
+                if(this.$store.state.app.device === 'mobile'){
+                    return 'top'
+                }else{
+                    return 'right'
+                }
+            },
         },
         methods:{
             //单选框切换事件

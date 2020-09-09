@@ -1,49 +1,72 @@
 <template>
     <el-card shadow="hover">
         <div slot="header">
-            <div style="display: flex;justify-content: space-between;align-items:center;">
+            <el-row>
                 <!--{notempty name="title"}-->
-                <div>{$title}</div>
+                    <el-col :xs="24" :sm="24" :md="6" :span="6" >
+                        <div>{$title}</div>
+                    </el-col>
                 <!--{/notempty}-->
-                <el-button-group>
+                <el-col :xs="24" :sm="24" :md="18" :span="18">
+                    <el-button-group >
 
-                    <el-button v-if="params.date_type == 'yesterday'"type="primary" @click="requestData('yesterday')">昨天</el-button>
-                    <el-button v-else plain @click="requestData('yesterday')">昨天</el-button>
+                        <el-button v-if="params.date_type == 'yesterday'" size="small" type="primary" @click="requestData('yesterday')">昨天</el-button>
+                        <el-button v-else plain size="small" @click="requestData('yesterday')">昨天</el-button>
 
-                    <el-button v-if="params.date_type == 'today'"type="primary" @click="requestData('today')">今天</el-button>
-                    <el-button v-else plain @click="requestData('today')">今天</el-button>
+                        <el-button v-if="params.date_type == 'today'" size="small" type="primary" @click="requestData('today')">今天</el-button>
+                        <el-button v-else plain size="small" @click="requestData('today')">今天</el-button>
 
-                    <el-button v-if="params.date_type == 'week'"type="primary" @click="requestData('week')">本周</el-button>
-                    <el-button v-else plain @click="requestData('week')">本周</el-button>
+                        <el-button v-if="params.date_type == 'week'" size="small" type="primary" @click="requestData('week')">本周</el-button>
+                        <el-button v-else plain size="small" @click="requestData('week')">本周</el-button>
 
-                    <el-button v-if="params.date_type == 'month'"type="primary" @click="requestData('month')">本月</el-button>
-                    <el-button v-else plain @click="requestData('month')">本月</el-button>
+                        <el-button v-if="params.date_type == 'month'" size="small" type="primary" @click="requestData('month')">本月</el-button>
+                        <el-button v-else plain size="small" @click="requestData('month')">本月</el-button>
 
-                    <el-button v-if="params.date_type == 'year'"type="primary" @click="requestData('year')">全年</el-button>
-                    <el-button v-else plain @click="requestData('year')">全年</el-button>
+                        <el-button v-if="params.date_type == 'year'" size="small" type="primary" @click="requestData('year')">全年</el-button>
+                        <el-button v-else plain size="small" @click="requestData('year')">全年</el-button>
 
-                    <el-date-picker
-                            v-model="rangeDate"
-                            type="daterange"
-                            value-format="yyyy-MM-dd"
-                            range-separator="至"
-                            start-placeholder="开始日期"
-                            end-placeholder="结束日期"
-                    >
-                    </el-date-picker>
-                </el-button-group>
-            </div>
+                        <el-date-picker
+                                class="hidden-md-and-down"
+                                size="small"
+                                v-model="rangeDate"
+                                type="daterange"
+                                value-format="yyyy-MM-dd"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                        >
+                        </el-date-picker>
+                        <el-date-picker
+                                class="hidden-md-and-up"
+                                size="small"
+                                v-model="rangeDate"
+                                type="daterange"
+                                value-format="yyyy-MM-dd"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                style="width: 275px;margin-top: 5px"
+                        >
+                        </el-date-picker>
+                    </el-button-group>
+                </el-col>
+            </el-row>
+
         </div>
 
             <!--{notempty name="$filter"}-->
-            <el-form :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
+            <el-form class="hidden-md-and-down" :inline="true" size="small" ref="form" @submit.native.prevent :model="form">
                 {$filter|raw|default=''}
-                <el-button size="small" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-                    搜索
-                </el-button>
-                <el-button size="small"  class="filter-item" icon="el-icon-refresh" @click="filterReset">
-                    重置
-                </el-button>
+                <!-- PC端-->
+                <el-button class="hidden-md-and-down filter-item" size="small" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
+                <el-button class="hidden-md-and-down filter-item" size="small" icon="el-icon-refresh" @click="filterReset">重置</el-button>
+
+            </el-form>
+            <el-form class="hidden-md-and-up" size="mini" ref="form" @submit.native.prevent :model="form">
+                {$filter|raw|default=''}
+                <!-- 移动端-->
+                <el-button class="hidden-md-and-up filter-item" size="mini" type="primary" icon="el-icon-search" @click="handleFilter"></el-button>
+                <el-button class="hidden-md-and-up filter-item" size="mini" icon="el-icon-refresh" @click="filterReset"></el-button>
             </el-form>
             <!--{/notempty}-->
             <component v-loading="loading" :is="component"></component>

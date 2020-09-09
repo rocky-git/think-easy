@@ -6,8 +6,12 @@
 
                 <el-form label-width="100px" @submit.native.prevent size="small" ref="form" @submit.native.prevent :model="form">
                     <div>
-                        <el-button size="small" type="primary" native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button>
-                        <el-button size="small" icon="el-icon-refresh" @click="filterReset" style="box-shadow: 0px 2px 3px #cccccc">重置</el-button>
+                        <!-- PC端-->
+                        <el-button size="small" class="hidden-md-and-down" type="primary" native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button>
+                        <el-button size="small" class="hidden-md-and-down" icon="el-icon-refresh" @click="filterReset" style="box-shadow: 0px 2px 3px #cccccc">重置</el-button>
+                        <!-- 移动端-->
+                        <el-button size="mini" class="hidden-md-and-up" type="primary" native-type="submit" icon="el-icon-search" :loading="loading" @click="handleFilter(false)">筛选</el-button>
+                        <el-button size="mini" class="hidden-md-and-up" icon="el-icon-refresh" @click="filterReset" style="box-shadow: 0px 2px 3px #cccccc">重置</el-button>
                     </div>
                     <el-divider></el-divider>
                     {$filter|raw|default=''}
@@ -29,17 +33,26 @@
             <el-row style="padding-top: 10px">
                 <el-col :span="24">
                     <!--{if isset($quickSearch)}-->
-                    <el-input v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
-                    <el-button type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
+                    <!-- PC端-->
+                    <el-input class="hidden-md-and-down"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
+                    <el-button class="hidden-md-and-down"  type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
+                    <!-- 移动端-->
+                    <el-input class="hidden-md-and-up"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
                     <!--{/if}-->
                     <!--{if !isset($hideAddButton)}-->
-                    <el-button type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                    <!-- PC端-->
+                    <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                    <!-- 移动端-->
+                    <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-plus" @click="showDialog('添加',1)"></el-button>
                     <!--{/if}-->
                     <!--{if isset($exportOpen)}-->
                     <el-dropdown trigger="click" style="margin-left: 10px;">
-                        <el-button type="primary" size="small" icon="el-icon-download">
+                        <!-- PC端-->
+                        <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-download">
                             导出<i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
+                        <!-- 移动端-->
+                        <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-download"></el-button>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item @click.native="exportData(1)">导出当前页</el-dropdown-item>
                             <el-dropdown-item @click.native="exportData(2)" v-show="this.selectionData.length > 0">导出选中行</el-dropdown-item>
@@ -49,13 +62,23 @@
                     <!--{/if}-->
 
                     <!--{if !isset($hideDeletesButton)}-->
-                    <el-button plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                    <el-button plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
-                    <el-button plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                    <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                    <!-- PC端-->
+                    <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                    <el-button class="hidden-md-and-down" plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button class="hidden-md-and-down" plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                    <el-button class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                    <!-- 移动端-->
+                    <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect"></el-button>
+                    <el-button class="hidden-md-and-up" plain size="mini" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
+                    <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
+
                     <!--{/if}-->
                     <!--{notempty name="$filter"}-->
-                    <el-button size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
+                    <!-- PC端-->
+                    <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
+                    <!-- 移动端-->
+                    <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
                     <!--{/notempty}-->
                     <!--{if isset($toolbar)}-->
                     {$toolbar|raw}
@@ -92,8 +115,7 @@
             {$tableHtml|raw}
         </div>
         <!--{/if}-->
-
-        <el-pagination style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
+        <el-pagination class="hidden-md-and-down" style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
                        v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -103,6 +125,17 @@
                        background
                        :total="total"
                        layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
+        <el-pagination class="hidden-md-and-up" style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
+                       v-if="!pageHide"
+                       small
+                       @size-change="handleSizeChange"
+                       @current-change="handleCurrentChange"
+                       :page-sizes="pagesize"
+                       :page-size="size"
+                       :current-page="page"
+                       :total="total"
+                       layout="total,  prev, pager, next, jumper">
         </el-pagination>
         {$dialog|raw|default=''}
     </div>
@@ -151,15 +184,18 @@
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},
                 checkboxColumn:{$checkboxColumn|raw|default='[]'},
                 pageHide:{$pageHide|default='true'},
-            page:1,
+                page:1,
                 pagesize:[],
                 total:{$pageTotal|default=0},
-            size:{$pageSize|default=20},
-            selectionData:[],
-            {$tableScriptVar|raw}
+                size:{$pageSize|default=20},
+                selectionData:[],
+                {$tableScriptVar|raw}
         }
         },
         computed:{
+            device() {
+                return this.$store.state.app.device
+            },
             tableHeight(){
                 if(this.tableMaxHeight > 0){
 
@@ -259,6 +295,7 @@
             },
         },
         methods: {
+
             //导出
             exportData(type){
                 if(type == 0){

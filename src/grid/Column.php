@@ -64,7 +64,7 @@ class Column extends View
 
     public $totalText = '';
     public $closeExport = false;
-
+    public $html = '';
     public function __construct($field = '', $label = '')
     {
         $this->label = $label;
@@ -551,36 +551,35 @@ class Column extends View
 
     public function render()
     {
-
+        $this->html = '';
         if (empty($this->display)) {
 
             if (!empty($this->tag)) {
-                $html = sprintf($this->tag, "{{{$this->rowField}}}");
-                $this->display = sprintf($this->scopeTemplate, $html);
+                $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
+                $this->display = sprintf($this->scopeTemplate, $this->html);
             }
             if (count($this->usings) > 0) {
-                $html = '';
                 foreach ($this->usings as $key => $value) {
                     if (is_string($key)) {
-                        $html .= "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} == '{$key}'\">%s</span>";
+                        $this->html .= "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} == '{$key}'\">%s</span>";
                     } else {
-                        $html .= "<span v-if='{$this->relationRowField} === null || {$this->rowField} == {$key}'>%s</span>";
+                        $this->html .= "<span v-if='{$this->relationRowField} === null || {$this->rowField} == {$key}'>%s</span>";
                     }
                     if (isset($this->tagColor[$key])) {
                         $this->tag($this->tagColor[$key], $this->tagTheme);
                         $value = sprintf($this->tag, $value);
                     }
-                    $html = sprintf($html, $value);
+                    $this->html = sprintf($this->html, $value);
                 }
-
-                $this->display = sprintf($this->scopeTemplate, $html);
+                $this->display = sprintf($this->scopeTemplate, $this->html);
             }
         } else {
-
+            $this->html = $this->display;
             $this->display = sprintf($this->scopeTemplate, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {
-            $this->display = sprintf($this->scopeTemplate, "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>");
+            $this->html = "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
+            $this->display = sprintf($this->scopeTemplate, $this->html);
         }
         list($attrStr, $dataStr) = $this->parseAttr();
 

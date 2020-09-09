@@ -66,6 +66,11 @@ class Column extends View
      */
     public function span($num = 24){
         $this->setAttr(':span',$num);
+        if($num == 8 || $num == 6 || $num == 12){
+            $this->setAttr(':xs',24);
+            $this->setAttr(':sm',24);
+            $this->setAttr(':md',$num);
+        }
     }
     /**
      * 栅格左侧的间隔格数
@@ -98,9 +103,10 @@ class Column extends View
         $this->clickLink = [$url,$name];
     }
     public function render(){
+
         foreach ($this->row as $row){
             $this->html .= $row->render();
-            $this->component = array_merge($this->component,$row->getComponents());    
+            $this->component = array_merge($this->component,$row->getComponents());
         }
         list($attrStr, $scriptVar) = $this->parseAttr();
         if(!is_null($this->clickLink)){

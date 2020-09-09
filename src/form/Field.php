@@ -131,7 +131,7 @@ class Field extends View
      */
     public function inline($span = 4)
     {
-        $this->inline = "<el-col :span='$span'>%s</el-col>";
+        $this->inline = "<el-row><el-col :span='{$span}' :xs='24' :sm='24' :md='{$span}'>%s</el-col></el-row>";
         return $this;
     }
 
@@ -151,7 +151,7 @@ class Field extends View
      */
     public function md($num = 3)
     {
-        $this->md = "<el-col :span='{$num}'>%s</el-col>";
+        $this->md = "<el-col :xs='24' :sm='24' :md='{$num}' :span='{$num}'>%s</el-col>";
         return $this;
     }
 

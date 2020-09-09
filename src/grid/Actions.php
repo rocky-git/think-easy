@@ -21,9 +21,9 @@ class Actions extends Column
     protected $hideDelButton = false;
 
     protected $closure = null;
-    protected $detailButton = '<el-button size="small" icon="el-icon-info" @click="handleDetail(data,index)" data-title="详情">详情</el-button>';
-    protected $editButton = '<el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(data,index)" data-title="编辑" >编辑</el-button>';
-    protected $delButton = '<el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(data,index)" >删除</el-button>';
+    protected $detailButton = '<el-button circle size="mini" class="hidden-md-and-up" icon="el-icon-info" @click="handleDetail(data,index)" data-title="详情"></el-button><el-button class="hidden-md-and-down" size="small" icon="el-icon-info" @click="handleDetail(data,index)" data-title="详情">详情</el-button>';
+    protected $editButton = '<el-button circle class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-edit" @click="handleEdit(data,index)" data-title="编辑"></el-button><el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-edit" @click="handleEdit(data,index)" data-title="编辑" >编辑</el-button>';
+    protected $delButton = '<el-button  circle class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="handleDelete(data,index)"></el-button><el-button  class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="handleDelete(data,index)" >删除</el-button>';
 
 
     protected $prependArr = [];
@@ -34,8 +34,6 @@ class Actions extends Column
     public function __construct(string $field = '', string $label = '')
     {
         parent::__construct($field, $label);
-        $this->setAttr('fixed', 'right');
-
     }
     //下拉菜单模式
     public function dropdown(){
