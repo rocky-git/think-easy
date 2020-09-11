@@ -65,6 +65,8 @@ class Column extends View
     public $totalText = '';
     public $closeExport = false;
     public $html = '';
+    //是否行内编辑
+    protected $edit = false;
     public function __construct($field = '', $label = '')
     {
         $this->label = $label;
@@ -86,6 +88,12 @@ class Column extends View
         }
         $fields = explode('.', $field);
         return end($fields);
+    }
+    /**
+    * 行内编辑
+    */
+    public function edit(){
+        $this->edit = true;
     }
     /**
      * 设置当内容过长被隐藏时显示
@@ -582,7 +590,11 @@ class Column extends View
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }
         list($attrStr, $dataStr) = $this->parseAttr();
+        if($this->edit){
+            $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
+            $this->display = sprintf($this->scopeTemplate, $this->html);
 
+        }
         return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">$this->label</template>" . $this->display . "</el-table-column>";
     }
 }

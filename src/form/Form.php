@@ -76,7 +76,7 @@ class Form extends View
 
 
     protected $tabs = null;
-    protected $layout = null;
+
 
 
     protected $scriptArr = [];
@@ -569,15 +569,13 @@ class Form extends View
                         }
                         $this->hasManyRelation = null;
                         break;
-                    case 'layout':
-                        $this->layout = $formItemHtml;
+                    case 'layout':;
                         if (empty($formItem['title'])) {
                             $title = '';
                         } else {
                             $title = "<h4 style='color: #999999;font-size: 14px'>{$formItem['title']}</h4>";
                         }
-                        $formItemHtml = $title . '<el-row>' . $this->parseFormItem() . '</el-row>';
-                        $formItemHtml = $this->layout . $formItemHtml;
+                        $formItemHtml .= $title . '<el-row>' . $this->parseFormItem() . '</el-row>';
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {

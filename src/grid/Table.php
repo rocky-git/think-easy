@@ -22,7 +22,6 @@ class Table extends View
         'show-header',
         'highlight-current-row',
         'current-row-key',
-        'row-class-name',
         'row-style',
         'cell-class-name',
         'cell-style',
@@ -50,6 +49,8 @@ class Table extends View
         $this->headers = $headers;
         $this->setAttr('data', $data);
         $this->setAttr('@sort-change', 'sortHandel');
+        $this->setAttr('@cell-click', 'cellClick');
+        $this->setAttr(':row-class-name', 'tableRowClassName');
         $this->setAttr('@row-click', 'rowClick');
         $this->setAttr('ref', 'dragTable');
         $this->setAttr('v-loading', 'loading');

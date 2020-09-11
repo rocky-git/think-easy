@@ -170,7 +170,7 @@
                 sortable:null,
                 deleteButtonText:'清空数据',
                 deleteColumnShow:false,
-                showEditId:0,
+                inputEditRow:null,
                 showDetailId:0,
                 dialogVisible:false,
                 tableDataUpdate:false,
@@ -179,6 +179,9 @@
                 loading:false,
                 tableData:[],
                 plugDialog:null,
+                inputEditField :'',
+                inputEditId :0,
+                showEditId :0,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},
@@ -258,7 +261,6 @@
                 this.setSort()
             })
             this.tableData = this.{$tableDataScriptVar}
-
         },
         inject:['reload'],
         watch:{
@@ -295,7 +297,10 @@
             },
         },
         methods: {
-
+            //行的 className 的回调方法
+            tableRowClassName({row, column, rowIndex, columnIndex}){
+                row.eadminIndex = rowIndex;
+            },
             //导出
             exportData(type){
                 if(type == 0){
@@ -454,7 +459,6 @@
 
                     })
                 }else{
-                    console.log(this.$route.query)
                     this.$router.push({
                         path:url,
                         query:params
@@ -473,6 +477,16 @@
                     this.$emit('update:iframeSelect', row)
                     this.$emit('update:iframeVisible', false)
                 }
+            },
+            //当某个单元格被点击时会触发该事件
+            cellClick(row, column, cell, event){
+                this.inputEditRow = row
+                this.inputEditField = column.property
+                this.$set( this.tableData[row.eadminIndex],'eadmin_edit',true)
+                this.$nextTick(()=>{
+                    this.$refs[column.property+row.eadminIndex].focus()
+                })
+
             },
             //删除选中
             DeleteSelect(){
@@ -505,6 +519,40 @@
                         }
                     }
                 }
+            },
+            blurInput(){
+                this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',false)
+            },
+            //行内编辑
+            editInput(val){
+
+                this.updateRequest(this.inputEditRow.id,this.inputEditField,val)
+            },
+            //更新请求
+            updateRequest(id,field,value){
+                let url  ='{$submitUrl|default=""}/batch.rest';
+                const param = {}
+                param[field] = value
+                param.ids = [id]
+                this.$request({
+                    url: url,
+                    method: 'put',
+                    data: param
+                }).then(response => {
+                    if (response.code == 200) {
+                        this.$notify({
+                            title: '操作完成',
+                            message: response.message,
+                            type: 'success',
+                            duration: 1500
+                        })
+                        this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',false)
+                    } else {
+                        this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',true)
+                    }
+                }).catch(res => {
+                    this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',true)
+                })
             },
             //恢复数据请求
             recoveryRequest(title,ids){
