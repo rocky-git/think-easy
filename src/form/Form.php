@@ -55,7 +55,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\Transfer transfer($field, $label) 穿梭框
  * @method \thinkEasy\form\Icon icon($field, $label) 图标选择器
  * @method \thinkEasy\form\IframeTag iframeTag($field, $label) 弹窗选择框
- * @method \thinkEasy\form\Map map($lng,$lat,$address, $label) 高德地图
+ * @method \thinkEasy\form\Map map($lng, $lat, $address, $label) 高德地图
  */
 class Form extends View
 {
@@ -76,6 +76,7 @@ class Form extends View
 
 
     protected $tabs = null;
+    protected $layout = null;
 
 
     protected $scriptArr = [];
@@ -133,6 +134,7 @@ class Form extends View
     //保存修改成功后跳转的url
     protected $redirectUrl = '';
     protected static $extend = [];
+
     public function __construct($model = null)
     {
         if ($model instanceof Model) {
@@ -142,7 +144,7 @@ class Form extends View
         }
         $this->template = 'form';
         $this->labelPosition('right');
-        $this->setAttr(':label-position',"labelPosition");
+        $this->setAttr(':label-position', "labelPosition");
         $this->addExtraData([
             'submitFromMethod' => request()->action(),
         ]);
@@ -155,23 +157,29 @@ class Form extends View
      * 设置保存修改成功后跳转的url
      * @param $url
      */
-    public function redirectUrl($url){
+    public function redirectUrl($url)
+    {
         $this->redirectUrl = $url;
     }
+
     /**
      * 修改成功后后退
      * @return string
      */
-    public function redirectBack(){
+    public function redirectBack()
+    {
         $this->redirectUrl = 'back';
     }
+
     /**
      * 获取修改成功后跳转的url
      * @return string
      */
-    public function getRedirectUrl(){
+    public function getRedirectUrl()
+    {
         return $this->redirectUrl;
     }
+
     /**
      * 设置主键字段
      * @param $field
@@ -180,14 +188,17 @@ class Form extends View
     {
         $this->pkField = $field;
     }
+
     /**
      * 批量添加表单
      * @param \Closure $closure
      */
-    public function batch( \Closure $closure)
+    public function batch(\Closure $closure)
     {
         array_push($this->formItem, ['type' => 'batchAdd', 'closure' => $closure]);
     }
+
+
     /**
      * 一对多
      * @param $label 标签
@@ -224,10 +235,12 @@ class Form extends View
     /**
      * 布局
      * @param \Closure $closure
+     * @param $title 标题
+     * @return $this
      */
-    public function layout(\Closure $closure)
+    public function layout(\Closure $closure, $title = '')
     {
-        array_push($this->formItem, ['type' => 'layout', 'closure' => $closure]);
+        array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure]);
         return $this;
     }
 
@@ -300,7 +313,7 @@ class Form extends View
                 }
             } else {
                 //批量添加
-                if(!empty($this->saveData['eadminBatchAdd'])){
+                if (!empty($this->saveData['eadminBatchAdd'])) {
                     $this->model->saveAll($this->saveData['eadminBatchAdd']);
                     Db::commit();
                     return true;
@@ -341,7 +354,7 @@ class Form extends View
                         } elseif ($this->model->$field() instanceof HasMany) {
 
                             $realtionUpdateIds = array_column($value, 'id');
-                            if(!empty($this->data->$field)){
+                            if (!empty($this->data->$field)) {
                                 $deleteIds = $this->data->$field->column('id');
 
                                 if (is_array($realtionUpdateIds)) {
@@ -352,7 +365,7 @@ class Form extends View
                                     $res = $this->model->$field()->whereIn($this->pkField, $deleteIds)->delete();
                                 }
                             }
-                            foreach ($value as $key=>&$val){
+                            foreach ($value as $key => &$val) {
                                 $val['sort'] = $key;
                             }
                             $this->model->$field()->saveAll($value);
@@ -367,9 +380,9 @@ class Form extends View
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
-            if(env('APP_DEBUG')){
-                abort(999,$e->getMessage());
-            }else{
+            if (env('APP_DEBUG')) {
+                abort(999, $e->getMessage());
+            } else {
                 Log::error($e->getMessage());
             }
             $res = false;
@@ -462,7 +475,7 @@ class Form extends View
         } else {
             $class .= ucfirst($name);
         }
-        if(array_key_exists($name,self::$extend)){
+        if (array_key_exists($name, self::$extend)) {
             $class = self::$extend[$name];
         }
         $formItem = new $class($field, $label, $arguments);
@@ -557,10 +570,14 @@ class Form extends View
                         $this->hasManyRelation = null;
                         break;
                     case 'layout':
-                        $this->layout = true;
-                        $formItemHtml = "<el-row>{$formItemHtml}</el-row>";
-                        $formItemHtml = '<el-row>' . $this->parseFormItem($formItemHtml) . '</el-row>';
-                        $this->layout = false;
+                        $this->layout = $formItemHtml;
+                        if (empty($formItem['title'])) {
+                            $title = '';
+                        } else {
+                            $title = "<h4 style='color: #999999;font-size: 14px'>{$formItem['title']}</h4>";
+                        }
+                        $formItemHtml = $title . '<el-row>' . $this->parseFormItem() . '</el-row>';
+                        $formItemHtml = $this->layout . $formItemHtml;
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {
@@ -572,7 +589,7 @@ class Form extends View
                         }
                         $this->tabs->setAttr('tab-position', $formItem['position']);
                         $this->tabs->push($formItem['label'], $this->parseFormItem());
-                        $formItemHtml = $this->tabs->tempHtml.$this->tabs->render();
+                        $formItemHtml = $this->tabs->tempHtml . $this->tabs->render();
                         $this->scriptArr = array_merge($this->scriptArr, $this->tabs->getScriptVar());
                         break;
                 }
@@ -602,16 +619,16 @@ class Form extends View
                         if ($relation) {
                             $fieldValue = [];
                             $manyDatas = $this->getData($relation);
-                            if($manyDatas){
-                                foreach ($manyDatas as $key=>$manyData){
-                                    foreach ($formItem->fields as $field){
-                                        if(!empty($manyData[$field])){
+                            if ($manyDatas) {
+                                foreach ($manyDatas as $key => $manyData) {
+                                    foreach ($formItem->fields as $field) {
+                                        if (!empty($manyData[$field])) {
                                             $fieldValue[$key][] = $manyData[$field];
                                         }
                                     }
                                 }
                             }
-                            $formItem->setAttr('v-model','form.'.$relation);
+                            $formItem->setAttr('v-model', 'form.' . $relation);
                             $formItem->setField($relation);
                         }
                     }
@@ -620,18 +637,18 @@ class Form extends View
                         if (is_null($fieldValue)) {
                             $this->setData($formItem->field, $formItem->defaultValue);
                         } else {
-                            if($formItem instanceof Select && !$formItem->inOptions($fieldValue)){
+                            if ($formItem instanceof Select && !$formItem->inOptions($fieldValue)) {
                                 $this->setData($formItem->field, '');
-                            }else{
+                            } else {
                                 $this->setData($formItem->field, $fieldValue);
                             }
                         }
                     } else {
 
                         if (is_array($fieldValue)) {
-                            if(empty($fieldValue) && count($formItem->fields) > 1){
+                            if (empty($fieldValue) && count($formItem->fields) > 1) {
                                 $this->setData($formItem->field, $formItem->defaultValue);
-                            }else{
+                            } else {
                                 $this->setData($formItem->field, $fieldValue);
                             }
                         } else {
@@ -650,10 +667,10 @@ class Form extends View
                     $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error=\"validates['{$valdateField}'+manyIndex+'ErrorMsg']\"  label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //设置默认值
                     if ($this->isEdit) {
-                        if(count($formItem->getFileds()) > 1){
+                        if (count($formItem->getFileds()) > 1) {
                             $itemFields = $formItem->getFileds();
                             $field = $formItem->getField();
-                            foreach ($this->hasManyData as &$val){
+                            foreach ($this->hasManyData as &$val) {
                                 $value = [];
                                 foreach ($itemFields as $key => $itemField) {
                                     if (isset($val[$itemField])) {
@@ -663,7 +680,7 @@ class Form extends View
                                     }
                                 }
                             }
-                        }else{
+                        } else {
                             $this->hasManyRowData[$formItem->field] = $formItem->defaultValue;
                         }
                     } else {
@@ -690,9 +707,9 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                if($formItem instanceof Radio){
+                if ($formItem instanceof Radio) {
                     //单选框添加改变事件
-                    $formItem->setAttr('@change',"(e)=>radioChange(e,\"{$formItem->getTag()}\",manyIndex)");
+                    $formItem->setAttr('@change', "(e)=>radioChange(e,\"{$formItem->getTag()}\",manyIndex)");
                 }
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
@@ -700,19 +717,19 @@ EOF;
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
                     $itemFields = $formItem->getFileds();
-                    if(method_exists($this->model, $field) && $this->model->$field() instanceof HasMany){
+                    if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany) {
                         //针对级联选择器多选解析保存一对多数据
                         $this->saveData[$field] = [];
-                        foreach ($itemSaveValues as $index=>$itemSaveValue){
+                        foreach ($itemSaveValues as $index => $itemSaveValue) {
                             $saveHanyData = [];
-                            foreach ($itemSaveValue as $key=>$value){
-                                if(isset($itemFields[$key])){
+                            foreach ($itemSaveValue as $key => $value) {
+                                if (isset($itemFields[$key])) {
                                     $saveHanyData[$itemFields[$key]] = $value;
                                 }
                             }
                             $this->saveData[$field][] = $saveHanyData;
                         }
-                    }else{
+                    } else {
                         if (count($itemFields) > 1) {
                             foreach ($itemFields as $key => $itemField) {
                                 if (isset($itemSaveValues[$key])) {
@@ -722,12 +739,12 @@ EOF;
                         }
                     }
 
-                }elseif (count($formItem->getFileds()) > 1 && strpos($formItem->field,'.') !== false){
+                } elseif (count($formItem->getFileds()) > 1 && strpos($formItem->field, '.') !== false) {
                     //多个字段,关联方法解析
                     $itemFields = $formItem->getFileds();
-                    list($reliatonMethod,$field) = explode('.',$formItem->field);
-                    if(isset($this->saveData[$reliatonMethod])){
-                        foreach ($this->saveData[$reliatonMethod] as &$val){
+                    list($reliatonMethod, $field) = explode('.', $formItem->field);
+                    if (isset($this->saveData[$reliatonMethod])) {
+                        foreach ($this->saveData[$reliatonMethod] as &$val) {
                             $itemSaveValues = $val[$field];
                             foreach ($itemFields as $key => $itemField) {
                                 if (isset($itemSaveValues[$key])) {
@@ -777,11 +794,11 @@ EOF;
                     $defalutHideTags = implode(',', $defalutHideTags);
                     $defalutHideTagsJs = '';
                     $hideTagsJs = '';
-                    if(!empty($defalutHideTags)){
-                        $defalutHideTagsJs.="this.formItemTags.splice(-1,0,{$defalutHideTags});";
+                    if (!empty($defalutHideTags)) {
+                        $defalutHideTagsJs .= "this.formItemTags.splice(-1,0,{$defalutHideTags});";
                     }
-                    if(!empty($hideTags)){
-                        $hideTagsJs.="this.formItemTags.splice(-1,0,{$hideTags});";
+                    if (!empty($hideTags)) {
+                        $hideTagsJs .= "this.formItemTags.splice(-1,0,{$hideTags});";
                     }
                     $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}'){this.formItemTags = [];{$hideTagsJs};}else{{$defalutHideTagsJs}}" . PHP_EOL;
                 }
@@ -847,7 +864,7 @@ EOF;
                     return $val;
                 } elseif ($this->model->$field() instanceof HasMany) {
                     if (empty($data->$field)) {
-                       return [];
+                        return [];
                     } else {
                         return $data->$field;
                     }
@@ -906,17 +923,17 @@ EOF;
                 $validateFields = [];
                 $removeFields = [];
                 $manyValidate = clone $validate;
-                foreach ($rules as $key=>$rule){
-                    if(strstr($key,$field.'.')){
+                foreach ($rules as $key => $rule) {
+                    if (strstr($key, $field . '.')) {
                         $validateFields[] = $key;
                         $removeFields[$key] = true;
                     }
                 }
-                foreach ($data as $index=>$value) {
+                foreach ($data as $index => $value) {
                     $valdateData[$field] = $value;
                     $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);
                     if (!$result) {
-                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(),'index'=>(string)$index]));
+                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(), 'index' => (string)$index]));
                     }
                 }
                 $validate->remove($removeFields);
@@ -993,14 +1010,17 @@ EOF;
         }
         return $this->render();
     }
+
     /**
      * 组件扩展
      * @param $name 名称
      * @param $class 组件类
      */
-    public static function extend($name,$class){
+    public static function extend($name, $class)
+    {
         self::$extend[$name] = $class;
     }
+
     public function __call($name, $arguments)
     {
         return $this->formItem($name, $arguments[0], array_slice($arguments, 1));
