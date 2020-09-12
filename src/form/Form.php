@@ -172,6 +172,13 @@ class Form extends View
     }
 
     /**
+     * 设置提交按钮对齐方式
+     * @param string $align
+     */
+    public function sumbitAlign($align='right'){
+        $this->setVar('sumbitAlign',$align);
+    }
+    /**
      * 获取修改成功后跳转的url
      * @return string
      */
@@ -226,7 +233,7 @@ class Form extends View
      * @param string $type 风格类型 ''/card/border-card
      * @return $this
      */
-    public function tab($label, \Closure $closure, $position = 'top', $type = 'card')
+    public function tab($label, \Closure $closure, $position = 'top', $type = '')
     {
         array_push($this->formItem, ['type' => 'tabs', 'style' => $type, 'position' => $position, 'label' => $label, 'closure' => $closure]);
         return $this;
@@ -283,6 +290,7 @@ class Form extends View
     {
         $res = false;
         $this->saveData = $data;
+
         $this->parseFormItem();
         $this->checkRule($this->saveData);
         Db::startTrans();
@@ -583,7 +591,7 @@ class Form extends View
                             $this->tabs->tempHtml = $formItemHtml;
                         }
                         if (!empty($formItem['style'])) {
-                            $this->tabs->setAttr('type', 'card');
+                            $this->tabs->setAttr('type', $formItem['style']);
                         }
                         $this->tabs->setAttr('tab-position', $formItem['position']);
                         $this->tabs->push($formItem['label'], $this->parseFormItem());
@@ -596,11 +604,15 @@ class Form extends View
             } else {
                 if ($formItem instanceof Tree) {
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
-
+                }
+                if(empty($formItem->label)){
+                    $labelWidth = "label-width='0px'";
+                }else{
+                    $labelWidth = '';
                 }
                 if (is_null($this->hasManyRelation)) {
                     $valdateField = str_replace('.', '_', $formItem->field);
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+                    $formItemTmp = "<el-form-item {$labelWidth} v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //是否多个字段解析
                     if (count($formItem->fields) > 1) {
                         $fieldValue = [];
@@ -662,7 +674,8 @@ class Form extends View
                     $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
                     $formItem->setAttr('v-model', 'manyItem.' . $formItem->field);
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
-                    $formItemTmp = "<el-form-item v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error=\"validates['{$valdateField}'+manyIndex+'ErrorMsg']\"  label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
+
+                    $formItemTmp = "<el-form-item {$labelWidth} v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error=\"validates['{$valdateField}'+manyIndex+'ErrorMsg']\"  label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //设置默认值
                     if ($this->isEdit) {
                         if (count($formItem->getFileds()) > 1) {
@@ -705,17 +718,16 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                if ($formItem instanceof Radio) {
-                    //单选框添加改变事件
+                if ($formItem instanceof Radio || $formItem instanceof Select) {
+                    //单选框或下拉框添加改变事件
                     $formItem->setAttr('@change', "(e)=>radioChange(e,\"{$formItem->getTag()}\",manyIndex)");
                 }
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
-
                     $field = $formItem->field;
                     $itemSaveValues = $this->saveData[$field];
                     $itemFields = $formItem->getFileds();
-                    if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany) {
+                    if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany && $formItem instanceof Cascader) {
                         //针对级联选择器多选解析保存一对多数据
                         $this->saveData[$field] = [];
                         foreach ($itemSaveValues as $index => $itemSaveValue) {
@@ -927,11 +939,13 @@ EOF;
                         $removeFields[$key] = true;
                     }
                 }
-                foreach ($data as $index => $value) {
-                    $valdateData[$field] = $value;
-                    $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);
-                    if (!$result) {
-                        throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(), 'index' => (string)$index]));
+                if($validateFields){
+                    foreach ($data as $index => $value) {
+                        $valdateData[$field] = $value;
+                        $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);;
+                        if (!$result) {
+                            throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(), 'index' => (string)$index]));
+                        }
                     }
                 }
                 $validate->remove($removeFields);

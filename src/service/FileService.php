@@ -131,15 +131,18 @@ class FileService extends Service
      * @param $fileName 文件名
      * @param $saveDir 保存目录
      * @param $upType disk
+     * @param $isUniqidmd5 是否唯一文件名
      * @return  bool|string
      */
-    public function upload($file, $fileName = null,$saveDir = '/',$upType='')
+    public function upload($file, $fileName = null,$saveDir = '/',$upType='',bool $isUniqidmd5 = false)
     {
         if(empty($upType)){
             $upType = $this->upType;
         }
-        if(empty($fileName)){
-            $saveName = Filesystem::disk($upType)->putFile($saveDir, $file, 'uniqid');
+        if($isUniqidmd5){
+            $saveName = Filesystem::disk($upType)->putFile($saveDir, $file);
+        }elseif(empty($fileName)){
+            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $file->getOriginalName());
         }else{
             $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $fileName);
         }

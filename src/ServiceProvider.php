@@ -37,7 +37,7 @@ class ServiceProvider extends Service
             }
 
             if($this->app->request->method() == 'POST' && empty($chunk)){
-                $res = FileService::instance()->upload($file,$filename,'editor',$upType);
+                $res = FileService::instance()->upload($file,$filename,'editor',$upType,$isUniqidmd5);
                 if (!$res) {
                     return json(['code'=>999,'message'=>'上传失败'],404);
                 } else{

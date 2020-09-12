@@ -1,5 +1,8 @@
 <template>
     <div>
+        <!--{notempty name="$header"}-->
+        {$header|raw}
+        <!--{/notempty}-->
         <!--{notempty name="$filter"}-->
         <el-drawer :with-header="false" size="25%" :append-to-body="true" :visible.sync="filterVisible" :modal="false">
             <div class="filter">
@@ -478,13 +481,27 @@
                     this.$emit('update:iframeVisible', false)
                 }
             },
+            rowDblclick(row, column, event){
+                /*{if isset($dbclickEdit)}*/
+                this.$nextTick(()=>{
+                    this.showEditId = row.id
+                })
+                /*{/if}*/
+                /*{if isset($dbclickDetail)}*/
+                this.$nextTick(()=> {
+                    this.showDetailId = row.id
+                })
+                /*{/if}*/
+            },
             //当某个单元格被点击时会触发该事件
             cellClick(row, column, cell, event){
                 this.inputEditRow = row
                 this.inputEditField = column.property
                 this.$set( this.tableData[row.eadminIndex],'eadmin_edit',true)
                 this.$nextTick(()=>{
-                    this.$refs[column.property+row.eadminIndex].focus()
+                    if(this.$refs[column.property+row.eadminIndex]){
+                        this.$refs[column.property+row.eadminIndex].focus()
+                    }
                 })
 
             },
@@ -525,7 +542,6 @@
             },
             //行内编辑
             editInput(val){
-
                 this.updateRequest(this.inputEditRow.id,this.inputEditField,val)
             },
             //更新请求

@@ -6,7 +6,7 @@
             <!--{/notempty}-->
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
-                <el-form-item>
+                <el-form-item :style="{textAlign:'{$sumbitAlign|default=\'left\'}' }">
                     <el-button type="primary" :disabled="disabledSubmit" native-type="submit" :loading="loading" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
@@ -30,7 +30,6 @@
         data(){
             let _self = this
             return {
-
                 loading:false,
                 disabledSubmit:false,
                 auto:'',

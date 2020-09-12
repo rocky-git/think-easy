@@ -75,7 +75,7 @@ abstract class View
             }
 
         }
-        $attrStr = implode(' ', $this->attrArr);
+        $attrStr = implode(' ', array_unique($this->attrArr));
         $dataStr = implode(',', $this->scriptVar);
         return [$attrStr, $dataStr];
     }

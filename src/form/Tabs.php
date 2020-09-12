@@ -33,6 +33,7 @@ class Tabs extends View
     public function render()
     {
         list($attrStr, $tableScriptVar) = $this->parseAttr();
+        
         $html = "<el-tabs {$attrStr}>%s</el-tabs>";
         $html =  sprintf($html,implode('',$this->tabPane));
         return $html;

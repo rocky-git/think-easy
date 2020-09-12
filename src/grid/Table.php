@@ -50,6 +50,7 @@ class Table extends View
         $this->setAttr('data', $data);
         $this->setAttr('@sort-change', 'sortHandel');
         $this->setAttr('@cell-click', 'cellClick');
+        $this->setAttr('@row-dblclick', 'rowDblclick');
         $this->setAttr(':row-class-name', 'tableRowClassName');
         $this->setAttr('@row-click', 'rowClick');
         $this->setAttr('ref', 'dragTable');

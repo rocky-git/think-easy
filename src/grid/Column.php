@@ -305,7 +305,6 @@ class Column extends View
             } else {
                 return "<eadmin-download-file style='margin: 5px' url='$val'></eadmin-download-file>";
             }
-
         });
         return $this;
     }

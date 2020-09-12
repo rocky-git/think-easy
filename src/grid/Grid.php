@@ -106,6 +106,24 @@ class Grid extends View
     }
 
     /**
+     * 头部内容
+     */
+    public function header($html){
+        $this->table->setVar('header',$html);
+    }
+    /**
+     * 双击编辑
+     */
+    public function dbclickEdit(){
+        $this->table->setVar('dbclickEdit',true);
+    }
+    /**
+     * 双击详情
+     */
+    public function dbclickDetail(){
+        $this->table->setVar('dbclickDetail',true);
+    }
+    /**
      * 拖拽排序列
      * @param $field 排序字段
      * @param string $label 显示标签
