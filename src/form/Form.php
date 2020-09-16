@@ -78,7 +78,6 @@ class Form extends View
     protected $tabs = null;
 
 
-
     protected $scriptArr = [];
     //当前模型
     protected $model;
@@ -112,8 +111,9 @@ class Form extends View
     //表单验证双向绑定变量
     protected $formValidate = [];
 
-    //表单item标记集合
-    protected $formItemTags = [];
+    protected $layoutTags = [];
+    protected $whenValue = null;
+    protected $formWhenItem = [];
 
     //radio事件js
     protected $radioJs = null;
@@ -175,9 +175,11 @@ class Form extends View
      * 设置提交按钮对齐方式
      * @param string $align
      */
-    public function sumbitAlign($align='right'){
-        $this->setVar('sumbitAlign',$align);
+    public function sumbitAlign($align = 'right')
+    {
+        $this->setVar('sumbitAlign', $align);
     }
+
     /**
      * 获取修改成功后跳转的url
      * @return string
@@ -367,7 +369,6 @@ class Form extends View
 
                                 if (is_array($realtionUpdateIds)) {
                                     $deleteIds = array_diff($deleteIds, $realtionUpdateIds);
-
                                 }
                                 if (count($deleteIds) > 0) {
                                     $res = $this->model->$field()->whereIn($this->pkField, $deleteIds)->delete();
@@ -376,7 +377,9 @@ class Form extends View
                             foreach ($value as $key => &$val) {
                                 $val['sort'] = $key;
                             }
-                            $this->model->$field()->saveAll($value);
+                            if (!empty($value)) {
+                                $this->model->$field()->saveAll($value);
+                            }
                         }
                     }
                 }
@@ -386,10 +389,12 @@ class Form extends View
                 call_user_func_array($this->afterSave, [$this->saveData, $this->model]);
             }
             Db::commit();
+        } catch (HttpResponseException $e) {
+            die($e->getMessage());
         } catch (\Exception $e) {
             Db::rollback();
             if (env('APP_DEBUG')) {
-                abort(999, $e->getMessage());
+                throw $e;
             } else {
                 Log::error($e->getMessage());
             }
@@ -537,9 +542,8 @@ class Form extends View
      * 解析formItem
      * @return string
      */
-    protected function parseFormItem($formItemHtml = '')
+    protected function parseFormItem($formItemHtml = '',$whenTag='')
     {
-
         foreach ($this->formItem as $key => $formItem) {
             if (is_array($formItem)) {
                 $formItemArr = array_slice($this->formItem, $key + 1);
@@ -577,13 +581,16 @@ class Form extends View
                         }
                         $this->hasManyRelation = null;
                         break;
-                    case 'layout':;
+                    case 'layout':
                         if (empty($formItem['title'])) {
                             $title = '';
                         } else {
-                            $title = "<h4 style='color: #999999;font-size: 14px'>{$formItem['title']}</h4>";
+                            $title = "<div><h4 style='color: #999999;font-size: 14px'>{$formItem['title']}</h4></div>";
                         }
-                        $formItemHtml .= $title . '<el-row>' . $this->parseFormItem() . '</el-row>';
+                        $field = new Field('', '', []);
+                        $this->layoutTags[$whenTag][] = $field->getTag();
+
+                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row>' . $this->parseFormItem('',$whenTag) . '</el-row></div>';
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {
@@ -600,18 +607,18 @@ class Form extends View
                         break;
                 }
                 $this->formItem = $formItemArr;
-
             } else {
                 if ($formItem instanceof Tree) {
                     $this->setVar('styleHorizontal', $formItem->styleHorizontal());
                 }
-                if(empty($formItem->label)){
+                if (empty($formItem->label)) {
                     $labelWidth = "label-width='0px'";
-                }else{
+                } else {
                     $labelWidth = '';
                 }
                 if (is_null($this->hasManyRelation)) {
                     $valdateField = str_replace('.', '_', $formItem->field);
+
                     $formItemTmp = "<el-form-item {$labelWidth} v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //是否多个字段解析
                     if (count($formItem->fields) > 1) {
@@ -654,7 +661,6 @@ class Form extends View
                             }
                         }
                     } else {
-
                         if (is_array($fieldValue)) {
                             if (empty($fieldValue) && count($formItem->fields) > 1) {
                                 $this->setData($formItem->field, $formItem->defaultValue);
@@ -674,7 +680,6 @@ class Form extends View
                     $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
                     $formItem->setAttr('v-model', 'manyItem.' . $formItem->field);
                     $valdateField = str_replace('.', '_', $this->hasManyRelation . '.' . $formItem->field);
-
                     $formItemTmp = "<el-form-item {$labelWidth} v-show=\"formItemTags.indexOf('{$formItem->getTag()}' + manyIndex) === -1\" ref='{$formItem->field}' :error=\"validates['{$valdateField}'+manyIndex+'ErrorMsg']\"  label='{$formItem->label}' :prop=\"'{$this->hasManyRelation}.' + manyIndex + '.{$formItem->field}'\" :rules='formItemTags.indexOf(\"{$formItem->getTag()}\" + manyIndex) === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //设置默认值
                     if ($this->isEdit) {
@@ -718,10 +723,10 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                if ($formItem instanceof Radio || $formItem instanceof Select) {
-                    //单选框或下拉框添加改变事件
-                    $formItem->setAttr('@change', "(e)=>radioChange(e,\"{$formItem->getTag()}\",manyIndex)");
-                }
+
+
+                $this->radioJs .= $formItem->changeJs;
+
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $field = $formItem->field;
@@ -776,41 +781,61 @@ EOF;
                     $formItemHtml .= $formItemTmp;
                 }
                 $this->script($formItem->getScript());
-
-
-                //when显示元素解析，item互动事件显示隐藏
                 $whenTags = [];
                 $whenTagsAll = [];
+                if(!empty($whenTag)){
+                    $this->formWhenItem[$whenTag][] = $formItem;
+                }
+                //when显示元素解析，item互动事件显示隐藏
                 foreach ($formItem->getWhenItem() as $whenIndex => $whenItem) {
                     $formItemArr = array_slice($this->formItem, $key + 1);
                     $this->formItem = [];
+                    $whenTagNow = $formItem->getTag().$whenItem['value'];
                     call_user_func_array($whenItem['closure'], [$this]);
-                    $formItemHtml = $this->parseFormItem($formItemHtml);
-                    foreach ($this->formItem as $whenformItem) {
+                    $formItemHtml = $this->parseFormItem($formItemHtml,$whenTagNow);
+                    if (empty($this->formItem) && isset($this->formWhenItem[$whenTagNow])) {
+                        $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
+                    } else {
+                        $formWhenItem = $this->formItem;
+                    }
+                    foreach ($formWhenItem as $whenformItem) {
                         $whenTags[$whenItem['value']][] = $whenformItem->getTag();
                         $whenTagsAll[] = $whenformItem->getTag();
-                        $this->radioJs .= "if(val == '{$whenItem['value']}' && tag === '{$formItem->getTag()}'){this.deleteArr(this.formItemTags,'{$whenformItem->getTag()}' + manyIndex)}" . PHP_EOL;
+                    }
+                    if(isset($this->layoutTags[$whenTagNow])){
+                        foreach ($this->layoutTags[$whenTagNow] as $tag) {
+                            $whenTags[$whenItem['value']][] = $tag;
+                            $whenTagsAll[] = $tag;
+                        }
                     }
                 }
                 foreach ($whenTags as $whenVal => $tags) {
                     $hideTags = array_diff($whenTagsAll, $tags);
-                    $defalutHideTags = array_map(function ($v) {
+                    $defalutHideTagsArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $tags);
-                    $hideTags = array_map(function ($v) {
+                    $hideTagsArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $hideTags);
-                    $hideTags = implode(',', $hideTags);
-                    $defalutHideTags = implode(',', $defalutHideTags);
+                    $hideTags = implode(',', $hideTagsArr);
+                    $defalutHideTags = implode(',', $defalutHideTagsArr);
                     $defalutHideTagsJs = '';
                     $hideTagsJs = '';
                     if (!empty($defalutHideTags)) {
+                        foreach ($hideTagsArr as $tag) {
+                            $defalutHideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
+                        }
                         $defalutHideTagsJs .= "this.formItemTags.splice(-1,0,{$defalutHideTags});";
+
                     }
                     if (!empty($hideTags)) {
+                        foreach ($defalutHideTagsArr as $tag) {
+                            $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
+                        }
                         $hideTagsJs .= "this.formItemTags.splice(-1,0,{$hideTags});";
+
                     }
-                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}'){this.formItemTags = [];{$hideTagsJs};}else{{$defalutHideTagsJs}}" . PHP_EOL;
+                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}else if(changeType == 'when'){{$defalutHideTagsJs}}" . PHP_EOL;
                 }
             }
         }
@@ -939,7 +964,7 @@ EOF;
                         $removeFields[$key] = true;
                     }
                 }
-                if($validateFields){
+                if ($validateFields) {
                     foreach ($data as $index => $value) {
                         $valdateData[$field] = $value;
                         $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);;
@@ -999,16 +1024,15 @@ EOF;
             $this->edit($this->extraData[$this->pkField]);
         }
         $formItem = $this->parseFormItem();
+
         $scriptStr = implode(',', array_unique($this->scriptArr));
         list($attrStr, $formScriptVar) = $this->parseAttr();
         if (!empty($scriptStr)) {
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
         $this->formData = array_merge($this->formData, $this->extraData);
-
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
         $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
-        $this->setVar('formItemTags', json_encode($this->formItemTags, JSON_UNESCAPED_UNICODE));
         $this->setVar('script', $this->script);
         $this->setVar('attrStr', $attrStr);
         $this->setVar('radioJs', $this->radioJs);

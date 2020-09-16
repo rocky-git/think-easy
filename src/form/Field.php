@@ -46,7 +46,8 @@ class Field extends View
     public $helpText = '';
 
     protected $whenItem = [];
-
+    public $changeJs = '';
+   
     /**
      * Input constructor.
      * @param $field 字段
@@ -224,6 +225,7 @@ class Field extends View
      */
     public function when(...$conditon)
     {
+        $this->setAttr('@change', "(e)=>radioChange(e,\"{$this->getTag()}\",manyIndex,\"when\")");
         if (count($conditon) == 3) {
             list($val, $operator, $closure) = $conditon;
         } elseif (count($conditon) == 2) {
@@ -235,10 +237,10 @@ class Field extends View
             'operator' => $operator,
             'closure' => $closure,
         ];
-        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0)" . PHP_EOL;
+        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
         return $this;
     }
-
+   
     public function getWhenItem()
     {
         return $this->whenItem;

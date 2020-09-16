@@ -37,9 +37,9 @@
                 plugIframe:null,
                 iframeVisible:false,
                 iframeField:null,
+                formItemTags:[],
                 form:{$formData|raw},
                 validates:{$formValidate|raw},
-                formItemTags:{$formItemTags|raw},
                 {$formScriptVar|raw}
             }
         },
@@ -57,7 +57,7 @@
         },
         methods:{
             //单选框切换事件
-            radioChange(val,tag,manyIndex){
+            radioChange(val,tag,manyIndex,changeType=''){
                 {$radioJs|raw|default=''}
             },
             init(){
@@ -161,9 +161,7 @@
                             val = response.data[field]
                             field = field.replace('.','_')
                             this.validates[field+index+'ErrorMsg'] = val
-
                         }
-                        console.log(this.validates)
                     }
                 }).catch(res=>{
                     this.loading = false

@@ -22,10 +22,11 @@ class Select extends Field
     protected $options = [];
     protected $groupOptions = [];
     protected $disabledData = [];
+
     public function __construct($field, $label, $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
-        $this->setAttr('clearable', true);
+
         $this->setAttr('filterable', true);
         $this->setAttr('placeholder', '请选择' . $label);
     }
@@ -111,7 +112,34 @@ class Select extends Field
      */
     public function multiple()
     {
+        $this->setAttr('clearable', true);
         $this->setAttr('multiple', true);
+        return $this;
+    }
+
+    /**
+     * 联动显示数据
+     * @param $field 联动字段
+     * @param $action 联动请求方法
+     */
+    public function load($field,$action){
+        if(is_array($field)){
+            $js = '';
+            foreach ($field as $f){
+                $js .= "this.form['{$f}'] = res.data.$f || ''". PHP_EOL;
+            }
+            $this->changeJs = <<<EOF
+        if(tag == '{$this->getTag()}' && changeType == 'load'){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){{$js}}})}
+        
+EOF;
+        }else{
+            $this->changeJs = <<<EOF
+        if(tag == '{$this->getTag()}' && changeType == 'load'){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){this.form['{$field}'] = res.data}})}
+       
+EOF;
+        }
+        $this->setAttr('@change', "(e)=>radioChange(e,\"{$this->getTag()}\",manyIndex,\"load\")");
+        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"load\")" . PHP_EOL;
         return $this;
     }
     /**
