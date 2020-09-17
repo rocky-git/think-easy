@@ -129,12 +129,12 @@ class Select extends Field
                 $js .= "this.form['{$f}'] = res.data.$f || ''". PHP_EOL;
             }
             $this->changeJs = <<<EOF
-        if(tag == '{$this->getTag()}' && changeType == 'load'){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){{$js}}})}
+        if(tag == '{$this->getTag()}' && changeType == 'load'){if(val){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){{$js}}})}}
         
 EOF;
         }else{
             $this->changeJs = <<<EOF
-        if(tag == '{$this->getTag()}' && changeType == 'load'){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){this.form['{$field}'] = res.data}})}
+        if(tag == '{$this->getTag()}' && changeType == 'load'){if(val){this.\$request('{$action}/q/'+ val).then(res=>{if(res.data){this.form['{$field}'] = res.data}})}}
        
 EOF;
         }

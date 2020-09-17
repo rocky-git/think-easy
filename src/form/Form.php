@@ -242,12 +242,12 @@ class Form extends View
     }
 
     /**
-     * 布局
+     * 布局行
      * @param \Closure $closure
      * @param $title 标题
      * @return $this
      */
-    public function layout(\Closure $closure, $title = '')
+    public function row(\Closure $closure, $title = '')
     {
         array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure]);
         return $this;
