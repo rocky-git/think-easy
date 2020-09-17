@@ -18,7 +18,8 @@
   "php": ">=7.1.0",
     "iidestiny/flysystem-oss": "^2.0",
     "overtrue/flysystem-qiniu": "^1.0",
-    "overtrue/wechat": "~4.0"
+    "overtrue/wechat": "~4.0",
+    "symfony/finder": "v4.4.9"
   },
   "autoload": {
     "psr-4": {

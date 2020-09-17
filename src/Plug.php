@@ -12,6 +12,7 @@ use Phinx\Migration\AbstractMigration;
 use Phinx\Migration\MigrationInterface;
 use Phinx\Seed\AbstractSeed;
 use Phinx\Util\Util;
+use Symfony\Component\Finder\Finder;
 
 /**
  * 插件
@@ -175,37 +176,47 @@ abstract class Plug
             }
         }
     }
-    protected function recurse_copy($src, $dst)
-    {
-        $dir = opendir($src);
-        mkdir($dst);
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->recurse_copy($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    copy($src . '/' . $file, $dst . '/' . $file);
-                }
+
+    /**
+     * 递归复制目录文件
+     * @param $dir 源目录
+     * @param $src 目标目录
+     */
+    protected function copyDir($dir,$src){
+        if(!is_dir($src)){
+            mkdir($src,0755);
+        }
+        $finder = new Finder();
+        foreach ($finder->in($dir)  as $file){
+            $path = $file->getRealPath();
+            $makePath = $src.DIRECTORY_SEPARATOR.$file->getRelativePath().DIRECTORY_SEPARATOR.$file->getFilename();
+            if(is_dir($path)){
+                mkdir($makePath,0755);
+            }else{
+                copy($path,$makePath);
             }
         }
-        closedir($dir);
     }
-    //循环删除目录和文件函数
-    protected function delDirAndFile($dirName)
-    {
-        if ($handle = opendir("$dirName")) {
-            while (false !== ($item = readdir($handle))) {
-                if ($item != "." && $item != "..") {
-                    if (is_dir("$dirName/$item")) {
-                        $this->delDirAndFile("$dirName/$item");
-                    } else {
-                        unlink("$dirName/$item");
-                    }
-                }
-            }
-            closedir($handle);
-            rmdir($dirName);
+    /**
+     * 递归删除目录文件
+     * @param $dir 源目录
+     */
+    protected function delDir($dirName){
+        if(!is_dir($dirName))
+        {
+            return false;
         }
+        $handle = @opendir($dirName);
+        while(($file = @readdir($handle)) !== false)
+        {
+            if($file != '.' && $file != '..')
+            {
+                $dir = $dirName . '/' . $file;
+                is_dir($dir) ? $this->delDir($dir) : @unlink($dir);
+            }
+        }
+        closedir($handle);
+        return rmdir($dirName) ;
     }
     //获取插件描述
     final function getDescription(){
