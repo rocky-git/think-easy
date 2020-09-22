@@ -179,6 +179,16 @@ class Form extends View
     {
         $this->setVar('sumbitAlign', $align);
     }
+    public function prependSubmitExtend($entend){
+        $field = new $entend('','',[]);
+        $this->setVar('prependSubmitExtend', $field->render());
+        $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+    }
+    public function appendSubmitExtend(Field $field){
+        $field = new $entend('','',[]);
+        $this->setVar('appendSubmitExtend', $field->render());
+        $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+    }
 
     /**
      * 获取修改成功后跳转的url

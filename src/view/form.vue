@@ -7,9 +7,15 @@
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
                 <el-form-item :style="{textAlign:'{$sumbitAlign|default=\'left\'}' }">
-                    <el-button type="primary" :disabled="disabledSubmit" native-type="submit" :loading="loading" @click="onSubmit('form')">{$submitText|default='保存数据'}</el-button>
+                    <!--{if isset($prependSubmitExtend)}-->
+                    {$prependSubmitExtend|raw}
+                    <!--{/if}-->
+                    <el-button type="primary"  native-type="submit" :loading="loading" @click="loading = true">{$submitText|default='保存数据'}</el-button>
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
+                    <!--{/if}-->
+                    <!--{if isset($appendSubmitExtend)}-->
+                    {$appendSubmitExtend|raw}
                     <!--{/if}-->
                 </el-form-item>
             </el-form>
@@ -31,16 +37,23 @@
             let _self = this
             return {
                 loading:false,
-                disabledSubmit:false,
                 auto:'',
                 manyIndex:0,
                 plugIframe:null,
                 iframeVisible:false,
                 iframeField:null,
                 formItemTags:[],
+                closeVisible:true,
                 form:{$formData|raw},
                 validates:{$formValidate|raw},
                 {$formScriptVar|raw}
+            }
+        },
+        watch:{
+            loading(val){
+                if(val){
+                    this.onSubmit()
+                }
             }
         },
         created(){
@@ -109,7 +122,7 @@
                 this.form[field] = this.$refs.tree.getCheckedNodes();
             },
             //提交
-            onSubmit(formName){
+            onSubmit(){
                 let url,method
                 let urlArr = this.$route.path.split('/')
                 //url = urlArr[1]+'/'+ urlArr[2]
@@ -121,9 +134,7 @@
                     url = url +'/'+this.form.id+'.rest'
                     method = 'put'
                 }
-                this.loading = true
                 this.$emit('update:tableDataUpdate', false)
-                this.disabledSubmit = true
                 this.$request({
                     url: url,
                     method: method,
@@ -131,7 +142,6 @@
                     params:this.$route.query
                 }).then(response=>{
                     this.loading = false
-                    this.disabledSubmit = false
                     if(response.code == 200){
                         this.$notify({
                             title: '操作完成',
@@ -144,8 +154,10 @@
                         }else if(response.data.url){
                             this.$router.push(response.data.url)
                         }
-                        this.$emit('update:dialogVisible', false)
-                        this.$emit('update:tableDataUpdate', true)
+                        if(this.closeVisible){
+                            this.$emit('update:dialogVisible', false)
+                            this.$emit('update:tableDataUpdate', true)
+                        }
                         if (this.refresh == 1) {
                             this.reload()
                         }
@@ -165,7 +177,6 @@
                     }
                 }).catch(res=>{
                     this.loading = false
-                    this.disabledSubmit = false
                 })
             },
             resetForm(formName) {

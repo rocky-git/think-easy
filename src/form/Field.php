@@ -47,7 +47,7 @@ class Field extends View
 
     protected $whenItem = [];
     public $changeJs = '';
-   
+
     /**
      * Input constructor.
      * @param $field 字段
@@ -60,7 +60,9 @@ class Field extends View
         array_unshift($this->fields, $this->field);
         $this->label = $label;
         $this->rule = json_encode([], JSON_UNESCAPED_UNICODE);
-        $this->setAttr('v-model', 'form.' . $field);
+        if(!empty($field)){
+            $this->setAttr('v-model', 'form.' . $field);
+        }
         $this->setAttr('placeholder', '请输入' . $label);
     }
 
@@ -240,7 +242,7 @@ class Field extends View
         $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
         return $this;
     }
-   
+
     public function getWhenItem()
     {
         return $this->whenItem;
