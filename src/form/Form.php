@@ -873,7 +873,11 @@ EOF;
             }
         } else {
             if (empty($val)) {
-                $this->formData[$field] = SystemConfig::where('name', $field)->value('value');
+                $val= SystemConfig::where('name', $field)->value('value');
+                if(is_numeric($val)){
+                    $val = (int)$val;
+                }
+                $this->formData[$field] = $val;
             } else {
                 $this->formData[$field] = $val;
             }
