@@ -63,11 +63,7 @@ class FileService extends Service
                 if (substr($saveDir, -1) == '/') {
                     $saveDir = substr($saveDir, 0, -1);
                 }
-                if ($isUniqidmd5) {
-                    return $this->upload($file,null, $saveDir);
-                } else {
-                    return $this->upload($file, $filename,$saveDir);
-                }
+                return $this->upload($file, $filename,$saveDir,$this->upType,$isUniqidmd5);
             } else {
 
                 $this->totalSizeCacheKey = md5($filename . 'totalSize');
