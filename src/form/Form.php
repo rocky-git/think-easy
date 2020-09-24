@@ -184,7 +184,7 @@ class Form extends View
         $this->setVar('prependSubmitExtend', $field->render());
         $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
     }
-    public function appendSubmitExtend(Field $field){
+    public function appendSubmitExtend($entend){
         $field = new $entend('','',[]);
         $this->setVar('appendSubmitExtend', $field->render());
         $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());

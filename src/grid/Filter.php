@@ -357,7 +357,18 @@ class Filter extends View
         $formItem->options($options);
         return $formItem;
     }
-
+    /**
+     * 分组下拉框
+     * @param $options 选项值
+     * @return \thinkEasy\form\Select
+     */
+    public function selectGroup(array $options)
+    {
+        $formItem = array_pop($this->formItem);
+        $formItem = $this->formItem($formItem->field, $formItem->label, 'select');
+        $formItem->groupOptions($options);
+        return $formItem;
+    }
     /**
      * 下拉框
      * @param $options 选项值

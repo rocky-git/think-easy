@@ -202,11 +202,25 @@ EOF;
                 return false;
             }
         }else{
-            $keys = array_keys($this->options);
-            if(in_array($val,$keys)){
-                return true;
+            if(count($this->groupOptions) > 0){
+                $options = [];
+                foreach ($this->groupOptions as $value){
+                    foreach ($value['options'] as $option){
+                        $options[] = $option['value'];
+                    }
+                }
+                if(in_array($val,$options)){
+                    return true;
+                }else{
+                    return false;
+                }
             }else{
-                return false;
+                $keys = array_keys($this->options);
+                if(in_array($val,$keys)){
+                    return true;
+                }else{
+                    return false;
+                }
             }
         }
     }
