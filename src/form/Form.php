@@ -678,6 +678,7 @@ class Form extends View
                                 $this->setData($formItem->field, $fieldValue);
                             }
                         } else {
+
                             $this->setData($formItem->field, $formItem->defaultValue);
                         }
                     }
@@ -872,7 +873,7 @@ EOF;
                 $this->formData[$field] = $val;
             }
         } else {
-            if (empty($val)) {
+            if (empty($val) && $val !== 0) {
                 $val= SystemConfig::where('name', $field)->value('value');
                 if(is_numeric($val)){
                     $val = (int)$val;
