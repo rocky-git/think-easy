@@ -1,6 +1,6 @@
 <?php
 namespace {%namespace%};
-use thinkEasy\model\BaseModel;
+
 class {%className%} extends BaseModel
 {
     //
