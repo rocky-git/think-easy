@@ -67,12 +67,12 @@
                     <!--{if !isset($hideDeletesButton)}-->
                     <!-- PC端-->
                     <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                    <el-button class="hidden-md-and-down" plain size="small" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button class="hidden-md-and-down" plain size="small" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
                     <el-button class="hidden-md-and-down" plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                     <el-button class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                     <!-- 移动端-->
                     <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect"></el-button>
-                    <el-button class="hidden-md-and-up" plain size="mini" type="primary" v-show="selectButtonShow && iframeMode" @click="confirmSelect">确认选中</el-button>
+                    <el-button class="hidden-md-and-up" plain size="mini" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
                     <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
                     <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
 

@@ -14,6 +14,7 @@
         },
         data(){
           return {
+            tableDataUpdate:true,
             form:{
                 switch:'{$switchValue|default="0"}',
             },

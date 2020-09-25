@@ -56,6 +56,7 @@ class IframeTag extends Field
                     $pk = $this->table->getPk();
                     $data = $this->table->whereIn($pk,$ids)->field("$pk as id,$this->tagField as label")->select()->toArray();
                 }else{
+                    $pk = Db::name($this->table)->getPk();
                     $data = Db::name($this->table)->whereIn($pk,$ids)->field("$pk as id,$this->tagField as label")->select()->toArray();
                 }
                 $this->successCode($data);

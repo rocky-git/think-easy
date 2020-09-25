@@ -114,6 +114,7 @@ class Actions extends Column
         foreach ($this->appendArr as $val) {
             $html .= $val;
         }
+       
         $this->appendArr = [];
         $this->prependArr = [];
         if($this->mode == 'button'){

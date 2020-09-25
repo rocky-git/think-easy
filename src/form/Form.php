@@ -832,19 +832,18 @@ EOF;
                     $defalutHideTags = implode(',', $defalutHideTagsArr);
                     $defalutHideTagsJs = '';
                     $hideTagsJs = '';
+                    foreach ($hideTagsArr as $tag) {
+                        $defalutHideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
+                    }
                     if (!empty($defalutHideTags)) {
-                        foreach ($hideTagsArr as $tag) {
-                            $defalutHideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
-                        }
                         $defalutHideTagsJs .= "this.formItemTags.splice(-1,0,{$defalutHideTags});";
 
                     }
+                    foreach ($defalutHideTagsArr as $tag) {
+                        $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
+                    }
                     if (!empty($hideTags)) {
-                        foreach ($defalutHideTagsArr as $tag) {
-                            $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
-                        }
                         $hideTagsJs .= "this.formItemTags.splice(-1,0,{$hideTags});";
-
                     }
                     $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}else if(changeType == 'when'){{$defalutHideTagsJs}}" . PHP_EOL;
                 }

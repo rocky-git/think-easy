@@ -87,6 +87,7 @@ class Button extends View
         $this->setAttr('open-type',$type);
         if($refreshTable){
             $this->setAttr(':table-data-update.sync','tableDataUpdate');
+            $this->setAttr(':tabledata.sync','tableData');
         }
         $this->setAttr('refresh',$refresh);
         return $this->html();
