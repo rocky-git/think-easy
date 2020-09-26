@@ -28,7 +28,7 @@ abstract class View
 
     //解析完成的已设置组件属性
     protected $attrArr = [];
-
+    protected $attr = [];
     //js变量
     protected $scriptVar = [];
 
@@ -182,9 +182,17 @@ abstract class View
     {
         $var = $this->attrVarName($name, $value);
         $this->attrVars[$var] = $value;
+        $this->attr[$name] = $value;
         return $this;
     }
+    public function getAttr($name=''){
+        if(empty($name)){
+            return $this->attr;
+        }else{
+            return $this->attr[$name];
+        }
 
+    }
     /**
      * 获取标记
      */
