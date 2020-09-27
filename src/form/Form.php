@@ -820,32 +820,23 @@ EOF;
                         }
                     }
                 }
+                if(count($whenTags) > 0){
+                    $hideTagsAllArr = array_map(function ($v) {
+                        return "'{$v}' + manyIndex";
+                    }, $whenTagsAll);
+                    $HideTagsAllJs = implode(',', $hideTagsAllArr);
+                    $this->radioJs .= "if(tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}".PHP_EOL;
+                }
                 foreach ($whenTags as $whenVal => $tags) {
-                    $hideTags = array_diff($whenTagsAll, $tags);
                     $defalutHideTagsArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $tags);
-                    $hideTagsArr = array_map(function ($v) {
-                        return "'{$v}' + manyIndex";
-                    }, $hideTags);
-                    $hideTags = implode(',', $hideTagsArr);
                     $defalutHideTags = implode(',', $defalutHideTagsArr);
-                    $defalutHideTagsJs = '';
                     $hideTagsJs = '';
-                    foreach ($hideTagsArr as $tag) {
-                        $defalutHideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
-                    }
-                    if (!empty($defalutHideTags)) {
-                        $defalutHideTagsJs .= "this.formItemTags.splice(-1,0,{$defalutHideTags});";
-
-                    }
                     foreach ($defalutHideTagsArr as $tag) {
                         $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
                     }
-                    if (!empty($hideTags)) {
-                        $hideTagsJs .= "this.formItemTags.splice(-1,0,{$hideTags});";
-                    }
-                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}else if(changeType == 'when'){{$defalutHideTagsJs}}" . PHP_EOL;
+                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}" . PHP_EOL;
                 }
             }
         }

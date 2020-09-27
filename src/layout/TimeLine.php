@@ -21,13 +21,20 @@ class TimeLine extends View
     protected $html = '';
     protected $placement = '';
     protected $datas = [];
+    protected $timeField = 'time';
+    protected $contentField = 'content';
+    public function __construct($timeField='time',$contenField='content')
+    {
+        $this->contentField = $contenField;
+        $this->timeField = $timeField;
+    }
     /**
      * 创建
      * @param array $datas
      * @return TimeLine
      */
-    public function create(array $datas){
-        $self = new self();
+    public function create(array $datas,$timeField,$contenField){
+        $self = new self($timeField,$contenField);
         $self->data($datas);
         return $self;
     }
@@ -56,7 +63,7 @@ class TimeLine extends View
     }
     public function render(){
         foreach ($this->datas as $value){
-            $this->html .= "<el-timeline-item {$this->placement} timestamp='{$value['time']}'>{$value['content']}</el-timeline-item>";
+            $this->html .= "<el-timeline-item {$this->placement} timestamp='{$value[$this->timeField]}'>{$value[$this->contentField]}</el-timeline-item>";
         }
         list($attrStr, $scriptVar) = $this->parseAttr();
         return "<el-timeline $attrStr>{$this->html}</el-timeline>";

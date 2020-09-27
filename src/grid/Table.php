@@ -130,19 +130,27 @@ class Table extends View
             }
             if($column->label == '删除时间'){
                 $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1 && deleteColumnShow");
+                $checkboxOptions[] = [
+                    'field'=>$column->field,
+                    'label'=>$column->label,
+                ];
+                $checkboxColumn[] = $column->field;
+            }elseif ($column->isHide()){
+                $column->setAttr('v-if',"1 == 0");
             }else{
                 $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1");
+                $checkboxOptions[] = [
+                    'field'=>$column->field,
+                    'label'=>$column->label,
+                ];
+                $checkboxColumn[] = $column->field;
             }
             $this->cellComponent[] = $column->getDisplay($i, 'tableData');
             $i++;
             $columnHtml .= $column->render();
             $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
-            $checkboxOptions[] = [
-                'field'=>$column->field,
-                'label'=>$column->label,
-            ];
-            $checkboxColumn[] = $column->field;
+
         }
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();

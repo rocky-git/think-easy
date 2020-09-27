@@ -65,6 +65,7 @@ class Column extends View
     public $totalText = '';
     public $closeExport = false;
     public $html = '';
+    protected $hide = false;
     //是否行内编辑
     protected $edit = false;
     public function __construct($field = '', $label = '')
@@ -80,7 +81,17 @@ class Column extends View
             $this->setAttr('prop', $field);
         }
     }
-
+    /**
+     * 隐藏
+     * @return $this
+     */
+    public function hide(){
+        $this->hide = true;
+        return $this;
+    }
+    public function isHide(){
+        return $this->hide;
+    }
     public function getField($field = '')
     {
         if (empty($field)) {

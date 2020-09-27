@@ -13,7 +13,7 @@ use think\Facade;
 /**
  * Class TimeLine
  * @package \thinkEasy\layout\TimeLine
- * @method \thinkEasy\layout\TimeLine create(array $datas) static 创建
+ * @method \thinkEasy\layout\TimeLine create(array $datas,$timeField,$contentField) static 创建
  * @method \thinkEasy\layout\TimeLine asc() static 排序小到大
  */
 class TimeLine extends Facade
