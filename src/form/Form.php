@@ -859,13 +859,14 @@ EOF;
                 list($relation, $field) = explode('.', $field);
                 $this->formData[$relation][$field] = $val;
             } else {
-
                 $this->formData[$field] = $val;
             }
         } else {
-            if (empty($val) && $val !== 0) {
-                $val= SystemConfig::where('name', $field)->value('value');
-                if(is_numeric($val)){
+            if (empty($val)) {
+                $val = SystemConfig::where('name', $field)->value('value');
+                if(is_null($val)){
+                    $val  = '';
+                }else if(is_numeric($val)){
                     $val = (int)$val;
                 }
                 $this->formData[$field] = $val;
