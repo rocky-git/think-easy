@@ -68,6 +68,7 @@ class Column extends View
     protected $hide = false;
     //是否行内编辑
     protected $edit = false;
+    protected $relation = '';
     public function __construct($field = '', $label = '')
     {
         $this->label = $label;
@@ -76,8 +77,8 @@ class Column extends View
             $field = $this->getField($field);
             $this->rowField = "scope.row.{$this->field}";
             $fields = explode('.',$this->field);
-            $relation = array_shift($fields);
-            $this->relationRowField = "scope.row.{$relation}";
+            $this->relation = array_shift($fields);
+            $this->relationRowField = "scope.row.{$this->relation}";
             $this->setAttr('prop', $field);
         }
     }
@@ -542,6 +543,7 @@ class Column extends View
             $label = "<span style='font-size: 14px;color: #888888'>{$this->label}:</span>&nbsp;";
         }
         $this->rowField = 'data.' . $this->field;
+        $this->relationRowField = 'data.' . $this->relation;
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
         } elseif (count($this->usings) > 0) {
@@ -560,7 +562,7 @@ class Column extends View
             }
             $this->display = $html;
         } elseif (empty($this->display) && !empty($this->field)) {
-            $this->display = "<span style='font-size: 14px;' v-if=\"{$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
+            $this->display = "<span style='font-size: 14px;' v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
         $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px; padding-top: 15px;padding-bottom: 15px;border-bottom-style: solid;border-bottom-color: #f0f0f0;display: flex;align-items: center'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
