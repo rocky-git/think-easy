@@ -11,14 +11,20 @@
             page:Number,
             total:Number,
             size:Number,
+            tableDataUpdate: Boolean,
         },
         data(){
           return {
-            tableDataUpdate:true,
+
             form:{
                 switch:'{$switchValue|default="0"}',
             },
           }
+        },
+        watch: {
+            tableDataUpdate(val) {
+                this.$emit('update:tableDataUpdate', val)
+            },
         },
         methods:{
             //输入框排序
