@@ -6,7 +6,9 @@
  * Time: 10:51
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
+
+use thinkEasy\form\Field;
 
 /**
  * 穿梭框

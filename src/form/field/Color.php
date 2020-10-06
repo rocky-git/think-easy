@@ -6,8 +6,8 @@
  * Time: 22:33
  */
 
-namespace thinkEasy\form;
-
+namespace thinkEasy\form\field;
+use thinkEasy\form\Field;
 /**
  * 颜色选择器
  * Class Color

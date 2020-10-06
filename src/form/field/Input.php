@@ -6,10 +6,10 @@
  * Time: 09:48
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
 
-
+use thinkEasy\form\Field;
 
 class Input extends Field
 {

@@ -6,9 +6,9 @@
  * Time: 21:50
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
-
+use thinkEasy\form\Field;
 class Checkbox extends Field
 {
     protected $attrs = [

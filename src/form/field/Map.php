@@ -1,8 +1,8 @@
 <?php
 
 
-namespace thinkEasy\form;
-
+namespace thinkEasy\form\field;
+use thinkEasy\form\Field;
 /**
  * 高德地图
  * Class Map

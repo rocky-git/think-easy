@@ -1,14 +1,14 @@
 <?php
 
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
 
 use think\facade\Db;
 use think\facade\Request;
 use think\Model;
 use thinkEasy\ApiJson;
-
+use thinkEasy\form\Field;
 class IframeTag extends Field
 {
     use ApiJson;

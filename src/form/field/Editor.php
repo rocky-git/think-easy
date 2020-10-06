@@ -6,12 +6,12 @@
  * Time: 11:01
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
 
 use Overtrue\Flysystem\Qiniu\Plugins\UploadToken;
 use think\facade\Filesystem;
-
+use thinkEasy\form\Field;
 class Editor extends Field
 {
     public function __construct($field, $label, array $arguments = [])

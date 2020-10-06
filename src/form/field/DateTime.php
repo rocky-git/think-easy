@@ -6,9 +6,9 @@
  * Time: 20:10
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
-
+use thinkEasy\form\Field;
 class DateTime extends Field
 {
     protected $attrs = [

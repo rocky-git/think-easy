@@ -1,7 +1,8 @@
 <?php
 
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
+use thinkEasy\form\Field;
 /**
  * 图标选择器
  * Class Icon

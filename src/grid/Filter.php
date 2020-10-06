@@ -390,11 +390,11 @@ class Filter extends View
      * @param $class 组件类
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\Input
+     * @return \thinkEasy\form\field\Input
      */
     protected function formItem($field, $label, $name = 'input', $arguments = [])
     {
-        $class = "thinkEasy\\form\\" . ucfirst($name);
+        $class = "thinkEasy\\form\\field\\" . ucfirst($name);
         $field = str_replace('.', '__', $field);
         $formItem = new $class($field, $label, $arguments);
         if($formItem instanceof Input){

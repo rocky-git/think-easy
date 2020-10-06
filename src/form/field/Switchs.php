@@ -6,8 +6,10 @@
  * Time: 16:14
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
+
+use thinkEasy\form\Field;
 
 /**
  * Switch 开关

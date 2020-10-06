@@ -9,7 +9,7 @@
 namespace thinkEasy\grid;
 
 
-use thinkEasy\form\Switchs;
+use thinkEasy\form\field\Switchs;
 use thinkEasy\View;
 
 class Column extends View

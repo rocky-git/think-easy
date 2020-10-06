@@ -44,8 +44,8 @@
                 iframeField:null,
                 formItemTags:[],
                 closeVisible:true,
+                validates:[],
                 form:{$formData|raw},
-                validates:{$formValidate|raw},
                 {$formScriptVar|raw}
             }
         },
@@ -54,7 +54,11 @@
                 if(val){
                     this.onSubmit()
                 }
-            }
+            },
+
+            //监听
+            {$watchJs|raw}
+            //
         },
         created(){
             this.init()
