@@ -15,7 +15,7 @@ use think\model\Relation;
 use think\model\relation\BelongsTo;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
-use thinkEasy\form\Input;
+use thinkEasy\form\field\Input;
 use thinkEasy\View;
 
 class Filter extends View
