@@ -10,7 +10,6 @@ namespace thinkEasy\model;
 
 
 use app\admin\model\SystemUserAuth;
-use app\admin\model\Test;
 use think\facade\Db;
 
 class AdminModel extends BaseModel

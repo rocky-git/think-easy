@@ -423,7 +423,7 @@ class Filter extends View
             $fields = explode('__', $field);
             $dbField = end($fields);
             if (count($fields) > 1) {
-                $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
+                return $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
                     $filter->filterField($method, $dbField, $field);
                 });
             }
@@ -578,19 +578,9 @@ class Filter extends View
         if (method_exists($this->model, $relation_method)) {
             $relation = $this->model->$relation_method();
             if ($relation instanceof Relation) {
-                $sql = $this->model->hasWhere($relation_method)->buildSql();
                 $relation_table = $relation->getTable();
-                $sqlArr = explode('ON ', $sql);
-                $str = array_pop($sqlArr);
-                preg_match_all("/`(.*)`/U", $str, $arr);
-                if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
-                    $foreignKey = $arr[1][1];
-                    $pk = $arr[1][3];
-                }
-                if ($relation instanceof HasOne) {
-                    $pk = $arr[1][1];
-                    $foreignKey = $arr[1][3];
-                }
+                $foreignKey = $relation->getForeignKey();
+                $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
                     $this->relationModel = new self($relation_table);
                     call_user_func($callback, $this->relationModel);
