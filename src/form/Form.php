@@ -260,6 +260,7 @@ class Form extends View
      */
     public function labelPosition($position, $width = 120)
     {
+        $this->removeAttr(':label-position');
         $this->setAttr('label-width', $width . 'px');
         $this->setAttr('label-position', $position);
     }
