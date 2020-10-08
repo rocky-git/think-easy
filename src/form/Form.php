@@ -804,11 +804,7 @@ EOF;
                     $whenTagNow = $formItem->getTag().$whenItem['value'];
                     call_user_func_array($whenItem['closure'], [$this]);
                     $formItemHtml = $this->parseFormItem($formItemHtml,$whenTagNow);
-                    if (empty($this->formItem) && isset($this->formWhenItem[$whenTagNow])) {
-                        $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
-                    } else {
-                        $formWhenItem = $this->formItem;
-                    }
+                    $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
                     foreach ($formWhenItem as $whenformItem) {
                         $whenTags[$whenItem['value']][] = $whenformItem->getTag();
                         $whenTagsAll[] = $whenformItem->getTag();
