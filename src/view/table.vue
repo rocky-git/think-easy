@@ -64,19 +64,23 @@
                     </el-dropdown>
                     <!--{/if}-->
 
+                    <!-- PC端-->
+                    <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
+                    <!-- 移动端-->
+                    <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
+
                     <!--{if !isset($hideDeletesButton)}-->
                     <!-- PC端-->
                     <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                    <el-button class="hidden-md-and-down" plain size="small" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
                     <el-button class="hidden-md-and-down" plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
                     <el-button class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
                     <!-- 移动端-->
                     <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect"></el-button>
-                    <el-button class="hidden-md-and-up" plain size="mini" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
                     <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
                     <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
-
                     <!--{/if}-->
+
+
                     <!--{notempty name="$filter"}-->
                     <!-- PC端-->
                     <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
@@ -300,6 +304,16 @@
             },
         },
         methods: {
+            // selectionChange(selection){
+            //     if(selection.length > 2){
+            //         selection.pop()
+            //         this.$refs.dragTable.clearSelection()
+            //         selection.forEach(row=>{
+            //             console.log(row)
+            //             this.$refs.dragTable.toggleRowExpansion(selection[0],true)
+            //         })
+            //     }
+            // },
             //行的 className 的回调方法
             tableRowClassName({row, column, rowIndex, columnIndex}){
                 row.eadminIndex = rowIndex;

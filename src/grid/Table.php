@@ -49,6 +49,7 @@ class Table extends View
         $this->headers = $headers;
         $this->setAttr('data', $data);
         $this->setAttr('@sort-change', 'sortHandel');
+        //$this->setAttr('@selection-change', 'selectionChange');
         $this->setAttr('@cell-click', 'cellClick');
         $this->setAttr('@row-dblclick', 'rowDblclick');
         $this->setAttr(':row-class-name', 'tableRowClassName');

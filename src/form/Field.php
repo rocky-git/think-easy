@@ -121,11 +121,28 @@ class Field extends View
 
     /**
      * 必填
+     * @param bool $bool true判断不为空且大于0
      * @return $this
      */
-    public function required()
+    public function required($bool = false)
     {
         $this->rule(['require'=>$this->label.'不能为空']);
+        if($bool){
+            $this->rule(['gt:0'=>$this->label.'不能为空']);
+        }
+        $this->rule = json_encode([['required' => true, 'message' => $this->label.'不能为空', 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
+        return $this;
+    }
+
+    /**
+     * 条件必填
+     * @param $field 字段
+     * @param $val 条件值
+     * @return $this
+     */
+    public function requiredIf($field,$val)
+    {
+        $this->rule(["requireIf:{$field},{$val}"=>$this->label.'不能为空']);
         $this->rule = json_encode([['required' => true, 'message' => $this->label.'不能为空', 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
         return $this;
     }

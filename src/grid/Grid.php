@@ -321,7 +321,7 @@ EOF;
         return $this;
     }
 
-    
+
     /**
      * 设置列
      * @Author: rocky
@@ -350,6 +350,8 @@ EOF;
     {
         $column = $this->column('', '');
         $column->setAttr('type', $type);
+        
+
         return $column;
     }
 
