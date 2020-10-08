@@ -6,7 +6,9 @@
  * Time: 19:19
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
+
+use thinkEasy\form\Field;
 
 class Select extends Field
 {

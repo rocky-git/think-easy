@@ -15,7 +15,7 @@ use think\model\Relation;
 use think\model\relation\BelongsTo;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
-use thinkEasy\form\Input;
+use thinkEasy\form\field\Input;
 use thinkEasy\View;
 
 class Filter extends View
@@ -390,11 +390,11 @@ class Filter extends View
      * @param $class 组件类
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\Input
+     * @return \thinkEasy\form\field\Input
      */
     protected function formItem($field, $label, $name = 'input', $arguments = [])
     {
-        $class = "thinkEasy\\form\\" . ucfirst($name);
+        $class = "thinkEasy\\form\\field\\" . ucfirst($name);
         $field = str_replace('.', '__', $field);
         $formItem = new $class($field, $label, $arguments);
         if($formItem instanceof Input){
@@ -423,7 +423,7 @@ class Filter extends View
             $fields = explode('__', $field);
             $dbField = end($fields);
             if (count($fields) > 1) {
-                $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
+                return $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
                     $filter->filterField($method, $dbField, $field);
                 });
             }
@@ -578,19 +578,9 @@ class Filter extends View
         if (method_exists($this->model, $relation_method)) {
             $relation = $this->model->$relation_method();
             if ($relation instanceof Relation) {
-                $sql = $this->model->hasWhere($relation_method)->buildSql();
                 $relation_table = $relation->getTable();
-                $sqlArr = explode('ON ', $sql);
-                $str = array_pop($sqlArr);
-                preg_match_all("/`(.*)`/U", $str, $arr);
-                if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
-                    $foreignKey = $arr[1][1];
-                    $pk = $arr[1][3];
-                }
-                if ($relation instanceof HasOne) {
-                    $pk = $arr[1][1];
-                    $foreignKey = $arr[1][3];
-                }
+                $foreignKey = $relation->getForeignKey();
+                $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
                     $this->relationModel = new self($relation_table);
                     call_user_func($callback, $this->relationModel);

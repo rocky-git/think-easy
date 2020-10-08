@@ -6,8 +6,9 @@
  * Time: 23:16
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
+use thinkEasy\form\Field;
 use thinkEasy\tools\Data;
 
 /**

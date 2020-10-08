@@ -6,12 +6,12 @@
  * Time: 23:56
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
 
 
 use Overtrue\Flysystem\Qiniu\Plugins\UploadToken;
 use think\facade\Filesystem;
-
+use thinkEasy\form\Field;
 
 class File extends Field
 {

@@ -20,45 +20,54 @@ use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use thinkEasy\form\field\Cascader;
+use thinkEasy\form\field\Input;
+use thinkEasy\form\field\Radio;
+use thinkEasy\form\field\Select;
+use thinkEasy\form\field\Tree;
+use thinkEasy\form\traits\ValidatorForm;
+use thinkEasy\form\traits\WatchForm;
 use thinkEasy\model\SystemConfig;
 use thinkEasy\View;
 
 /**
  * Class Form
  * @package thinkEasy\form
- * @method \thinkEasy\form\Input text($field, $label) 文本输入框
- * @method \thinkEasy\form\Input hidden($field) 隐藏输入框
- * @method \thinkEasy\form\Input textarea($field, $label) 多行文本输入框
- * @method \thinkEasy\form\Input password($field, $label) 密码输入框
- * @method \thinkEasy\form\Input number($field, $label) 数字输入框
- * @method \thinkEasy\form\Select select($field, $label) 下拉选择器
- * @method \thinkEasy\form\Radio radio($field, $label) 单选框
- * @method \thinkEasy\form\Switchs switch ($field, $label) switch开关
- * @method \thinkEasy\form\Tree tree($field, $label) 树形
- * @method \thinkEasy\form\DateTime datetime($field, $label) 日期时间
- * @method \thinkEasy\form\DateTime datetimeRange($startFiled, $endField, $label) 日期时间范围时间
- * @method \thinkEasy\form\DateTime dateRange($startFiled, $endField, $label) 日期范围时间
- * @method \thinkEasy\form\DateTime timeRange($startFiled, $endField, $label) 日期范围时间
- * @method \thinkEasy\form\DateTime date($field, $label) 日期
- * @method \thinkEasy\form\DateTime dates($field, $label) 多选日期
- * @method \thinkEasy\form\DateTime time($field, $label) 时间
- * @method \thinkEasy\form\DateTime year($field, $label) 年
- * @method \thinkEasy\form\DateTime month($field, $label) 月
- * @method \thinkEasy\form\Checkbox checkbox($field, $label) 多选框
- * @method \thinkEasy\form\File file($field, $label) 文件上传
- * @method \thinkEasy\form\File image($field, $label) 图片上传
- * @method \thinkEasy\form\Editor editor($field, $label) 富文本编辑器
- * @method \thinkEasy\form\Slider slider($field, $label) 滑块
- * @method \thinkEasy\form\Color color($field, $label) 颜色选择器
- * @method \thinkEasy\form\Rate rate($field, $label) 评分组件
- * @method \thinkEasy\form\Cascader cascader(...$field, $label) 级联选择器
- * @method \thinkEasy\form\Transfer transfer($field, $label) 穿梭框
- * @method \thinkEasy\form\Icon icon($field, $label) 图标选择器
- * @method \thinkEasy\form\IframeTag iframeTag($field, $label) 弹窗选择框
- * @method \thinkEasy\form\Map map($lng, $lat, $address, $label) 高德地图
+ * @method \thinkEasy\form\field\Input text($field, $label) 文本输入框
+ * @method \thinkEasy\form\field\Input hidden($field) 隐藏输入框
+ * @method \thinkEasy\form\field\Input textarea($field, $label) 多行文本输入框
+ * @method \thinkEasy\form\field\Input password($field, $label) 密码输入框
+ * @method \thinkEasy\form\field\Input number($field, $label) 数字输入框
+ * @method \thinkEasy\form\field\Select select($field, $label) 下拉选择器
+ * @method \thinkEasy\form\field\Radio radio($field, $label) 单选框
+ * @method \thinkEasy\form\field\Switchs switch ($field, $label) switch开关
+ * @method \thinkEasy\form\field\Tree tree($field, $label) 树形
+ * @method \thinkEasy\form\field\DateTime datetime($field, $label) 日期时间
+ * @method \thinkEasy\form\field\DateTime datetimeRange($startFiled, $endField, $label) 日期时间范围时间
+ * @method \thinkEasy\form\field\DateTime dateRange($startFiled, $endField, $label) 日期范围时间
+ * @method \thinkEasy\form\field\DateTime timeRange($startFiled, $endField, $label) 日期范围时间
+ * @method \thinkEasy\form\field\DateTime date($field, $label) 日期
+ * @method \thinkEasy\form\field\DateTime dates($field, $label) 多选日期
+ * @method \thinkEasy\form\field\DateTime time($field, $label) 时间
+ * @method \thinkEasy\form\field\DateTime year($field, $label) 年
+ * @method \thinkEasy\form\field\DateTime month($field, $label) 月
+ * @method \thinkEasy\form\field\Checkbox checkbox($field, $label) 多选框
+ * @method \thinkEasy\form\field\File file($field, $label) 文件上传
+ * @method \thinkEasy\form\field\File image($field, $label) 图片上传
+ * @method \thinkEasy\form\field\Editor editor($field, $label) 富文本编辑器
+ * @method \thinkEasy\form\field\Slider slider($field, $label) 滑块
+ * @method \thinkEasy\form\field\Color color($field, $label) 颜色选择器
+ * @method \thinkEasy\form\field\Rate rate($field, $label) 评分组件
+ * @method \thinkEasy\form\field\Cascader cascader(...$field, $label) 级联选择器
+ * @method \thinkEasy\form\field\Transfer transfer($field, $label) 穿梭框
+ * @method \thinkEasy\form\field\Icon icon($field, $label) 图标选择器
+ * @method \thinkEasy\form\field\IframeTag iframeTag($field, $label) 弹窗选择框
+ * @method \thinkEasy\form\field\Map map($lng, $lat, $address, $label) 高德地图
  */
 class Form extends View
 {
+    use WatchForm,ValidatorForm;
+    
     protected $attrs = [
         'model',
         'rules',
@@ -92,25 +101,11 @@ class Form extends View
     protected $afterSave = null;
 
     protected $data = [];
-
     protected $formData = ['empty' => 0];
 
     //是否编辑表单
     protected $isEdit = false;
-
-    //创建验证规则
-    protected $createRules = [
-        'rule' => [],
-        'msg' => [],
-    ];
-    //更新验证规则
-    protected $updateRules = [
-        'rule' => [],
-        'msg' => [],
-    ];
-    //表单验证双向绑定变量
-    protected $formValidate = [];
-
+    
     protected $layoutTags = [];
     protected $whenValue = null;
     protected $formWhenItem = [];
@@ -270,6 +265,7 @@ class Form extends View
      */
     public function labelPosition($position, $width = 120)
     {
+        $this->removeAttr(':label-position');
         $this->setAttr('label-width', $width . 'px');
         $this->setAttr('label-position', $position);
     }
@@ -300,9 +296,9 @@ class Form extends View
 
     protected function autoSave($data, $id = null)
     {
+        $this->watchCall();
         $res = false;
         $this->saveData = $data;
-
         $this->parseFormItem();
         $this->checkRule($this->saveData);
         Db::startTrans();
@@ -467,7 +463,7 @@ class Form extends View
     protected function formItem($name, $field, $arguments)
     {
         $label = array_pop($arguments);
-        $class = "thinkEasy\\form\\";
+        $class = "thinkEasy\\form\\field\\";
         $inputs = [
             'text',
             'textarea',
@@ -918,71 +914,7 @@ EOF;
         }
     }
 
-    /**
-     * 设置表单验证规则
-     * @Author: rocky
-     * 2019/8/9 10:45
-     * @param $rule 验证规则
-     * @param $msg 验证提示
-     * @param int $type 1新增，2更新
-     */
-    public function setRules($rule, $msg, $type)
-    {
-        switch ($type) {
-            case 1:
-                $this->createRules['rule'] = array_merge($this->createRules['rule'], $rule);
-                $this->createRules['msg'] = array_merge($this->createRules['msg'], $msg);
-                break;
-            case 2:
-                $this->updateRules['rule'] = array_merge($this->updateRules['rule'], $rule);
-                $this->updateRules['msg'] = array_merge($this->updateRules['msg'], $msg);
-                break;
-        }
-    }
-
-    /**
-     * 验证表单规则
-     * @param $datas
-     */
-    public function checkRule($datas)
-    {
-        if ($this->isEdit) {
-            //更新
-            $validate = Validate::rule($this->updateRules['rule'])->message($this->updateRules['msg']);
-            $rules = $this->updateRules['rule'];
-        } else {
-            //新增
-            $validate = Validate::rule($this->createRules['rule'])->message($this->createRules['msg']);
-            $rules = $this->createRules['rule'];
-        }
-        foreach ($datas as $field => $data) {
-            if (method_exists($this->model, $field) && $this->model->$field() instanceof HasMany) {
-                $validateFields = [];
-                $removeFields = [];
-                $manyValidate = clone $validate;
-                foreach ($rules as $key => $rule) {
-                    if (strstr($key, $field . '.')) {
-                        $validateFields[] = $key;
-                        $removeFields[$key] = true;
-                    }
-                }
-                if ($validateFields) {
-                    foreach ($data as $index => $value) {
-                        $valdateData[$field] = $value;
-                        $result = $manyValidate->only($validateFields)->batch(true)->check($valdateData);;
-                        if (!$result) {
-                            throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $manyValidate->getError(), 'index' => (string)$index]));
-                        }
-                    }
-                }
-                $validate->remove($removeFields);
-            }
-        }
-        $result = $validate->batch(true)->check($datas);
-        if (!$result) {
-            throw new HttpResponseException(json(['code' => 422, 'message' => '表单验证失败', 'data' => $validate->getError()]));
-        }
-    }
+    
 
     /**
      * 设置标题
@@ -1020,6 +952,7 @@ EOF;
         return $this;
     }
 
+    
     public function view()
     {
         if (isset($this->extraData[$this->pkField])) {
@@ -1033,11 +966,12 @@ EOF;
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
         $this->formData = array_merge($this->formData, $this->extraData);
+
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
-        $this->setVar('formValidate', json_encode($this->formValidate, JSON_UNESCAPED_UNICODE));
         $this->setVar('script', $this->script);
         $this->setVar('attrStr', $attrStr);
         $this->setVar('radioJs', $this->radioJs);
+        $this->setVar('watchJs', $this->createWatchJs());
         $this->setVar('formItem', $formItem);
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);

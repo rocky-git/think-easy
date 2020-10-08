@@ -185,6 +185,11 @@ abstract class View
         $this->attr[$name] = $value;
         return $this;
     }
+    public function removeAttr($name){
+        $var = $this->attrVarName($name);
+        unset($this->attrVars[$var],$this->attr[$name]);
+        return $this;
+    }
     public function getAttr($name=''){
         if(empty($name)){
             return $this->attr;

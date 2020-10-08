@@ -9,7 +9,7 @@
 namespace thinkEasy\grid;
 
 
-use thinkEasy\form\Switchs;
+use thinkEasy\form\field\Switchs;
 use thinkEasy\View;
 
 class Column extends View
@@ -492,7 +492,7 @@ class Column extends View
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :tableData.sync="' . $tableDataScriptVar . '"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="' . $tableDataScriptVar . '"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();

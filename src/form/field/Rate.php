@@ -6,8 +6,8 @@
  * Time: 22:38
  */
 
-namespace thinkEasy\form;
-
+namespace thinkEasy\form\field;
+use thinkEasy\form\Field;
 /**
  * 评分组件
  * Class Rate

@@ -6,7 +6,9 @@
  * Time: 11:53
  */
 
-namespace thinkEasy\form;
+namespace thinkEasy\form\field;
+
+use thinkEasy\form\Field;
 
 /**
  * 树形组件
