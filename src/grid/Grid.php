@@ -350,7 +350,7 @@ EOF;
     {
         $column = $this->column('', '');
         $column->setAttr('type', $type);
-        
+
 
         return $column;
     }
@@ -585,7 +585,7 @@ EOF;
         $params = http_build_query(request()->param());
 
         $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token) . '&' . $params);
-        $this->exportFileName = empty($fileName) ? date('Ymd') : $fileName;
+        $this->exportFileName = empty($fileName) ? date('YmdHis') : $fileName;
     }
 
     //导出数据操作

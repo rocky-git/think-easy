@@ -67,7 +67,7 @@ use thinkEasy\View;
 class Form extends View
 {
     use WatchForm,ValidatorForm;
-    
+
     protected $attrs = [
         'model',
         'rules',
@@ -105,7 +105,7 @@ class Form extends View
 
     //是否编辑表单
     protected $isEdit = false;
-    
+
     protected $layoutTags = [];
     protected $whenValue = null;
     protected $formWhenItem = [];
@@ -730,10 +730,7 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-
-
                 $this->radioJs .= $formItem->changeJs;
-
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $field = $formItem->field;
@@ -797,17 +794,22 @@ EOF;
                 foreach ($formItem->getWhenItem() as $whenIndex => $whenItem) {
                     $formItemArr = array_slice($this->formItem, $key + 1);
                     $this->formItem = [];
-                    $whenTagNow = $formItem->getTag().$whenItem['value'];
+                    if(is_array($whenItem['value'])){
+                        $indexTag = implode('',$whenItem['value']);
+                    }
+                    $whenTagNow = $formItem->getTag().$indexTag;
                     call_user_func_array($whenItem['closure'], [$this]);
                     $formItemHtml = $this->parseFormItem($formItemHtml,$whenTagNow);
                     $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
                     foreach ($formWhenItem as $whenformItem) {
-                        $whenTags[$whenItem['value']][] = $whenformItem->getTag();
+                        $whenTags[$indexTag]['tag'][] = $whenformItem->getTag();
+                        $whenTags[$indexTag]['value'] = $whenItem['value'];
                         $whenTagsAll[] = $whenformItem->getTag();
                     }
                     if(isset($this->layoutTags[$whenTagNow])){
                         foreach ($this->layoutTags[$whenTagNow] as $tag) {
-                            $whenTags[$whenItem['value']][] = $tag;
+                            $whenTags[$indexTag]['tag'][] = $tag;
+                            $whenTags[$indexTag]['value'] = $whenItem['value'];
                             $whenTagsAll[] = $tag;
                         }
                     }
@@ -819,7 +821,9 @@ EOF;
                     $HideTagsAllJs = implode(',', $hideTagsAllArr);
                     $this->radioJs .= "if(tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}".PHP_EOL;
                 }
-                foreach ($whenTags as $whenVal => $tags) {
+                foreach ($whenTags as $whenVal) {
+                    $tags = $whenVal['tag'];
+                    $value = $whenVal['value'];
                     $defalutHideTagsArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $tags);
@@ -828,7 +832,15 @@ EOF;
                     foreach ($defalutHideTagsArr as $tag) {
                         $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
                     }
-                    $this->radioJs .= "if(val == '{$whenVal}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}" . PHP_EOL;
+                    $whenVals = [];
+                    if(is_array($value)){
+                        $whenVals = $value;
+                    }else{
+                        $whenVals[] = $value;
+                    }
+                    foreach ($whenVals as $val){
+                        $this->radioJs .= "if(val == '{$val}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}" . PHP_EOL;
+                    }
                 }
             }
         }
@@ -914,7 +926,7 @@ EOF;
         }
     }
 
-    
+
 
     /**
      * 设置标题
@@ -952,7 +964,7 @@ EOF;
         return $this;
     }
 
-    
+
     public function view()
     {
         if (isset($this->extraData[$this->pkField])) {

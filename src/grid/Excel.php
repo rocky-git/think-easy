@@ -22,7 +22,6 @@ class Excel
         set_time_limit(0);
         static $nums = 0;
         ini_set('memory_limit', '128M');
-        $fileName = date('YmdHis', time());
         header('Content-Type: application/vnd.ms-execl');
         header('Content-Disposition: attachment;filename="' . $fileName . '.csv"');
         $fp = fopen('php://output', 'a');

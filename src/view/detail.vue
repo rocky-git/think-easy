@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="font-size: 14px;">
         <el-row :gutter="10">
         <!--{notempty name="title"}-->
             <el-col :span="24">
