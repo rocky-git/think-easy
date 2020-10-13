@@ -796,6 +796,8 @@ EOF;
                     $this->formItem = [];
                     if(is_array($whenItem['value'])){
                         $indexTag = implode('',$whenItem['value']);
+                    }else{
+                        $indexTag = $whenItem['value'];
                     }
                     $whenTagNow = $formItem->getTag().$indexTag;
                     call_user_func_array($whenItem['closure'], [$this]);
