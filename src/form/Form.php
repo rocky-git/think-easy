@@ -107,6 +107,7 @@ class Form extends View
     protected $isEdit = false;
 
     protected $layoutTags = [];
+    protected $formTags = [];
     protected $whenValue = null;
     protected $formWhenItem = [];
 
@@ -624,7 +625,6 @@ class Form extends View
                 }
                 if (is_null($this->hasManyRelation)) {
                     $valdateField = str_replace('.', '_', $formItem->field);
-
                     $formItemTmp = "<el-form-item {$labelWidth} v-show=\"formItemTags.indexOf('{$formItem->getTag()}0') === -1\" ref='{$formItem->field}' :error='validates.{$valdateField}ErrorMsg' label='{$formItem->label}' prop='{$formItem->field}' :rules='formItemTags.indexOf(\"{$formItem->getTag()}0\") === -1 ? {$formItem->rule}:{required:false}'>%s<span style='font-size: 12px'>{$formItem->helpText}</span></el-form-item>";
                     //是否多个字段解析
                     if (count($formItem->fields) > 1) {
@@ -784,6 +784,7 @@ EOF;
                 } else {
                     $formItemHtml .= $formItemTmp;
                 }
+                $this->formTags[$formItem->field] = $formItem->getTag().'0';
                 $this->script($formItem->getScript());
                 $whenTags = [];
                 $whenTagsAll = [];
@@ -979,9 +980,10 @@ EOF;
         if (!empty($scriptStr)) {
             $formScriptVar = $scriptStr . ',' . $formScriptVar;
         }
+        $this->script($this->initWatchJs());
         $this->formData = array_merge($this->formData, $this->extraData);
-
         $this->setVar('formData', json_encode($this->formData, JSON_UNESCAPED_UNICODE));
+        $this->setVar('formTags', json_encode($this->formTags, JSON_UNESCAPED_UNICODE));
         $this->setVar('script', $this->script);
         $this->setVar('attrStr', $attrStr);
         $this->setVar('radioJs', $this->radioJs);

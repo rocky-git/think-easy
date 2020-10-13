@@ -19,6 +19,7 @@ trait WatchForm
     use ApiJson;
     protected $watchs = [];
     protected $watchJs = '';
+
     /**
      * 设置监听数据方法
      * @param array $data
@@ -26,19 +27,18 @@ trait WatchForm
     public function watch(array $data){
         $this->watchs = $data;
     }
-    /**
-     * 生成监听js
-     * @return string
-     */
-    protected function createWatchJs(){
+    protected function initWatchJs(){
         $fields = array_keys($this->watchs);
+        $js = '';
+        foreach ($fields as $field){
+            $js .= $this->watchRequstJs($field,"this.form.{$field}","this.form.{$field}");
+        }
+        return $js;
+    }
+    protected function watchRequstJs($field,$newVal='newVal',$oldValue='oldValue'){
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
-        $submitFromMethod = request()->action();
-        foreach ($fields as $field){
-            $this->watchJs .= <<<EOF
-    'form.{$field}': {
-         handler: function(newVal,oldValue) {
+        $js = <<<EOF
             let method,url = '{$submitUrl}'
             if(this.form.id == undefined){
                 url = url+'.rest'
@@ -53,20 +53,43 @@ trait WatchForm
                   data:{
                       field:'{$field}',
                       submitFromMethod:'{$this->extraData['submitFromMethod']}',
-                      newVal:newVal,
-                      oldValue:oldValue,
+                      newVal:{$newVal},
+                      oldValue:{$oldValue},
                       form:this.form,
                       eadmin_form_watch:true
                   }
             }).then(res=>{
-                for(field in res.data){
-                    if(field == '{$field}' && res.data[field] != newVal){
-                       this.form[field] = res.data[field]
+                res.data.showField.forEach(field=>{
+                    this.deleteArr(this.formItemTags,this.formTags[field])
+                })
+                res.data.hideField.forEach(field=>{
+                   this.formItemTags.splice(-1,0,this.formTags[field])
+                  
+                })
+                let formData = res.data.form
+                for(field in formData){
+                    if(field == '{$field}' && formData[field] != newVal){
+                       this.form[field] = formData[field]
                     }else if(field != '{$field}'){
-                       this.form[field] = res.data[field]
+                       this.form[field] = formData[field]
                     }
                 }
             })
+EOF;
+        return $js;
+    }
+    /**
+     * 生成监听js
+     * @return string
+     */
+    protected function createWatchJs(){
+        $fields = array_keys($this->watchs);
+        foreach ($fields as $field){
+            $requestJs = $this->watchRequstJs($field);
+            $this->watchJs .= <<<EOF
+    'form.{$field}': {
+         handler: function(newVal,oldValue) {
+            {$requestJs}
          }
      },
 EOF;
@@ -85,7 +108,11 @@ EOF;
             $watch = new \thinkEasy\form\Watch($data['form']);
             $closure = $this->watchs[$data['field']];
             call_user_func_array($closure,[$data['newVal'],$watch,$data['oldValue']]);
-            $this->successCode($watch->get());
+            $this->successCode([
+                'form'=>$watch->get(),
+                'showField'=>$watch->getShowField(),
+                'hideField'=>$watch->getHideField(),
+            ]);
         }
     }
 }

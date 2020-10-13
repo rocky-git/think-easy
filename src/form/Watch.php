@@ -12,12 +12,32 @@ use ArrayAccess;
 class Watch implements ArrayAccess
 {
     protected $data = [];
-
+    protected $hideField = [];
+    protected $showField = [];
     public function __construct($data)
     {
         $this->data = $data;
     }
+    /**
+     * 显示
+     * @param $field 字段
+     */
+    public function hide($field){
+        $this->hideField[] = $field;
+    }
+    /**
+     * 隐藏
+     * @param $field 字段
+     */
+    public function show($field){
+        $this->showField[] = $field;
+    }
 
+    /**
+     * 获取字段值
+     * @param string $field 字段
+     * @return array|mixed
+     */
     public function get($field = '')
     {
         if (empty($field)) {
@@ -26,7 +46,17 @@ class Watch implements ArrayAccess
             return $this->data[$field];
         }
     }
-
+    public function getShowField(){
+        return $this->showField;
+    }
+    public function getHideField(){
+        return $this->hideField;
+    }
+    /**
+     * 设置值
+     * @param $field 字段
+     * @param $value
+     */
     public function set($field, $value)
     {
         $this->data[$field] = $value;

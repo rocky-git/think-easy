@@ -46,6 +46,7 @@
                 closeVisible:true,
                 validates:[],
                 form:{$formData|raw},
+                formTags:{$formTags|raw},
                 {$formScriptVar|raw}
             }
         },
