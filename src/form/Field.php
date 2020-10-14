@@ -47,7 +47,6 @@ class Field extends View
 
     protected $whenItem = [];
     public $changeJs = '';
-
     /**
      * Input constructor.
      * @param $field 字段
@@ -256,10 +255,11 @@ class Field extends View
             'operator' => $operator,
             'closure' => $closure,
         ];
-        $this->script = "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
         return $this;
     }
-
+    public function getWhenInitJs(){
+        $this->script .= "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
+    }
     public function getWhenItem()
     {
         return $this->whenItem;

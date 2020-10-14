@@ -718,7 +718,7 @@ class Form extends View
                         $manyData = $this->getData($this->hasManyRelation);
                         $radioJs = <<<EOF
                         this.form.{$this->hasManyRelation}.forEach((item,index)=>{
-                            this.radioChange(item.{$formItem->field},'{$formItem->getTag()}',index)
+                            this.radioChange(item.{$formItem->field},'{$formItem->getTag()}',index,'when')
                         })
 EOF;
                         $this->script($radioJs);
@@ -786,6 +786,7 @@ EOF;
                 }
                 $this->formTags[$formItem->field] = $formItem->getTag().'0';
                 $this->script($formItem->getScript());
+                $this->script($formItem->getWhenInitJs());
                 $whenTags = [];
                 $whenTagsAll = [];
                 if(!empty($whenTag)){
