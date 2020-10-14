@@ -397,7 +397,7 @@ class Form extends View
             }
             Db::commit();
         } catch (HttpResponseException $e) {
-            die($e->getMessage());
+            throw $e;
         } catch (\Exception $e) {
             Db::rollback();
             if (env('APP_DEBUG')) {
