@@ -258,7 +258,10 @@ class Field extends View
         return $this;
     }
     public function getWhenInitJs(){
-        $this->script .= "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
+        if(count($this->whenItem)){
+            return "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
+        }
+        return '';
     }
     public function getWhenItem()
     {

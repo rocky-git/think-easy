@@ -787,6 +787,7 @@ EOF;
                 }
                 $this->formTags[$formItem->field] = $formItem->getTag().'0';
                 $this->script($formItem->getScript());
+
                 $this->script($formItem->getWhenInitJs());
                 $whenTags = [];
                 $whenTagsAll = [];
