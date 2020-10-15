@@ -60,7 +60,8 @@
                 loading:false,
                 params:{
                     date_type:'today'
-                }
+                },
+                {$tableScriptVar|raw|default=''}
             }
         },
         watch:{
