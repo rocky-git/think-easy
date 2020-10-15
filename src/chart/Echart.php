@@ -106,6 +106,8 @@ class Echart extends View
             $this->filter = new Filter($this->db);
             call_user_func($callback, $this->filter);
             $this->setVar('filter', $this->filter->render());
+            $tableScriptVar = implode(',', $this->filter->scriptArr);
+            $this->setVar('tableScriptVar',$tableScriptVar);
         }
 
     }
@@ -319,6 +321,7 @@ class Echart extends View
         if (Request::has('ajax')) {
             return $html;
         }
+
         $this->setVar('html', rawurlencode($html));
         $this->setVar('headerTotal', rawurlencode($html));
         return parent::render();
