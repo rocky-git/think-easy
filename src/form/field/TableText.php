@@ -11,6 +11,7 @@ class TableText extends Field
 {
     public function columns($data){
         $this->setAttr(':columns',json_encode($data));
+        return $this;
     }
     public function render()
     {

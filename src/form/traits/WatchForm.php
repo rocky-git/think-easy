@@ -32,6 +32,7 @@ trait WatchForm
         $js = '';
         foreach ($fields as $field){
             $js .= $this->watchRequstJs($field,"this.form.{$field}","this.form.{$field}");
+
         }
         return $js;
     }
@@ -39,7 +40,7 @@ trait WatchForm
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $js = <<<EOF
-            let method,url = '{$submitUrl}'
+            var method,url = '{$submitUrl}'
             if(this.form.id == undefined){
                 url = url+'.rest'
                 method = 'post'
@@ -68,13 +69,14 @@ trait WatchForm
                 })
                 let formData = res.data.form
                 for(field in formData){
-                    if(field == '{$field}' && formData[field] != newVal){
+                    if(field == '{$field}' && formData[field] != {$newVal}){
                        this.form[field] = formData[field]
                     }else if(field != '{$field}'){
                        this.form[field] = formData[field]
                     }
                 }
             })
+            
 EOF;
         return $js;
     }

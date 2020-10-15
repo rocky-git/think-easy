@@ -63,6 +63,7 @@ use thinkEasy\View;
  * @method \thinkEasy\form\field\Icon icon($field, $label) 图标选择器
  * @method \thinkEasy\form\field\IframeTag iframeTag($field, $label) 弹窗选择框
  * @method \thinkEasy\form\field\Map map($lng, $lat, $address, $label) 高德地图
+ * @method \thinkEasy\form\field\TableText tableText($field, $label) 表格编辑
  */
 class Form extends View
 {
