@@ -14,7 +14,7 @@ class Content extends View
 
     /**
      * 添加一行
-     * @param $content 内容
+     * @param Closure|String  $content 内容
      * @param $span 栅格占据的列数,默认24
      */
     public function row($content,$span = 24){

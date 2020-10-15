@@ -15,7 +15,7 @@ class Row extends View
     protected $clickLink = null;
     /**
      * 添加列
-     * @param $content 内容
+     * @param Closure|String $content 内容
      * @param $span 栅格占据的列数,占满一行24,默认24
      */
     public function column($content,$span = 24){
@@ -42,9 +42,9 @@ class Row extends View
         if(empty($name)){
             $componentKey = 'component'.mt_rand(10000,99999);
         }else{
-            $componentKey = $name;    
+            $componentKey = $name;
         }
-        
+
         $this->component[$componentKey] = "() => new Promise(resolve => {
                             resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
                         })";
