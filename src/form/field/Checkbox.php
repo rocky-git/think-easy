@@ -27,6 +27,7 @@ class Checkbox extends Field
      */
     public function options(array $datas)
     {
+        $model = $this->getAttr('v-model');
         $options = [];
         foreach ($datas as $value => $label) {
             $options[] = [
@@ -34,7 +35,11 @@ class Checkbox extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = sprintf($this->optionHtml,"v-for='item in checkboxData{$this->varMark}' :key='item.value' :label='item.value'");
+        $this->optionHtml = "<template v-for='item in checkboxData{$this->varMark}'>
+            <el-checkbox   v-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'string'\" :label=\"'' + item.value\">{{item.label}}</el-checkbox>
+            <el-checkbox   v-else-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'number'\" :label=\"(('' + item.value) . trim() == '') ? '' : parseInt(item.value)\">{{item.label}}</el-checkbox>
+            <el-checkbox   v-else :label=\"item.value\">{{item.label}}</el-checkbox>
+</template>";
         $this->setAttr('data', $options);
         return $this;
 

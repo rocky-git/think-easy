@@ -176,7 +176,7 @@ EOF;
           v-else-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'number'\"
           :key='item.value'
           :label='item.label'
-          :value=\"(('' + item . value) . trim() == '') ? '' : parseInt(item . value)\"
+          :value=\"(('' + item.value) . trim() == '') ? '' : parseInt(item.value)\"
           :disabled='item.disabled'>
           <span v-html='item.label'></span>
         </el-option>
