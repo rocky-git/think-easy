@@ -675,27 +675,20 @@ EOF;
             foreach ($this->relations as $relationName) {
                 $sql = $this->model->hasWhere($relationName)->buildSql();
                 $relation = $this->model->$relationName();
-                $relation_table = $relation->getTable();
-                $sqlArr = explode('ON ', $sql);
-                $str = array_pop($sqlArr);
-                preg_match_all("/`(.*)`/U", $str, $arr);
-                if ($relation instanceof BelongsTo || $relation instanceof HasMany) {
-                    $foreignKey = $arr[1][1];
-                    $pk = $arr[1][3];
-                }
-                if ($relation instanceof HasOne) {
-                    $pk = $arr[1][1];
-                    $foreignKey = $arr[1][3];
-                }
+                $relationTable = $relation->getTable();
+                $relationTableFields = $relation->getTableFields();
+                $foreignKey = $relation->getForeignKey();
+                $pk = $relation->getLocalKey();
                 $db = null;
                 if ($relation instanceof HasMany) {
-                    $db = $relation->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}");
+                    $db = $relation->whereRaw("{$relationTable}.{$pk}={$this->db->getTable()}.{$foreignKey}");
                 } elseif ($relation instanceof BelongsTo) {
                     $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
                 } else if ($relation instanceof HasOne) {
                     $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
                 }
                 if($db){
+                    $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName],$relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
                     $sql = $db->where(function ($q) use($fields,$keyword,$relationWhereCondtion){
