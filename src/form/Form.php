@@ -442,6 +442,7 @@ class Form extends View
     {
         $this->data = $this->model->where($this->pkField, $id)->find();
         $this->formData[$this->pkField] = $id;
+
         $this->isEdit = true;
         return $this;
     }

@@ -28,7 +28,7 @@ class Select extends Field
     public function __construct($field, $label, $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
-
+        $this->setAttr('clearable', true);
         $this->setAttr('filterable', true);
         $this->setAttr('placeholder', '请选择' . $label);
     }

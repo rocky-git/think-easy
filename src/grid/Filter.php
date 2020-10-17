@@ -366,7 +366,6 @@ class Filter extends View
     {
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'select');
-        $formItem->setAttr('clearable', true);
         $formItem->groupOptions($options);
         return $formItem;
     }
@@ -379,7 +378,6 @@ class Filter extends View
     {
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'select');
-        $formItem->setAttr('clearable', true);
         $formItem->options($options);
         return $formItem;
     }
