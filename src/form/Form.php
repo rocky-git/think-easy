@@ -20,6 +20,8 @@ use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphMany;
+use think\model\relation\MorphOne;
 use thinkEasy\form\field\Cascader;
 use thinkEasy\form\field\Input;
 use thinkEasy\form\field\Radio;
@@ -361,7 +363,7 @@ class Form extends View
                             if (count($relationData) > 0) {
                                 $this->model->$field()->saveAll($relationData);
                             }
-                        } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo) {
+                        } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo || $this->model->$field() instanceof MorphOne) {
                             $relationData = $this->saveData[$field];
                             if (is_null($id) || empty($this->data->$field)) {
                                 $this->model->$field()->save($relationData);
@@ -369,8 +371,7 @@ class Form extends View
                                 $this->data->$field->save($relationData);
                             }
 
-                        } elseif ($this->model->$field() instanceof HasMany) {
-
+                        } elseif ($this->model->$field() instanceof HasMany || $this->model->$field() instanceof MorphMany) {
                             $realtionUpdateIds = array_column($value, 'id');
                             if (!empty($this->data->$field)) {
                                 $deleteIds = $this->data->$field->column('id');
