@@ -52,6 +52,8 @@ class Component
                 }else{
                     $componentProps[] = ":{$prop}='false'";
                 }
+            }else{
+                $componentProps[] = ":{$prop}='{$value}'";
             }
         }
         $componentProps = implode(' ',$componentProps);
