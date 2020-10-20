@@ -152,7 +152,7 @@ EOF;
           v-if=\"typeof({$model}) == 'string'\"
           :key='item.value'
           :label='item.label'
-          :value='item.value'
+          :value=\"'' + item.value\"
           :disabled='item.disabled'>
           <span v-html='item.label'></span>
         </el-option>

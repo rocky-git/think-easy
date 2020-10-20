@@ -27,7 +27,7 @@ class MenuService extends Service
      */
     public function all()
     {
-        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id desc')->select()->toArray();
+        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id desc')->cache(10)->select()->toArray();
         return $data;
     }
 
@@ -43,14 +43,17 @@ class MenuService extends Service
 
     /**
      * 生成菜单下拉框option
+     * @param array $data
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function listOptions()
+    public function listOptions($data = [])
     {
-        $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select();
+        if(count($data) == 0){
+            $data = Db::name('system_menu')->where('status', 1)->order('sort asc,id asc')->select();
+        }
         $menusList = $this->getTreeLevel($data);
         foreach ($menusList as &$value) {
             $value['label'] = str_repeat("　├　", $value['level'] + 1) . $value['name'];

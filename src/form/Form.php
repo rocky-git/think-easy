@@ -179,7 +179,7 @@ class Form extends View
         $this->setVar('sumbitAlign', $align);
     }
     public function prependSubmitExtend($entend){
-        if($entend instanceof Field){
+        if(class_exists($entend)){
             $field = new $entend('','',[]);
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
@@ -188,7 +188,7 @@ class Form extends View
 
     }
     public function appendSubmitExtend($entend){
-        if($entend instanceof Field){
+        if(class_exists($entend)){
             $field = new $entend('','',[]);
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
