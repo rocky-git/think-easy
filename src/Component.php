@@ -44,12 +44,12 @@ class Component
     /**
      * 渲染组件模板
      * @param $template 模板文件名
-     * @param array $vars 模板变量
      * @param array $props 组件参数
+     * @param array $vars 模板变量
      * @return string
      * @throws \Exception
      */
-    public function fetch($template,$vars = [],$props = []){
+    public function fetch($template,$props = [],$vars = []){
         $view = View::fetch($template,$vars);
         $componentProps = [];
         foreach ($props as $prop=>$value){

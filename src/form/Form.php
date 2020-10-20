@@ -179,14 +179,21 @@ class Form extends View
         $this->setVar('sumbitAlign', $align);
     }
     public function prependSubmitExtend($entend){
-        $field = new $entend('','',[]);
-        $this->setVar('prependSubmitExtend', $field->render());
-        $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+        if($entend instanceof Field){
+            $field = new $entend('','',[]);
+            $entend = $field->render();
+            $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+        }
+        $this->setVar('prependSubmitExtend', $entend);
+
     }
     public function appendSubmitExtend($entend){
-        $field = new $entend('','',[]);
-        $this->setVar('appendSubmitExtend', $field->render());
-        $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+        if($entend instanceof Field){
+            $field = new $entend('','',[]);
+            $entend = $field->render();
+            $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
+        }
+        $this->setVar('appendSubmitExtend', $entend);
     }
 
     /**
@@ -961,7 +968,13 @@ EOF;
     {
         $this->setVar('hideResetButton', true);
     }
-
+    /**
+     * 隐藏提交按钮
+     */
+    public function hideSubmitButton()
+    {
+        $this->setVar('hideSubmitButton', true);
+    }
     /**
      * 添加表单附加参数
      * @param array $data

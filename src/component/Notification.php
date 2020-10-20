@@ -18,54 +18,80 @@ use think\exception\HttpResponseException;
  */
 class Notification
 {
+    protected $data = [];
+
     /**
      * 成功提示
      * @param $title 标题
      * @param $message 提示信息
      * @param string $url 跳转url
+     * @return $this
      */
-    public function success($title,$message, $url = '')
+    public function success($title, $message, $url = '')
     {
-        $this->response($title,$message, 'success', $url);
+        $this->response($title, $message, 'success', $url);
+        return $this;
     }
+
     /**
      * 警告提示
      * @param $title 标题
      * @param $message 提示信息
      * @param string $url 跳转url
+     * @return $this
      */
-    public function warning($title,$message, $url = '')
+    public function warning($title, $message, $url = '')
     {
-        $this->response($title,$message, 'warning', $url);
+        $this->response($title, $message, 'warning', $url);
+        return $this;
     }
+
     /**
      * 信息提示
      * @param $title 标题
      * @param $message 提示信息
      * @param string $url 跳转url
+     * @return $this
      */
-    public function info($title,$message, $url = '')
+    public function info($title, $message, $url = '')
     {
-        $this->response($title,$message, 'info', $url);
+        $this->response($title, $message, 'info', $url);
+        return $this;
     }
+
     /**
      * 错误提示
      * @param $title 标题
      * @param $message 提示信息
      * @param string $url 跳转url
+     * @return $this
      */
-    public function error($title,$message, $url = '')
+    public function error($title, $message, $url = '')
     {
-        $this->response($title,$message, 'error', $url);
+        $this->response($title, $message, 'error', $url);
+        return $this;
     }
-    protected function response($title,$message, $type, $url = '')
+
+    /**
+     * 刷新当前页面
+     */
+    public function refresh()
     {
-        throw new HttpResponseException(json([
-            'code' => 80021,
+        $this->data = array_merge($this->data, ['refresh' => true]);
+    }
+    protected function response($title, $message, $type, $url = '')
+    {
+        $this->data = [
+            'code' => 80020,
             'type' => $type,
-            'title'=>$title,
-            'message'=>$message,
+            'title' => $title,
+            'message' => $message,
             'url' => $url
-        ]));
+        ];
+    }
+
+    public function __destruct()
+    {
+        throw new HttpResponseException(json($this->data));
     }
 }

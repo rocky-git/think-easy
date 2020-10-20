@@ -10,7 +10,9 @@
                     <!--{if isset($prependSubmitExtend)}-->
                     {$prependSubmitExtend|raw}
                     <!--{/if}-->
+                    <!--{if !isset($hideSubmitButton)}-->
                     <el-button type="primary"  native-type="submit" :loading="loading" @click="loading = true">{$submitText|default='保存数据'}</el-button>
+                    <!--{/if}-->
                     <!--{if !isset($hideResetButton)}-->
                     <el-button @click="resetForm('form')">重置</el-button>
                     <!--{/if}-->
@@ -36,6 +38,7 @@
         data(){
             let _self = this
             return {
+                tableData:[],
                 loading:false,
                 auto:'',
                 manyIndex:0,
