@@ -649,4 +649,7 @@
     .el-tabs__nav-wrap{
         z-index: 0;
     }
+    .el-drawer__body{
+        overflow: auto
+    }
 </style>
