@@ -710,7 +710,10 @@ EOF;
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
-            $count = $this->db->count();
+            $sql = $this->db->buildSql();
+            $sql = "SELECT COUNT(*) FROM {$sql} userCount";
+            $res  = Db::query($sql);
+            $count = $res[0]['COUNT(*)'];
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
             $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
@@ -768,7 +771,11 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                $result['total'] = $this->db->removeOption('page')->removeOption('limit')->count();
+                $sql = $this->db->removeOption('page')->removeOption('limit')->buildSql();
+                $sql = "SELECT COUNT(*) FROM {$sql} userCount";
+                $res  = Db::query($sql);
+                $count = $res[0]['COUNT(*)'];
+                $result['total'] = $count;
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
                 break;
