@@ -392,13 +392,6 @@
                                         sort: startPage +newIndex
                                     }
                                 }
-                            }).then(res=>{
-                                this.$notify({
-                                    title: '操作完成',
-                                    message: '排序完成',
-                                    type: 'success',
-                                    duration: 1500
-                                })
                             }).catch(res=>{
                                 const targetRow = this.tableData.splice(evt.newIndex, 1)[0]
                                 this.tableData.splice(evt.oldIndex, 0, targetRow)
@@ -462,6 +455,7 @@
                 }
                 if(this.isDialog){
                     params.build_dialog = true
+                    params.eadmin_component = true
                     this.$request({
                         url: url,
                         method: 'get',
@@ -570,12 +564,6 @@
                     data: param
                 }).then(response => {
                     if (response.code == 200) {
-                        this.$notify({
-                            title: '操作完成',
-                            message: response.message,
-                            type: 'success',
-                            duration: 1500
-                        })
                         this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',false)
                     } else {
                         this.$set( this.tableData[this.inputEditRow.eadminIndex],'eadmin_edit',true)
@@ -652,13 +640,6 @@
                                 this.deleteTreeData(this.tableData,delId)
                             })
                         }
-                        this.$notify({
-                            title: '操作完成',
-                            message: res.message,
-                            type: 'success',
-                            duration: 1500
-                        })
-
                     })
                 })
             },
@@ -702,6 +683,7 @@
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
+                requestParams.eadmin_component = true
                 this.tableData = []
                 this.$request({
                     url: url,

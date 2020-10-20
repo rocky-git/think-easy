@@ -71,6 +71,9 @@ class Row extends View
                             resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
                             this.\$request({
                                 url: '{$url}',
+                                params:{
+                                    eadmin_component:true
+                                }
                             }).then(res=>{
                                     this.{$componentKey} = () => new Promise(resolve => {
                                         resolve(this.\$splitCode(res.data))

@@ -150,17 +150,6 @@
                 }).then(response=>{
                     this.loading = false
                     if(response.code == 200){
-                        this.$notify({
-                            title: '操作完成',
-                            message: response.message,
-                            type: 'success',
-                            duration: 1500
-                        })
-                        if(response.data.url && response.data.url == 'back'){
-                            this.$router.go(-1)
-                        }else if(response.data.url){
-                            this.$router.push(response.data.url)
-                        }
                         if(this.closeVisible){
                             this.$emit('update:dialogVisible', false)
                             this.$emit('update:tableDataUpdate', true)

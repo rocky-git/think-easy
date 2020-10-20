@@ -15,6 +15,7 @@ use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
 use thinkEasy\facade\Button;
+use thinkEasy\facade\Component;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
@@ -411,9 +412,14 @@ EOF;
                 ->buildSql();
             $this->model->where($this->model->getPk(), $sortable_data['id'])->update([$this->sortField => $sortable_data['sort']]);
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
+            if($res){
+                Component::notification()->success('操作成功','排序完成');
+            }
         } else {
             $res = $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(), $ids)->update($data);
-            if($res){
+            if($res && isset($data[$this->sortField])){
+                Component::notification()->success('操作成功','排序完成');
+            }elseif($res){
                 return true;
             }else{
                 return false;

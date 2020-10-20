@@ -5,6 +5,7 @@ namespace thinkEasy\controller;
 
 use think\Request;
 use thinkEasy\Controller;
+use thinkEasy\facade\Component;
 
 class BaseAdmin extends Controller
 {
@@ -15,7 +16,7 @@ class BaseAdmin extends Controller
      */
     public function index()
     {
-        $this->successCode($this->grid()->view());
+        Component::view($this->grid()->view());
     }
 
     /**
@@ -25,7 +26,7 @@ class BaseAdmin extends Controller
      */
     public function create()
     {
-        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
+        Component::view($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
     }
 
     /**
@@ -40,9 +41,9 @@ class BaseAdmin extends Controller
         $form = $this->$submitFromMethod();
         $res = $form->save($request->post());
         if ($res !== false) {
-            $this->successCode(['url'=>$form->getRedirectUrl()], 200, '数据保存成功');
+            Component::notification()->success('操作完成','数据保存成功',$form->getRedirectUrl());
         } else {
-            $this->errorCode(999, '数据保存失败');
+            Component::message()->error('数据保存失败');
         }
 
 
@@ -56,7 +57,7 @@ class BaseAdmin extends Controller
      */
     public function read($id)
     {
-        $this->successCode($this->detail()->detailData($id)->view());
+        Component::view($this->detail()->detailData($id)->view());
 
     }
 
@@ -68,7 +69,7 @@ class BaseAdmin extends Controller
      */
     public function edit($id)
     {
-        $this->successCode($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
+        Component::view($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
     }
 
     /**
@@ -91,9 +92,9 @@ class BaseAdmin extends Controller
             $url = $form->getRedirectUrl();
         }
         if ($res !== false) {
-            $this->successCode(['url'=>$url], 200, '数据更新成功');
+            Component::notification()->success('操作完成','数据更新成功',$url);
         } else {
-            $this->errorCode(999, '数据保存失败');
+            Component::message()->error('数据保存失败');
         }
 
     }
@@ -108,9 +109,9 @@ class BaseAdmin extends Controller
     {
         $res = $this->grid()->destroy($id);
         if ($res !== false) {
-            $this->successCode([], 200, '删除成功');
+            Component::notification()->success('操作完成','删除成功');
         } else {
-            $this->errorCode(999, '删除失败');
+            Component::message()->error('数据保存失败');
         }
 
     }
@@ -118,7 +119,7 @@ class BaseAdmin extends Controller
     public function view($build)
     {
         if (request()->method() == 'GET') {
-            $this->successCode($build->view());
+            Component::view($build->view());
         } else {
             return $build;
         }

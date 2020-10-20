@@ -36,13 +36,6 @@
                     url: this.$route.path +'/batch.rest',
                     method: 'put',
                     data: param
-                }).then(res=>{
-                    this.$notify({
-                        title: '操作完成',
-                        message: '排序完成',
-                        type: 'success',
-                        duration: 1500
-                    })
                 })
             },
             //排序置顶
@@ -68,12 +61,6 @@
                         title = '已置顶到第一页'
                     }
                     this.$emit('update:tableData', this.tableData)
-                    this.$notify({
-                        title: '排序完成',
-                        message: title,
-                        type: 'success',
-                        duration: 1500
-                    })
                 })
 
             },
@@ -100,12 +87,6 @@
                         title = '已置底到最后一页'
                     }
                     this.$emit('update:tableData', this.tableData)
-                    this.$notify({
-                        title: '排序完成',
-                        message: title,
-                        type: 'success',
-                        duration: 1500
-                    })
                 })
             },
             handleDetail(row,index){
@@ -127,13 +108,6 @@
                     }).then(res=>{
                         this.deleteTreeData(this.tableData,row.id)
                         this.$emit('update:tableData', this.tableData)
-                        this.$notify({
-                            title: '操作完成',
-                            message: res.message,
-                            type: 'success',
-                            duration: 2000
-                        })
-
                     })
                 })
             },

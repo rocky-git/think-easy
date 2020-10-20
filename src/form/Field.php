@@ -9,6 +9,7 @@
 namespace thinkEasy\form;
 
 
+use thinkEasy\facade\Component;
 use thinkEasy\View;
 use think\helper\Str;
 class Field extends View

@@ -82,7 +82,7 @@ class Notification
     protected function response($title, $message, $type, $url = '')
     {
         $this->data = [
-            'code' => 80020,
+            'code' => 80021,
             'type' => $type,
             'title' => $title,
             'message' => $message,
