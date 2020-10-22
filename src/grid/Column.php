@@ -571,6 +571,9 @@ class Column extends View
 
     public function render()
     {
+        if($this->getAttr('type')){
+            $this->setField('');
+        }
         $this->html = '';
         if (empty($this->display)) {
 
@@ -601,11 +604,11 @@ class Column extends View
             $this->html = "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }
+
         list($attrStr, $dataStr) = $this->parseAttr();
         if($this->edit){
             $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
-
         }
         return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">$this->label</template>" . $this->display . "</el-table-column>";
     }

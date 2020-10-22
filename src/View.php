@@ -194,7 +194,7 @@ abstract class View
         if(empty($name)){
             return $this->attr;
         }else{
-            return $this->attr[$name];
+            return $this->attr[$name] ?? '';
         }
 
     }

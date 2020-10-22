@@ -82,13 +82,15 @@ class Grid extends View
     //导出文件名
     protected $exportFileName = null;
     protected $relations = [];
-
+    //初始化
+    protected static $init = null;
     public function __construct(Model $model)
     {
+
         $this->model = $model;
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
-        $this->actionColumn = new Actions('actionColumn', '');
+        $this->actionColumn = new Actions('eadminColumnAction', '');
         $this->table = new Table($this->columns, []);
         $this->table->setAttr(':max-height', 'tableHeight');
         $this->table->setAttr('style', 'z-index:0');
@@ -103,6 +105,9 @@ class Grid extends View
             $this->trashed(true);
         }
         $this->table->setVar('grid', true);
+        if(!is_null(self::$init)){
+            call_user_func(self::$init,$this);
+        }
     }
 
     /**
@@ -348,10 +353,8 @@ EOF;
      */
     public function indexColumn($type = 'selection')
     {
-        $column = $this->column('', '');
+        $column = $this->column('eadminColumnIndex'.$type, '');
         $column->setAttr('type', $type);
-
-
         return $column;
     }
 
@@ -745,7 +748,7 @@ EOF;
             if (request()->has('is_deleted')) {
                 $this->column($this->softDeleteField, '删除时间');
                 $this->hideAction();
-                $this->column('action_delete', '操作')->display(function ($val, $data) {
+                $this->column('eadminColumnActionDelete', '')->display(function ($val, $data) {
                     $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
                         ->delete($data['id'], '此操作将恢复该数据, 是否继续?', 2);
                     $button .= Button::create('永久删除', 'danger', 'small', 'el-icon-delete')
@@ -801,5 +804,19 @@ EOF;
             default:
                 return $this->table->view();
         }
+    }
+
+    /**
+     * 开启表格视图方案保存模式
+     */
+    public function onTableView(){
+        $this->table->setVar('onTableView', true);
+    }
+    /**
+     * 初始化
+     * @param \Closure $closure
+     */
+    public static function init(\Closure $closure){
+        self::$init = $closure;
     }
 }

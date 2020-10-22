@@ -79,8 +79,6 @@
                     <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
                     <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
                     <!--{/if}-->
-
-
                     <!--{notempty name="$filter"}-->
                     <!-- PC端-->
                     <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
@@ -92,6 +90,9 @@
                     <!--{/if}-->
                     <div style="float: right;margin-right: 15px">
                         <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
+                        {if isset($onTableView)}
+                        {$tableFieldView|raw}
+                        {else/}
                         <el-dropdown trigger="click" :hide-on-click="false">
                             <el-button icon="el-icon-s-grid" size="mini"></el-button>
                             <el-dropdown-menu slot="dropdown">
@@ -102,6 +103,7 @@
                                 </el-checkbox-group>
                             </el-dropdown-menu>
                         </el-dropdown>
+                        {/if}
                     </div>
                 </el-col>
             </el-row>
@@ -702,6 +704,7 @@
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
+                requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.tableData = []
                 this.$request({
                     url: url,
