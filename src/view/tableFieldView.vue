@@ -133,7 +133,11 @@
                 })
             },
             grid(){
-                return this.$route.path + JSON.stringify(this.$route.meta.params)
+                if(this.$route.meta.params.length > 0){
+                    return this.$route.path + JSON.stringify(this.$route.meta.params)
+                }else{
+                    return this.$route.path
+                }
             },
             //删除
             del(id,index){
@@ -171,6 +175,7 @@
             submitForm(formName){
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        this.form.all_fields = this.checkboxFields
                         let all_fields = this.form.all_fields.map(item=>{
                             return item.field + item.label
                         })
@@ -178,7 +183,6 @@
                             return all_fields.indexOf(a) - all_fields.indexOf(b)
                         })
                         this.form.grid = this.grid()
-                        this.form.all_fields = this.checkboxFields
                         this.$request({
                             url:'/eadmin/tableView',
                             method:'post',

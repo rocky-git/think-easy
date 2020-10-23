@@ -48,6 +48,7 @@
                 formItemTags:[],
                 closeVisible:true,
                 validates:[],
+                watchOldValue:[],
                 form:{$formData|raw},
                 formTags:{$formTags|raw},
                 {$formScriptVar|raw}

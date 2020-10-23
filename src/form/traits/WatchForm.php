@@ -48,6 +48,13 @@ trait WatchForm
                 url = url +'/'+this.form.id+'.rest'
                 method = 'put'
             }
+            if(this.watchOldValue['{$field}'] && JSON.stringify({$newVal}) === JSON.stringify(this.watchOldValue['{$field}'])){
+                return
+            }
+            if({$oldValue} instanceof Array || {$oldValue} instanceof Object){
+                 this.watchOldValue['{$field}'] = JSON.parse(JSON.stringify({$oldValue}))
+                 {$oldValue} = this.watchOldValue['{$field}']
+            }
             this.\$request({
                   url:url,
                   method:method,
@@ -76,7 +83,7 @@ trait WatchForm
                     }
                 }
             })
-            
+           
 EOF;
         return $js;
     }
@@ -90,6 +97,7 @@ EOF;
             $requestJs = $this->watchRequstJs($field);
             $this->watchJs .= <<<EOF
     'form.{$field}': {
+         deep:true,
          handler: function(newVal,oldValue) {
             {$requestJs}
          }
