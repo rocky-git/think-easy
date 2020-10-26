@@ -698,6 +698,7 @@ class Form extends View
                     if (!is_null($formItem->value)) {
                         $this->setData($formItem->field, $formItem->value);
                     }
+                    $this->script($formItem->getWhenInitJs());
                 } else {
                     //一对多解析
                     $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
@@ -802,8 +803,6 @@ EOF;
                 }
                 $this->formTags[$formItem->field] = $formItem->getTag() . '0';
                 $this->script($formItem->getScript());
-
-                $this->script($formItem->getWhenInitJs());
                 $whenTags = [];
                 $whenTagsAll = [];
                 if (!empty($whenTag)) {
