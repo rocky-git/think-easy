@@ -337,7 +337,7 @@ EOF;
      */
     public function column($field, $label)
     {
-        $column = new Column($field, $label);
+        $column = new Column($field, $label,$this);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
             $this->relations[] = array_shift($fields);
@@ -345,7 +345,6 @@ EOF;
         array_push($this->columns, $column);
         return $column;
     }
-
     /**
      * 设置索引列
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
@@ -467,11 +466,16 @@ EOF;
     public function filter($callback)
     {
         if ($callback instanceof \Closure) {
-            $this->filter = new Filter($this->db);
-            call_user_func($callback, $this->filter);
+
+            call_user_func($callback, $this->getFilter());
         }
     }
-
+    public function getFilter(){
+        if(is_null($this->filter)){
+            $this->filter = new Filter($this->db);
+        }
+        return $this->filter;
+    }
     /**
      * 删除数据
      */
@@ -770,6 +774,7 @@ EOF;
         //查询过滤
         if (!is_null($this->filter)) {
             $this->table->setVar('filter', $this->filter->render());
+            $this->table->setVar('filterMode', $this->filter->mode());
             $this->table->setScriptArr($this->filter->scriptArr);
         }
         //树形

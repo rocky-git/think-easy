@@ -4,6 +4,7 @@
         {$header|raw}
         <!--{/notempty}-->
         <!--{notempty name="$filter"}-->
+
         <el-drawer :with-header="false" size="25%" :append-to-body="true" :visible.sync="filterVisible" :modal="false">
             <div class="filter">
 
@@ -21,6 +22,7 @@
                 </el-form>
             </div>
         </el-drawer>
+
         <!--{/notempty}-->
 
         <!--{if isset($grid)}-->
@@ -80,14 +82,17 @@
                     <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
                     <!--{/if}-->
                     <!--{notempty name="$filter"}-->
+                    <template v-if="filterMode == 'filter'">
                     <!-- PC端-->
                     <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
                     <!-- 移动端-->
                     <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
+                    </template>
                     <!--{/notempty}-->
                     <!--{if isset($toolbar)}-->
                     {$toolbar|raw}
                     <!--{/if}-->
+
                     <div style="float: right;margin-right: 15px">
                         <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
                         {if isset($onTableView)}
@@ -104,6 +109,9 @@
                             </el-dropdown-menu>
                         </el-dropdown>
                         {/if}
+                    </div>
+                    <div>
+                        <el-tag size="small" closable type="info" style="margin-top: 5px;margin-right: 5px" v-for="item in filterTags" @close="removeFilter(item.field)">{{item.label}}</el-tag>
                     </div>
                 </el-col>
             </el-row>
@@ -172,8 +180,11 @@
         },
         data(){
             return {
+                filterMode:'filter',
                 quickSearch: '',
                 form:{},
+                filterTags:[],
+                filterTmpTags:[],
                 filterVisible:false,
                 sortableParams:{},
                 sortable:null,
@@ -240,6 +251,9 @@
             }
         },
         created(){
+            /*{if isset($filterMode)}*/
+            this.filterMode = '{$filterMode}'
+            /*{/if}*/
             /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
@@ -306,6 +320,50 @@
             },
         },
         methods: {
+            //移除筛选字段
+            removeFilter(field){
+                this.form[field] = ''
+                this.$delete(this.filterTags,field)
+                this.handleFilter(false)
+            },
+            //列字段筛选
+            filterColumnChange(val,field,label,itemType,usingData){
+                //列筛选空值移除
+                if(!val || (val instanceof Array && val.length  == 0)){
+                    if(this.filterMode == 'column') {
+                        this.removeFilter(field)
+                    }
+                    return
+                }
+                let showValue = val
+                if(itemType == 'radio' || itemType == 'select' || itemType == 'checkbox'){
+                    if(val instanceof Array){
+                        let showValueArr = []
+                        val.forEach(item=>{
+                            showValueArr.push(usingData[item])
+                        })
+                        showValue = showValueArr.join(',')
+                    }else{
+                        showValue = usingData[val]
+                    }
+                }
+                if(this.filterMode == 'filter') {
+                    let filterTags = JSON.parse(JSON.stringify(this.filterTags));
+                    this.filterTmpTags = Object.assign(filterTags,this.filterTmpTags)
+                    this.filterTmpTags[field] = {
+                        label:label + ': ' + showValue,
+                        field:field
+                    }
+                }else if(this.filterMode == 'column'){
+                    this.filterTags[field] = {
+                        label:label + ': ' + showValue,
+                        field:field
+                    }
+                }
+                if(this.filterMode == 'column'){
+                    this.handleFilter(false)
+                }
+            },
             // selectionChange(selection){
             //     if(selection.length > 2){
             //         selection.pop()
@@ -420,13 +478,23 @@
             //查询过滤
             handleFilter(quick){
                 if(quick){
-                    this.form = {}
+                    this.filterTags = []
+                    for(field in this.form){
+                        this.form[field] = ''
+                    }
                     this.form.quickSearch = this.quickSearch
                 }else{
+                    this.filterTags = Object.assign({}, this.filterTags,this.filterTmpTags)
                     this.quickSearch = ''
+                    this.form.quickSearch = ''
+                    for(field in this.form){
+                        if(!this.form[field] || (this.form[field] instanceof Array && this.form[field].length  == 0)){
+                            this.$delete(this.filterTags,field)
+                        }
+                    }
                 }
-                this.page = 1
-                this.requestPageData()
+               this.page = 1
+               this.requestPageData()
             },
             handleTabsClick(tab, event){
                 this.page = 1
@@ -751,7 +819,7 @@
         position: relative;
         border-radius: 4px;
         padding-left: 10px;
-        padding-bottom: 20px;
+        padding-bottom: 10px;
     }
     .container {
         background: #fff;
@@ -766,5 +834,19 @@
     }
     .el-tabs__nav-wrap{
         z-index: 0;
+    }
+    .eadmin_popover_filter{
+        height: auto!important;
+        padding: 0!important;
+    }
+    .eadmin_form_box .el-form-item{
+        margin-bottom: 0px;!important;
+        border-bottom: 1px solid #ebebf0!important;
+        padding: 5px 10px;
+        width: 100%;
+
+    }
+    .eadmin_form_box .el-date-editor--daterange.el-input__inner{
+        width: 100%;
     }
 </style>

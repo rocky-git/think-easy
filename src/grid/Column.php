@@ -69,30 +69,38 @@ class Column extends View
     //是否行内编辑
     protected $edit = false;
     protected $relation = '';
-    public function __construct($field = '', $label = '')
+    protected $grid = null;
+
+    public function __construct($field = '', $label = '', $grid = null)
     {
+        $this->grid = $grid;
         $this->label = $label;
         if (!empty($field)) {
             $this->field = $field;
             $field = $this->getField($field);
             $this->rowField = "scope.row.{$this->field}";
-            $fields = explode('.',$this->field);
+            $fields = explode('.', $this->field);
             $this->relation = array_shift($fields);
             $this->relationRowField = "scope.row.{$this->relation}";
             $this->setAttr('prop', $field);
         }
     }
+
     /**
      * 隐藏
      * @return $this
      */
-    public function hide(){
+    public function hide()
+    {
         $this->hide = true;
         return $this;
     }
-    public function isHide(){
+
+    public function isHide()
+    {
         return $this->hide;
     }
+
     public function getField($field = '')
     {
         if (empty($field)) {
@@ -101,12 +109,15 @@ class Column extends View
         $fields = explode('.', $field);
         return end($fields);
     }
+
     /**
-    * 行内编辑
-    */
-    public function edit(){
+     * 行内编辑
+     */
+    public function edit()
+    {
         $this->edit = true;
     }
+
     /**
      * 设置当内容过长被隐藏时显示
      * @return $this
@@ -122,11 +133,12 @@ class Column extends View
      * @param $val 显示的内容
      * @param $content 弹出内容
      * @param int $width 弹出宽度
-     * @param string $placement  弹出方向
+     * @param string $placement 弹出方向
      * @return $this
      */
-    public function popover($val,$content,$width=200,$placement='top-start'){
-        $this->display(function () use($val,$content,$placement,$width){
+    public function popover($val, $content, $width = 200, $placement = 'top-start')
+    {
+        $this->display(function () use ($val, $content, $placement, $width) {
             return "<el-popover
     placement='{$placement}'
     width='{$width}'
@@ -137,17 +149,20 @@ class Column extends View
         });
         return $this;
     }
+
     /**
      * 评分显示
      * @param int $max 最大长度
      * @return $this
      */
-    public function rate($max = 5){
-        $this->display(function ($val) use($max){
+    public function rate($max = 5)
+    {
+        $this->display(function ($val) use ($max) {
             return "<el-rate v-model='data.{$this->field}' disabled :max='{$max}'></el-rate>";
         });
         return $this;
     }
+
     /**
      * 列是否固定
      * @param string $fixed
@@ -194,7 +209,7 @@ class Column extends View
      * @param $theme 主题：dark，light，plain
      * @param $size 尺寸:medium，small，mini
      */
-    public function tag($color = '', $theme = 'dark',$size='mini')
+    public function tag($color = '', $theme = 'dark', $size = 'mini')
     {
         $this->tag = "<el-tag effect='{$theme}' type='{$color}' size='{$size}'>%s</el-tag>";
         return $this;
@@ -213,9 +228,12 @@ class Column extends View
         $this->usings = $usings;
         return $this;
     }
-    public function getUsings(){
+
+    public function getUsings()
+    {
         return $this->usings;
     }
+
     /**
      * 自定义显示
      * @param \Closure $closure
@@ -231,12 +249,14 @@ class Column extends View
      * 显示html
      * @return $this
      */
-    public function html(){
+    public function html()
+    {
         $this->display(function ($val) {
             return $val;
         });
         return $this;
     }
+
     public function getClosure()
     {
         return $this->displayClosure;
@@ -327,7 +347,7 @@ class Column extends View
      * @param int $height 高度
      * @return $this
      */
-    public function video($width = 0,$height = 0)
+    public function video($width = 0, $height = 0)
     {
         $this->display(function ($val, $data) use ($width, $height) {
             if (empty($val)) {
@@ -338,9 +358,9 @@ class Column extends View
             } else {
                 $videos = $val;
             }
-            if($width && $height){
+            if ($width && $height) {
                 return "<eadmin-video style='width: {$width}px;height:{$height}px' url='$videos'></eadmin-video>";
-            }else{
+            } else {
                 return "<eadmin-video url='$videos'></eadmin-video>";
             }
         });
@@ -355,9 +375,9 @@ class Column extends View
      * @param int $multi 是否显示多图
      * @return $this
      */
-    public function image($width = 80, $height = 80, $radius = 5,$multi = false)
+    public function image($width = 80, $height = 80, $radius = 5, $multi = false)
     {
-        $this->display(function ($val, $data) use ($width, $height, $radius,$multi) {
+        $this->display(function ($val, $data) use ($width, $height, $radius, $multi) {
             if (empty($val)) {
                 return '--';
             }
@@ -368,11 +388,11 @@ class Column extends View
             }
             $html = '';
             $jsonImage = json_encode($images);
-            if($multi){
-                foreach ($images as $image){
+            if ($multi) {
+                foreach ($images as $image) {
                     $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
                 }
-            }else{
+            } else {
                 $html = "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$images[0]}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
             }
             return $html;
@@ -387,9 +407,11 @@ class Column extends View
      * @param int $radius 圆角
      * @return $this
      */
-    public function images($width = 80, $height = 80, $radius = 5){
-        $this->image($width,$height,$radius,true);
+    public function images($width = 80, $height = 80, $radius = 5)
+    {
+        $this->image($width, $height, $radius, true);
     }
+
     /**
      * 设置数据
      * @param $data
@@ -516,6 +538,28 @@ class Column extends View
         return $this->cellVue;
     }
 
+    public function filter(\Closure $closure)
+    {
+        $filter = $this->grid->getFilter();
+        $filter->mode('column');
+        $filter->label($this->label);
+        call_user_func($closure,$filter);
+        $filterHtml = $filter->render();
+        $html = <<<EOF
+<el-popover
+    placement="bottom"
+    popper-class="eadmin_popover_filter"
+    width="250"
+    trigger="click">
+    <el-form label-width="100px" class="eadmin_form_box" size="small" ref="form" label-position="top" @submit.native.prevent :model="form">
+    {$filterHtml}
+    </el-form>
+    <i class="el-icon-caret-bottom" style="color: #c0c4cc;cursor: pointer" slot="reference"></i>
+  </el-popover>
+EOF;
+        $this->label .= '&nbsp;&nbsp;'.$html;
+    }
+
     /**
      * 开启排序
      */
@@ -539,7 +583,7 @@ class Column extends View
     public function detailRender()
     {
         $label = '';
-        if(!empty($this->label)){
+        if (!empty($this->label)) {
             $label = "<span style='font-size: 14px;color: #888888'>{$this->label}:</span>&nbsp;";
         }
         $this->rowField = 'data.' . $this->field;
@@ -571,7 +615,7 @@ class Column extends View
 
     public function render()
     {
-        if($this->getAttr('type')){
+        if ($this->getAttr('type')) {
             $this->setField('');
         }
         $this->html = '';
@@ -606,7 +650,7 @@ class Column extends View
         }
 
         list($attrStr, $dataStr) = $this->parseAttr();
-        if($this->edit){
+        if ($this->edit) {
             $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }

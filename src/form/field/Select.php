@@ -147,8 +147,8 @@ EOF;
             ];
         }
         $this->setAttr('data', $options);
-        $this->optionHtml = "<template v-for='item in selectData{$this->varMark}'>
-        <el-option
+
+        $optionHtml = "<el-option
           v-if=\"typeof({$model}) == 'string'\"
           :key='item.value'
           :label='item.label'
@@ -187,9 +187,8 @@ EOF;
           :value='item.value'
           :disabled='item.disabled'>
           <span v-html='item.label'></span>
-        </el-option>
-    </template>";
-
+        </el-option>";
+        $this->optionHtml = "<template v-for='item in selectData{$this->varMark}'>{$optionHtml}</template>";
         $groupOptions = [];
         foreach ($this->groupOptions as $key=>$option){
             if(in_array($option['value'],$this->disabledData)){
@@ -223,49 +222,7 @@ EOF;
       :key='group.value'
       :label='group.label'
       :disabled='group.disabled'>
-      <template v-for='item in group.options'>
-           <el-option
-           v-if=\"typeof({$model}) == 'string'\"
-          :key='item.value'
-          :label='item.label'
-          :value=\"'' + item.value\"
-          :disabled='item.disabled'>
-          <span v-html='item.label'></span>
-        </el-option>
-        <el-option
-          v-else-if=\"typeof({$model}) == 'number'\"
-          :key='item.value'
-          :label='item.label'
-          :value=\"(('' + item.value).trim() == '')?'':parseInt(item.value)\"
-          :disabled='item.disabled'>
-          <span v-html='item.label'></span>
-        </el-option>
-        <el-option
-          v-else-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'string'\"
-          :key='item.value'
-          :label='item.label'
-          :value=\"'' + item.value\"
-          :disabled='item.disabled'>
-          <span v-html='item.label'></span>
-        </el-option>  
-        <el-option
-          v-else-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'number'\"
-          :key='item.value'
-          :label='item.label'
-          :value=\"(('' + item.value).trim() == '')?'':parseInt(item.value)\"
-          :disabled='item.disabled'>
-          <span v-html='item.label'></span>
-        </el-option>
-        <el-option
-          v-else
-          :key='item.value'
-          :label='item.label'
-          :value='item.value'
-          :disabled='item.disabled'>
-          <span v-html='item.label'></span>
-        </el-option>
-      </template>
-    </el-option-group>";
+      <template v-for='item in group.options'>{$optionHtml}</el-option-group>";
             $this->setAttr('data', $groupOptions);
         }
     }

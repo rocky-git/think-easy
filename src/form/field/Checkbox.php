@@ -15,11 +15,19 @@ class Checkbox extends Field
         'data',
         'disabled',
     ];
+    protected $vertical = false;
     protected $optionHtml = '<el-checkbox %s>{{item.label}}</el-checkbox>';
     public function __construct($field, $label, array $arguments = [])
     {
         parent::__construct($field, $label, $arguments);
         $this->default([]);
+    }
+    /**
+     * 竖排
+     */
+    public function vertical(){
+        $this->vertical = true;
+        return $this;
     }
     /**
      * 设置选项数据
@@ -35,11 +43,13 @@ class Checkbox extends Field
                 'label' => $label,
             ];
         }
-        $this->optionHtml = "<template v-for='item in checkboxData{$this->varMark}'>
-            <el-checkbox   v-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'string'\" :label=\"'' + item.value\">{{item.label}}</el-checkbox>
+        $optionHtml = "<el-checkbox   v-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'string'\" :label=\"'' + item.value\">{{item.label}}</el-checkbox>
             <el-checkbox   v-else-if=\"typeof({$model}) == 'object' && typeof({$model}[0]) == 'number'\" :label=\"(('' + item.value) . trim() == '') ? '' : parseInt(item.value)\">{{item.label}}</el-checkbox>
-            <el-checkbox   v-else :label=\"item.value\">{{item.label}}</el-checkbox>
-</template>";
+            <el-checkbox   v-else :label=\"item.value\">{{item.label}}</el-checkbox>";
+        if($this->vertical){
+            $optionHtml = "<div>{$optionHtml}</div>";
+        }
+        $this->optionHtml = "<template v-for='item in checkboxData{$this->varMark}'>{$optionHtml}</template>";
         $this->setAttr('data', $options);
         return $this;
 
