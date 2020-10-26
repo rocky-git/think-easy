@@ -668,6 +668,9 @@ class Filter extends View
             }
             $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
         }
+        if ($this->mode == 'column') {
+            $this->formItem = [];
+        }
         array_push($this->scriptArr, "form:" . json_encode($this->fields, JSON_UNESCAPED_UNICODE));
 
         return $formItemHtml;
