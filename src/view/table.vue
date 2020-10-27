@@ -322,7 +322,11 @@
         methods: {
             //移除筛选字段
             removeFilter(field){
-                this.form[field] = ''
+                if(this.form[field] instanceof Array){
+                    this.form[field] = []
+                }else{
+                    this.form[field] = ''
+                }
                 this.$delete(this.filterTags,field)
                 this.handleFilter(false)
             },

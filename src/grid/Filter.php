@@ -446,6 +446,7 @@ class Filter extends View
             $this->columnLabel = $label;
         }
         $formItem->setAttr('@change',"(e)=>filterColumnChange(e,\"{$field}\",\"{$this->columnLabel}\",\"{$name}\",{$this->usingData})");
+        $this->usingData = [];
         return $formItem;
     }
 

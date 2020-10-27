@@ -278,7 +278,6 @@ class FileService extends Service
             imagedestroy($image);
             $funcs = "image".$extension;
             if($type == 2 || $type == 3){
-
                 $funcs($image_thump,$filename,$quality);
             }else{
                 $funcs($image_thump,$filename);
