@@ -132,15 +132,15 @@ class FileService extends Service
      */
     public function upload($file, $fileName = null,$saveDir = '/',$upType='',bool $isUniqidmd5 = false)
     {
-        if(empty($upType)){
-            $upType = $this->upType;
+        if(!empty($upType)){
+            $this->upType = $upType;
         }
         if($isUniqidmd5){
-            $saveName = Filesystem::disk($upType)->putFile($saveDir, $file);
+            $saveName = Filesystem::disk($this->upType)->putFile($saveDir, $file);
         }elseif(empty($fileName)){
-            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $file->getOriginalName());
+            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $file->getOriginalName());
         }else{
-            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $fileName);
+            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $fileName);
         }
         if ($saveName) {
             $filename = Filesystem::disk($this->upType)->path($saveName);
@@ -199,7 +199,6 @@ class FileService extends Service
             return false;
         }
     }
-
     /**
      * 获取访问路径
      * @param $name 文件名
@@ -211,12 +210,14 @@ class FileService extends Service
         if($this->upType == 'safe'){
             return $name;
         }else{
-            $domain = $config->get('domain') ?? $this->app->request->domain();
-            return $domain . $config->get('url') . DIRECTORY_SEPARATOR . $name;
+            if($this->upType == 'local'){
+                return $this->app->request->domain() . $config->get('url') . '/'  . $name;
+            }else{
+                $domain = config('filesystem.disks.'.$this->upType.'.domain');
+                return $domain . '/' . $name;
+            }
         }
-
     }
-
     /**
      * 合并分片文件
      * @param $chunkSaveDir 分片保存目录
