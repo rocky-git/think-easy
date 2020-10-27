@@ -82,8 +82,11 @@ class Grid extends View
     //导出文件名
     protected $exportFileName = null;
     protected $relations = [];
+    //表格对齐方式
+    protected $headerAlign = 'left';
     //初始化
     protected static $init = null;
+
     public function __construct(Model $model)
     {
 
@@ -105,29 +108,35 @@ class Grid extends View
             $this->trashed(true);
         }
         $this->table->setVar('grid', true);
-        if(!is_null(self::$init)){
-            call_user_func(self::$init,$this);
+        if (!is_null(self::$init)) {
+            call_user_func(self::$init, $this);
         }
     }
 
     /**
      * 头部内容
      */
-    public function header($html){
-        $this->table->setVar('header',$html);
+    public function header($html)
+    {
+        $this->table->setVar('header', $html);
     }
+
     /**
      * 双击编辑
      */
-    public function dbclickEdit(){
-        $this->table->setVar('dbclickEdit',true);
+    public function dbclickEdit()
+    {
+        $this->table->setVar('dbclickEdit', true);
     }
+
     /**
      * 双击详情
      */
-    public function dbclickDetail(){
-        $this->table->setVar('dbclickDetail',true);
+    public function dbclickDetail()
+    {
+        $this->table->setVar('dbclickDetail', true);
     }
+
     /**
      * 拖拽排序列
      * @param $field 排序字段
@@ -337,7 +346,8 @@ EOF;
      */
     public function column($field, $label)
     {
-        $column = new Column($field, $label,$this);
+        $column = new Column($field, $label, $this);
+        $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
             $this->relations[] = array_shift($fields);
@@ -345,6 +355,7 @@ EOF;
         array_push($this->columns, $column);
         return $column;
     }
+
     /**
      * 设置索引列
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
@@ -352,7 +363,7 @@ EOF;
      */
     public function indexColumn($type = 'selection')
     {
-        $column = $this->column('eadminColumnIndex'.$type, '');
+        $column = $this->column('eadminColumnIndex' . $type, '');
         $column->setAttr('type', $type);
         return $column;
     }
@@ -415,9 +426,9 @@ EOF;
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
         } else {
             $res = $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(), $ids)->update($data);
-            if($res){
+            if ($res) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -470,12 +481,15 @@ EOF;
             call_user_func($callback, $this->getFilter());
         }
     }
-    public function getFilter(){
-        if(is_null($this->filter)){
+
+    public function getFilter()
+    {
+        if (is_null($this->filter)) {
             $this->filter = new Filter($this->db);
         }
         return $this->filter;
     }
+
     /**
      * 删除数据
      */
@@ -639,37 +653,38 @@ EOF;
             $this->hideDeleteButton();
         }
     }
+
     protected function quickFilter()
     {
-        $keyword = Request::get('quickSearch','',['trim']);
-        if($keyword){
+        $keyword = Request::get('quickSearch', '', ['trim']);
+        if ($keyword) {
             $whereFields = [];
             $whereOr = [];
             $relationWhereFields = [];
             $relationWhereOr = [];
-            foreach ($this->columns as $column){
-                $fields = explode('.',  $column->field);
+            foreach ($this->columns as $column) {
+                $fields = explode('.', $column->field);
                 $field = $column->getField();
                 $usings = $column->getUsings();
                 if (count($fields) > 1) {
                     $relation = array_shift($fields);
-                    if(empty($usings)){
+                    if (empty($usings)) {
                         $relationWhereFields[$relation][] = $field;
-                    }else{
-                        foreach ($usings as $key=>$value){
-                            if(strpos($value,$keyword) !== false){
+                    } else {
+                        foreach ($usings as $key => $value) {
+                            if (strpos($value, $keyword) !== false) {
                                 $relationWhereOr[$relation][$field] = $key;
                             }
                         }
                     }
 
-                }else{
-                    if(in_array($column->getField(),$this->tableFields)){
-                        if(empty($usings)){
+                } else {
+                    if (in_array($column->getField(), $this->tableFields)) {
+                        if (empty($usings)) {
                             $whereFields[] = $field;
-                        }else{
-                            foreach ($usings as $key=>$value){
-                                if(stripos($value,$keyword) !== false){
+                        } else {
+                            foreach ($usings as $key => $value) {
+                                if (stripos($value, $keyword) !== false) {
                                     $whereOr[$field] = $key;
                                 }
                             }
@@ -694,27 +709,27 @@ EOF;
                 } else if ($relation instanceof HasOne) {
                     $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
                 }
-                if($db){
-                    $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName],$relationTableFields);
+                if ($db) {
+                    $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
-                    $sql = $db->where(function ($q) use($fields,$keyword,$relationWhereCondtion){
-                        foreach ($relationWhereCondtion as $field=>$value){
+                    $sql = $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
+                        foreach ($relationWhereCondtion as $field => $value) {
                             $q->whereOr($field, $value);
                         }
-                        $q->whereLike($fields, "%{$keyword}%",'OR');
+                        $q->whereLike($fields, "%{$keyword}%", 'OR');
                     })->buildSql();
                     $relationWhereSqls[] = $sql;
                 }
 
             }
             $fields = implode('|', $whereFields);
-            $this->db->where(function ($q) use($relationWhereSqls,$fields,$keyword,$whereOr){
-                $q->whereLike($fields, "%{$keyword}%",'OR');
-                foreach ($whereOr as $field=>$value){
+            $this->db->where(function ($q) use ($relationWhereSqls, $fields, $keyword, $whereOr) {
+                $q->whereLike($fields, "%{$keyword}%", 'OR');
+                foreach ($whereOr as $field => $value) {
                     $q->whereOr($field, $value);
                 }
-                foreach ($relationWhereSqls as $sql){
+                foreach ($relationWhereSqls as $sql) {
                     $q->whereExists($sql, 'OR');
                 }
             });
@@ -738,7 +753,7 @@ EOF;
             $this->table->setVar('pageHide', 'false');
             $sql = $this->db->buildSql();
             $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-            $res  = Db::query($sql);
+            $res = Db::query($sql);
             $count = $res[0]['COUNT(*)'];
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
@@ -800,7 +815,7 @@ EOF;
                 $result['data'] = $this->data;
                 $sql = $this->db->removeOption('page')->removeOption('limit')->buildSql();
                 $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-                $res  = Db::query($sql);
+                $res = Db::query($sql);
                 $count = $res[0]['COUNT(*)'];
                 $result['total'] = $count;
                 $result['cellComponent'] = $this->table->cellComponent();
@@ -812,16 +827,28 @@ EOF;
     }
 
     /**
+     * 设置表格对其方式
+     * @param string $align left/center/right
+     */
+    public function headerAlign($align = 'center')
+    {
+        $this->headerAlign = $align;
+    }
+
+    /**
      * 开启表格视图方案保存模式
      */
-    public function onTableView(){
+    public function onTableView()
+    {
         $this->table->setVar('onTableView', true);
     }
+
     /**
      * 初始化
      * @param \Closure $closure
      */
-    public static function init(\Closure $closure){
+    public static function init(\Closure $closure)
+    {
         self::$init = $closure;
     }
 }
