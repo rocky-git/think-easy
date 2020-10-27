@@ -554,10 +554,10 @@ class Column extends View
     <el-form label-width="100px" class="eadmin_form_box" size="small" ref="form" label-position="top" @submit.native.prevent :model="form">
     {$filterHtml}
     </el-form>
-    <i class="el-icon-caret-bottom" style="color: #c0c4cc;cursor: pointer" slot="reference"></i>
+    <i class="el-icon-caret-bottom" style="color: #c0c4cc;cursor: pointer;padding:5px 10px" slot="reference"></i>
   </el-popover>
 EOF;
-        $this->label .= '&nbsp;&nbsp;'.$html;
+        $this->label .= $html;
     }
 
     /**
