@@ -211,7 +211,8 @@ class FileService extends Service
         if($this->upType == 'safe'){
             return $name;
         }else{
-            return $this->app->request->domain() . $config->get('url') . DIRECTORY_SEPARATOR . $name;
+            $domain = $config->get('domain') ?? $this->app->request->domain();
+            return $domain . $config->get('url') . DIRECTORY_SEPARATOR . $name;
         }
 
     }

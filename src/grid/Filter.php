@@ -464,11 +464,20 @@ class Filter extends View
         if (is_string($field)) {
             $field = str_replace('.', '__', $field);
             $fields = explode('__', $field);
-            $dbField = end($fields);
-            if (count($fields) > 1) {
-                return $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
+            $dbField = array_pop($fields);
+            if (count($fields) > 0) {
+
+                $func = function (Filter $filter) use ($dbField, $field, $method) {
                     $filter->filterField($method, $dbField, $field);
-                });
+                };
+                while(count($fields) > 1){
+                    $relation = array_pop($fields);
+                    $func = function (Filter $filter) use($relation,$func,$dbField) {
+                        $filter->relationWhere($relation, $func);
+                    };
+                }
+                $relation = array_pop($fields);
+                return $this->relationWhere($relation,$func);
             }
             $requestField = $field;
         } elseif (is_array($field)) {
@@ -623,14 +632,16 @@ class Filter extends View
         if (method_exists($this->model, $relation_method)) {
             $relation = $this->model->$relation_method();
             if ($relation instanceof Relation) {
+                $relationModel = get_class($relation->getModel());
                 $relation_table = $relation->getTable();
                 $foreignKey = $relation->getForeignKey();
                 $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
-                    $this->relationModel = new self($relation_table);
+                    $this->relationModel = new self(new $relationModel);
                     call_user_func($callback, $this->relationModel);
                 }
                 $relationSql = $this->relationModel->db()->buildSql();
+
                 $res = strpos($relationSql, 'WHERE');
                 if ($res !== false) {
                     if ($relation instanceof HasMany) {
