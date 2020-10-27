@@ -139,7 +139,8 @@ class Table extends View
             } else {
                 $column = new Column($field, $label);
             }
-            $key = $column->field . $column->label;
+            $label = trim(strip_tags($column->label));
+            $key = $column->field . $label;
             $columns[$key] = $column;
             if(strpos($column->field,'eadminColumnIndex') !== false){
                 $eadminColumn[] = $column;
@@ -150,11 +151,10 @@ class Table extends View
             if (!$column->isHide()){
                 $checkboxOptions[] = [
                     'field' => $column->field,
-                    'label' => $column->label,
+                    'label' => $label,
                 ];
             }
         }
-
         //选择当前自定义视图表格字段方案
         if (!empty($tableGrid)) {
             $fields = array_flip($tableGrid['fields']);
@@ -162,6 +162,7 @@ class Table extends View
             $columns = array_intersect_key($columns,$fields);
             array_splice($eadminColumn,$insertIndex,0,$columns);
             $columns = $eadminColumn;
+
         }
 
         foreach ($columns as $column) {
@@ -183,6 +184,7 @@ class Table extends View
             $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
         }
+
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
