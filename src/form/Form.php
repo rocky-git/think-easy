@@ -265,11 +265,12 @@ class Form extends View
      * 布局行
      * @param \Closure $closure
      * @param $title 标题
+     * @param $gutter 栅格间隔
      * @return $this
      */
-    public function row(\Closure $closure, $title = '')
+    public function row(\Closure $closure, $title = '',$gutter = 0)
     {
-        array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure]);
+        array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure,'gutter'=>$gutter]);
         return $this;
     }
 
@@ -613,7 +614,7 @@ class Form extends View
                         }
                         $field = new Field('', '', []);
                         $this->layoutTags[$whenTag][] = $field->getTag();
-                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row>' . $this->parseFormItem('', $whenTag) . '</el-row></div>';
+                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row :gutter="'.$formItem['gutter'].'">' . $this->parseFormItem('', $whenTag) . '</el-row></div>';
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {
