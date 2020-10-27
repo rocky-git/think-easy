@@ -262,8 +262,9 @@ class FileService extends Service
      * @param $filename 文件路径
      */
     private function compressImage($filename){
+        $quality = Filesystem::getDiskConfig('local','quality',90);
         list($width, $height, $type, $attr) = getimagesize($filename);
-        if($type > 1 && $type < 17){
+        if($type > 1 && $type < 17 && $quality){
             $extension = image_type_to_extension($type,false);
             $fun = "imagecreatefrom".$extension;
             $image = $fun($filename);
@@ -276,7 +277,12 @@ class FileService extends Service
             imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
             imagedestroy($image);
             $funcs = "image".$extension;
-            $funcs($image_thump,$filename);
+            if($type == 2 || $type == 3){
+
+                $funcs($image_thump,$filename,$quality);
+            }else{
+                $funcs($image_thump,$filename);
+            }
             imagedestroy($image_thump);
         }
     }
@@ -300,7 +306,6 @@ class FileService extends Service
             }else{
                 $isUniqidmd5 = false;
             }
-
             if($this->app->request->method() == 'POST' && empty($chunk)){
                 $res = FileService::instance()->upload($file,$filename,'editor',$upType,$isUniqidmd5);
                 if (!$res) {
