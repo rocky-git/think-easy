@@ -262,27 +262,29 @@ class FileService extends Service
      * @param $filename 文件路径
      */
     private function compressImage($filename){
-        $quality = Filesystem::getDiskConfig('local','quality',90);
-        list($width, $height, $type, $attr) = getimagesize($filename);
-        if($type > 1 && $type < 17 && $quality){
-            $extension = image_type_to_extension($type,false);
-            $fun = "imagecreatefrom".$extension;
-            $image = $fun($filename);
-            $image_thump = imagecreatetruecolor($width,$height);
-            if($type == 3){
-                $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
-                imagefill($image_thump, 0, 0, $alpha);
-                imagesavealpha($image_thump, true);
+        if(file_exists($filename)){
+            $quality = Filesystem::getDiskConfig('local','quality',90);
+            list($width, $height, $type, $attr) = getimagesize($filename);
+            if($type > 1 && $type < 17 && $quality){
+                $extension = image_type_to_extension($type,false);
+                $fun = "imagecreatefrom".$extension;
+                $image = $fun($filename);
+                $image_thump = imagecreatetruecolor($width,$height);
+                if($type == 3){
+                    $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
+                    imagefill($image_thump, 0, 0, $alpha);
+                    imagesavealpha($image_thump, true);
+                }
+                imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
+                imagedestroy($image);
+                $funcs = "image".$extension;
+                if($type == 2 || $type == 3){
+                    $funcs($image_thump,$filename,$quality);
+                }else{
+                    $funcs($image_thump,$filename);
+                }
+                imagedestroy($image_thump);
             }
-            imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
-            imagedestroy($image);
-            $funcs = "image".$extension;
-            if($type == 2 || $type == 3){
-                $funcs($image_thump,$filename,$quality);
-            }else{
-                $funcs($image_thump,$filename);
-            }
-            imagedestroy($image_thump);
         }
     }
 

@@ -266,7 +266,7 @@ EOF;
         $column = $this->column($nickname, $label);
         return $column->display(function ($val, $data) use ($column, $headimg) {
             $headimgValue = $column->getValue($data, $headimg);
-            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$headimgValue}' fit='fit' :preview-src-list='[\"{$headimgValue}\"]'></el-image><br>{$val}";
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$headimgValue}' fit='cover' :preview-src-list='[\"{$headimgValue}\"]'></el-image><br>{$val}";
         })->align('center');
     }
 

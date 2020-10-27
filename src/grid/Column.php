@@ -390,10 +390,10 @@ class Column extends View
             $jsonImage = json_encode($images);
             if ($multi) {
                 foreach ($images as $image) {
-                    $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
+                    $html .= "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$image}' fit='cover' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
                 }
             } else {
-                $html = "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$images[0]}' fit='fit' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
+                $html = "<el-image style='width: {$width}px; height: {$height}px;border-radius: {$radius}%' src='{$images[0]}' fit='cover' :preview-src-list='{$jsonImage}'></el-image>&nbsp;";
             }
             return $html;
         });
