@@ -640,8 +640,8 @@ class Filter extends View
                     $this->relationModel = new self(new $relationModel);
                     call_user_func($callback, $this->relationModel);
                 }
-                $relationSql = $this->relationModel->db()->buildSql();
-
+                $tmpDb = clone $this->relationModel->db();
+                $relationSql = $tmpDb->removeWhereField('delete_time')->buildSql();
                 $res = strpos($relationSql, 'WHERE');
                 if ($res !== false) {
                     if ($relation instanceof HasMany) {
