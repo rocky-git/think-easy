@@ -322,16 +322,35 @@
         methods: {
             //移除筛选字段
             removeFilter(field){
-                if(this.form[field] instanceof Array){
-                    this.form[field] = []
+                if(field.indexOf('__betweens') !== -1){
+                    let formField = field.replace('__betweens','')
+                    this.form[formField + '__between_start'] = ''
+                    this.form[formField + '__between_end'] = ''
                 }else{
-                    this.form[field] = ''
+                    if(this.form[field] instanceof Array){
+                        this.form[field] = []
+                    }else{
+                        this.form[field] = ''
+                    }
                 }
                 this.$delete(this.filterTags,field)
                 this.handleFilter(false)
             },
             //列字段筛选
             filterColumnChange(val,field,label,itemType,usingData){
+                if(field.indexOf('__between_start') !== -1 || field.indexOf('__between_end') !== -1){
+                    field = field.replace('__between_start','')
+                    field = field.replace('__between_end','')
+                    if(this.form[field+'__between_start'] && this.form[field+'__between_end']){
+                        val = this.form[field+'__between_start'] + ' ~ ' + this.form[field+'__between_end']
+                        field = field + '__betweens'
+                    }else if(!this.form[field+'__between_start'] && !this.form[field+'__between_end']){
+                        val = ''
+                        field = field + '__betweens'
+                    }else{
+                        return
+                    }
+                }
                 //列筛选空值移除
                 if(!val || (val instanceof Array && val.length  == 0)){
                     if(this.filterMode == 'column') {

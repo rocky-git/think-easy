@@ -15,6 +15,8 @@ use think\model\Relation;
 use think\model\relation\BelongsTo;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphMany;
+use think\model\relation\MorphOne;
 use thinkEasy\form\field\Input;
 use thinkEasy\View;
 
@@ -207,7 +209,7 @@ class Filter extends View
     public function between($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field . '__between_start', $label = '')->placeholder("请输入开始$label");
+        $this->formItem($field . '__between_start', $label)->placeholder("请输入开始$label");
         $this->formItem($field . '__between_end', '-')->placeholder("请输入结束$label");
         return $this;
     }
@@ -442,7 +444,8 @@ class Filter extends View
             $formItem->placeholder('搜索 按Enter确认');
         }
         $this->usingData = json_encode($this->usingData);
-        if(!empty($label)){
+
+        if(!empty($label) && strpos($field,'__between_end') === false){
             $this->columnLabel = $label;
         }
         $formItem->setAttr('@change',"(e)=>filterColumnChange(e,\"{$field}\",\"{$this->columnLabel}\",\"{$name}\",{$this->usingData})");
@@ -636,6 +639,17 @@ class Filter extends View
                         $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
                     } else if ($relation instanceof HasOne) {
                         $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                    } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                        $reflectionClass = new \ReflectionClass($relation);
+                        $propertys = ['morphKey','morphType','type'];
+                        $propertyValues = [];
+                        foreach ($propertys as $var){
+                            $property = $reflectionClass->getProperty($var);
+                            $property->setAccessible(true);
+                            $propertyValues[] =  $property->getValue($relation);
+                        }
+                        list($morphKey,$morphType,$typeValue) = $propertyValues;
+                        $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
                     }
                     $this->db->whereExists($sql);
                 }
