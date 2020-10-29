@@ -114,7 +114,7 @@ class Actions extends Column
         foreach ($this->appendArr as $val) {
             $html .= $val;
         }
-       
+
         $this->appendArr = [];
         $this->prependArr = [];
         if($this->mode == 'button'){
@@ -136,6 +136,7 @@ class Actions extends Column
             });
         }
         parent::setData($data);
+        $this->mode = 'button';
         $this->hideDetailButton = false;
         $this->hideEditButton = false;
         $this->hideDelButton = false;

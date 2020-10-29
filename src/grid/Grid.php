@@ -44,6 +44,12 @@ class Grid extends View
     //是否开启树形表格
     protected $treeTable = false;
 
+    //树形上级id
+    protected $treeParent = 'pid';
+
+    //树形追加数据
+    protected $treeAppendData = [];
+
     //是否开启分页
     protected $isPage = true;
 
@@ -55,9 +61,6 @@ class Grid extends View
 
     //操作列
     protected $actionColumn;
-
-    //树形上级id
-    protected $treeParent = 'pid';
 
     //软删除字段
     protected $softDeleteField = 'delete_time';
@@ -242,12 +245,18 @@ EOF;
     /**
      * 开启树形表格
      * @param string $pid 父级字段
+     * @param array $appendData 追加数据
+     * @param bool $expand 是否展开
      */
-    public function treeTable($pidField = 'pid')
+    public function treeTable($pidField = 'pid',$appendData = [],$expand = true)
     {
         $this->treeParent = $pidField;
         $this->isPage = false;
         $this->treeTable = true;
+        $this->treeAppendData = $appendData;
+        if($expand){
+            $this->table->setAttr('default-expand-all', true);
+        }
     }
 
     protected function tree($list, $pid = 0)
@@ -377,6 +386,12 @@ EOF;
         //是否隐藏操作列
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
+        }
+        if(count($this->treeAppendData) > 0){
+            $this->data = $this->data->merge($this->treeAppendData);
+            $this->data = $this->data->sort(function($a,$b){
+                return $a['sort'] > $b['sort'];
+            });
         }
         if (count($this->data) > 0) {
             foreach ($this->data as $key => &$rows) {
@@ -758,6 +773,7 @@ EOF;
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
             $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+
         } else {
             $this->data = $this->db->select();
         }
@@ -797,7 +813,6 @@ EOF;
             $treeData = $this->tree($this->getDataArray());
             $this->data = $treeData;
             $this->table->setAttr('data', $treeData);
-            $this->table->setAttr('default-expand-all', true);
             $this->table->setAttr('tree-props', [
                 'children' => 'children',
                 'hasChildren' => 'hasChildren',
@@ -808,7 +823,6 @@ EOF;
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $this->table->setVar('submitUrl', $submitUrl);
         $this->table->setVar('submitParams', request()->param());
-
         switch ($build_request_type) {
             case 'page':
                 $this->table->view();
