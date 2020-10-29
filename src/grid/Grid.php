@@ -821,6 +821,10 @@ EOF;
         $build_request_type = Request::get('build_request_type');
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
+        $action = request()->action();
+        if($action != 'index'){
+            $submitUrl .= '/' . $action;
+        }
         $this->table->setVar('submitUrl', $submitUrl);
         $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
