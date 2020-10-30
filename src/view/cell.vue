@@ -18,8 +18,8 @@
           return {
             form:{
                 switch:'{$switchValue|default="0"}',
-                requestUrl:'{$requestUrl}',
             },
+            requestUrl:'{$requestUrl}',
           }
         },
         watch: {
