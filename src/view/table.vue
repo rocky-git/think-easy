@@ -558,7 +558,7 @@
                     /*{/if}*/
                 }else if(type == 3){
                     /*{if isset($detailUrl) && $detailRest}*/
-                    url = '{$editUrl}/'+this.showDetailId + '.rest'
+                    url = '{$detailUrl}/'+this.showDetailId + '.rest'
                     /*{elseif isset($detailUrl)}*/
                     url = '{$detailUrl}?id=' + this.showDetailId
                     /*{else/}*/
