@@ -858,18 +858,21 @@ EOF;
 
     /**
      * 设置编辑url
-     * @param $url
+     * @param string $url
+     * @param bool $rest
      */
-    public function setEditUrl($url){
+    public function setEditUrl(string $url,bool $rest = false){
         $this->table->setVar('editUrl', $url);
+        $this->table->setVar('editRest', $rest);
     }
-
     /**
      * 设置详情url
-     * @param $url
+     * @param string $url
+     * @param bool $rest
      */
-    public function setDetailUrl($url){
+    public function setDetailUrl(string $url,bool $rest = false){
         $this->table->setVar('detailUrl', $url);
+        $this->table->setVar('detailRest', $rest);
     }
     /**
      * 初始化

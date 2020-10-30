@@ -549,14 +549,18 @@
                     /*{/foreach}*/
                     /*{/if}*/
                 }else if(type == 2){
-                    /*{if isset($editUrl)}*/
-                    url = '$editUrl?id='+this.showEditId
+                    /*{if isset($editUrl) && $editRest}*/
+                    url = '{$editUrl}/'+this.showEditId + '/edit.rest'
+                    /*{elseif isset($editUrl)}*/
+                    url = '{$editUrl}?id='+this.showEditId
                     /*{else/}*/
                     url += '/'+this.showEditId + '/edit.rest'
                     /*{/if}*/
                 }else if(type == 3){
-                    /*{if isset($detailUrl)}*/
-                    url = '$detailUrl?id=' + this.showDetailId
+                    /*{if isset($detailUrl) && $detailRest}*/
+                    url = '{$editUrl}/'+this.showDetailId + '.rest'
+                    /*{elseif isset($detailUrl)}*/
+                    url = '{$detailUrl}?id=' + this.showDetailId
                     /*{else/}*/
                     url += '/'+this.showDetailId+'.rest'
                     /*{/if}*/
