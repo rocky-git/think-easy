@@ -549,9 +549,17 @@
                     /*{/foreach}*/
                     /*{/if}*/
                 }else if(type == 2){
-                    url += '/'+this.showEditId+'/edit.rest'
+                    /*{if isset($editUrl)}*/
+                    url = '$editUrl?id='+this.showEditId
+                    /*{else/}*/
+                    url += '/'+this.showEditId + '/edit.rest'
+                    /*{/if}*/
                 }else if(type == 3){
+                    /*{if isset($detailUrl)}*/
+                    url = '$detailUrl?id=' + this.showDetailId
+                    /*{else/}*/
                     url += '/'+this.showDetailId+'.rest'
+                    /*{/if}*/
                 }
                 if(this.isDialog){
                     params.build_dialog = true

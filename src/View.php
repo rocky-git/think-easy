@@ -220,6 +220,15 @@ abstract class View
     public function getScript(){
         return $this->script;
     }
+    protected function getRequestUrl(){
+        $requestUrl = app('http')->getName() . '/' . request()->controller();
+        $requestUrl = str_replace('.rest', '', $requestUrl);
+        $action = request()->action();
+        if($action != 'index'){
+            $requestUrl .= '/' . $action;
+        }
+        return $requestUrl;
+    }
     /**
      * 返回视图
      * @return string

@@ -310,7 +310,7 @@ class FileService extends Service
                 $isUniqidmd5 = false;
             }
             if($this->app->request->method() == 'POST' && empty($chunk)){
-                $res = FileService::instance()->upload($file,$filename,'editor',$upType,$isUniqidmd5);
+                $res = FileService::instance()->upload($file,$filename,$saveDir.'editor',$upType,$isUniqidmd5);
                 if (!$res) {
                     return json(['code'=>999,'message'=>'上传失败'],404);
                 } else{

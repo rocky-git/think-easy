@@ -12,12 +12,13 @@
             total:Number,
             size:Number,
             tableDataUpdate: Boolean,
+
         },
         data(){
           return {
-
             form:{
                 switch:'{$switchValue|default="0"}',
+                requestUrl:'{$requestUrl}',
             },
           }
         },
@@ -33,7 +34,7 @@
                 param[field] = sort
                 param.ids = [row.id]
                 this.$request({
-                    url: this.$route.path +'/batch.rest',
+                    url: this.requestUrl +'/batch.rest',
                     method: 'put',
                     data: param
                 }).then(res=>{
@@ -48,7 +49,7 @@
             //排序置顶
             sortTop(index,data){
                 this.$request({
-                    url: this.$route.path +'/batch.rest',
+                    url: this.requestUrl +'/batch.rest',
                     method: 'put',
                     data:{
                         action:'buldview_drag_sort',
@@ -80,7 +81,7 @@
             //排序置底
             sortBottom(index,data){
                 this.$request({
-                    url: this.$route.path +'/batch.rest',
+                    url: this.requestUrl +'/batch.rest',
                     method: 'put',
                     data:{
                         action:'buldview_drag_sort',
@@ -120,9 +121,8 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    let url  = '{$url}'
                     this.$request({
-                        url: url+'/'+row.id+'.rest',
+                        url: this.requestUrl+'/'+row.id+'.rest',
                         method: 'delete',
                     }).then(res=>{
                         this.deleteTreeData(this.tableData,row.id)

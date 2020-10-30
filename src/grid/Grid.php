@@ -819,13 +819,8 @@ EOF;
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-        $submitUrl = app('http')->getName() . '/' . request()->controller();
-        $submitUrl = str_replace('.rest', '', $submitUrl);
-        $action = request()->action();
-        if($action != 'index'){
-            $submitUrl .= '/' . $action;
-        }
-        $this->table->setVar('submitUrl', $submitUrl);
+
+        $this->table->setVar('submitUrl', $this->getRequestUrl());
         $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
             case 'page':
@@ -861,6 +856,21 @@ EOF;
         $this->table->setVar('onTableView', true);
     }
 
+    /**
+     * 设置编辑url
+     * @param $url
+     */
+    public function setEditUrl($url){
+        $this->table->setVar('editUrl', $url);
+    }
+
+    /**
+     * 设置详情url
+     * @param $url
+     */
+    public function setDetailUrl($url){
+        $this->table->setVar('detailUrl', $url);
+    }
     /**
      * 初始化
      * @param \Closure $closure
