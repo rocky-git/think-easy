@@ -645,7 +645,7 @@ class Filter extends View
                 $res = strpos($relationSql, 'WHERE');
                 if ($res !== false) {
                     if ($relation instanceof HasMany) {
-                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
+                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
                     } elseif ($relation instanceof BelongsTo) {
                         $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
                     } else if ($relation instanceof HasOne) {
