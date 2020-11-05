@@ -280,7 +280,8 @@ class FileService extends Service
                 imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
                 imagedestroy($image);
                 $funcs = "image".$extension;
-                if($type == 2 || $type == 3){
+                if($type == 2){
+                    imagepng($image_thump,$filename,90);
                     $funcs($image_thump,$filename,$quality);
                 }else{
                     $funcs($image_thump,$filename);
