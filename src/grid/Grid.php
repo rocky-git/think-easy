@@ -355,11 +355,16 @@ EOF;
      */
     public function column($field, $label)
     {
+
         $column = new Column($field, $label, $this);
         $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
             $this->relations[] = array_shift($fields);
+        }else{
+            if(method_exists($this->model,$field) && ($this->model->$field() instanceof BelongsToMany || $this->model->$field() instanceof HasMany)){
+                $this->relations[] = $field;
+            }
         }
         array_push($this->columns, $column);
         return $column;
@@ -668,7 +673,19 @@ EOF;
             $this->hideDeleteButton();
         }
     }
-
+    //预关联加载
+    protected function withRelations(){
+        $this->relations =  array_unique($this->relations);
+        $with = $this->db->getOptions('with');
+        if(is_null($with)){
+            $with = [];
+        }
+        $with = array_merge($with,$this->relations);
+        if(count($with) > 0){
+            $this->db->with($with);
+        }
+    }
+    //快捷搜索
     protected function quickFilter()
     {
         $keyword = Request::get('quickSearch', '', ['trim']);
@@ -757,6 +774,8 @@ EOF;
      */
     public function view()
     {
+        //预关联加载
+        $this->withRelations();
         //快捷搜索
         $this->quickFilter();
         //排序
