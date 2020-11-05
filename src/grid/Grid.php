@@ -735,13 +735,13 @@ EOF;
                 $pk = $relation->getLocalKey();
                 $db = null;
                 if ($relation instanceof HasMany) {
-                    $db = $relation->whereRaw("{$relationTable}.{$pk}={$this->db->getTable()}.{$foreignKey}");
+                    $db = $relation->whereRaw("{$relationTable}.{$foreignKey}={$this->db->getTable()}.{$pk}");
                 } elseif ($relation instanceof BelongsTo) {
                     $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
                 } else if ($relation instanceof HasOne) {
                     $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
                 }
-                if ($db) {
+                if ($db && isset($relationWhereFields[$relationName])) {
                     $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
@@ -753,7 +753,6 @@ EOF;
                     })->buildSql();
                     $relationWhereSqls[] = $sql;
                 }
-
             }
             $fields = implode('|', $whereFields);
             $this->db->where(function ($q) use ($relationWhereSqls, $fields, $keyword, $whereOr) {
