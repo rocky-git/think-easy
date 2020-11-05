@@ -233,7 +233,12 @@
                      }else if(this.iframeMode){
                         this.tableHeight = window.innerHeight / 2
                     }else{
-                        this.tableHeight = window.innerHeight - this.$refs.gridHeader.clientHeight -  this.$refs.gridContainer.offsetTop - 65
+                        this.tableHeight = window.innerHeight - this.$refs.gridHeader.clientHeight -  this.$refs.gridContainer.offsetTop
+                        if(this.pageHide){
+                            this.tableHeight -= 15
+                        }else{
+                            this.tableHeight -= 65
+                        }
                     }
                 },10)
             })
