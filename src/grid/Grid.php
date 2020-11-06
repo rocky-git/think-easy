@@ -788,7 +788,14 @@ EOF;
         }
 
     }
-
+    //获取数据总条数
+    private function getRowTotal(){
+        $sql = $this->db->buildSql();
+        $sql = "SELECT COUNT(*) FROM {$sql} userCount";
+        $res = Db::query($sql);
+        $count = $res[0]['COUNT(*)'];
+        return $count;
+    }
     /**
      * 视图渲染
      */
@@ -802,17 +809,18 @@ EOF;
         if (Request::has('sort_field')) {
             $this->db->removeOption('order')->order(Request::get('sort_field'), Request::get('sort_by'));
         }
+        //总记录条数
+        $count = 0;
         //分页
         if ($this->isPage) {
-            $this->table->setVar('pageHide', 'false');
-            $sql = $this->db->buildSql();
-            $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-            $res = Db::query($sql);
-            $count = $res[0]['COUNT(*)'];
-            $this->table->setVar('pageSize', $this->pageLimit);
+            $page = Request::get('page', 1);
+            if($page == 1){
+                $count = $this->getRowTotal();
+            }
             $this->table->setVar('pageTotal', $count);
-            $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
-
+            $this->table->setVar('pageHide', 'false');
+            $this->table->setVar('pageSize', $this->pageLimit);
+            $this->data = $this->db->page($page, Request::get('size', $this->pageLimit))->select();
         } else {
             $this->data = $this->db->select();
         }
@@ -865,7 +873,9 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                $result['total'] = $count;
+                if($count > 0){
+                    $result['total'] = $count;
+                }
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
                 break;

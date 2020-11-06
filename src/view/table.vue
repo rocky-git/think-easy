@@ -86,10 +86,10 @@
                         <!--{/if}-->
                         <!--{notempty name="$filter"}-->
                         <template v-if="filterMode == 'filter'">
-                        <!-- PC端-->
-                        <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
-                        <!-- 移动端-->
-                        <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
+                            <!-- PC端-->
+                            <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
+                            <!-- 移动端-->
+                            <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
                         </template>
                         <!--{/notempty}-->
                         <!--{if isset($toolbar)}-->
@@ -123,7 +123,7 @@
         </div>
         <!--{/if}-->
         <!--{if isset($trashed) && $trashed===true}-->
-        <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick">
+        <el-tabs v-model="activeTabsName" class="container" @tab-click="handleTabsClick"  ref="tabs">
             <el-tab-pane label="{$title|default='数据列表'}" name="data">
                 {$tableHtml|raw}
             </el-tab-pane>
@@ -132,7 +132,7 @@
             </el-tab-pane>
         </el-tabs>
         <!--{else/}-->
-        <div style="position: relative;z-index: 10;flex: 1;" ref="tableBox">
+        <div style="position: relative;z-index: 10;flex: 1;">
             {$tableHtml|raw}
         </div>
         <!--{/if}-->
@@ -210,14 +210,14 @@
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},
-                checkboxColumn:{$checkboxColumn|raw|default='[]'},
-                pageHide:{$pageHide|default='true'},
-                page:1,
+            checkboxColumn:{$checkboxColumn|raw|default='[]'},
+            pageHide:{$pageHide|default='true'},
+            page:1,
                 pagesize:[],
                 total:{$pageTotal|default=0},
-                size:{$pageSize|default=20},
-                selectionData:[],
-                {$tableScriptVar|raw}
+            size:{$pageSize|default=20},
+            selectionData:[],
+            {$tableScriptVar|raw}
         }
         },
         computed:{
@@ -230,10 +230,13 @@
                 setTimeout(()=>{
                     if(this.tableMaxHeight > 0){
                         this.tableHeight = this.tableMaxHeight
-                     }else if(this.iframeMode){
+                    }else if(this.iframeMode){
                         this.tableHeight = window.innerHeight / 2
                     }else{
                         this.tableHeight = window.innerHeight - this.$refs.gridHeader.clientHeight -  this.$refs.gridContainer.offsetTop
+                        if(this.$refs.tabs){
+                            this.tableHeight -=  75
+                        }
                         if(this.pageHide){
                             this.tableHeight -= 15
                         }else{
@@ -502,8 +505,8 @@
                         }
                     }
                 }
-               this.page = 1
-               this.requestPageData()
+                this.page = 1
+                this.requestPageData()
             },
             handleTabsClick(tab, event){
                 this.page = 1
@@ -791,7 +794,9 @@
                 }).then(res=>{
                     this.loading = false
                     this.tableData = res.data.data
-                    this.total = res.data.total
+                    if(res.data.total){
+                        this.total = res.data.total
+                    }
                     res.data.cellComponent.forEach((cmponent,index)=>{
                         this.cellComponent[index] = () => new Promise(resolve => {
                             resolve(this.$splitCode(cmponent))
@@ -801,7 +806,6 @@
                     this.loading = false
                     this.filterVisible = false
                 })
-
             }
         }
     }
