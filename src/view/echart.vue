@@ -105,6 +105,8 @@
             })
         },
         methods:{
+            filterColumnChange(){},
+            clearValidate(){},
             //查询过滤
             handleFilter(){
                 this.params = Object.assign(this.params,this.form)

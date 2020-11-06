@@ -11,5 +11,5 @@ namespace thinkEasy\model;
 
 class SystemAuth extends BaseModel
 {
-
+    
 }

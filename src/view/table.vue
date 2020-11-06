@@ -1,9 +1,8 @@
 <template>
-    <div>
-        <!--{notempty name="$header"}-->
-        {$header|raw}
-        <!--{/notempty}-->
+    <div ref="gridContainer">
+
         <!--{notempty name="$filter"}-->
+
         <el-drawer :with-header="false" size="25%" :append-to-body="true" :visible.sync="filterVisible" :modal="false">
             <div class="filter">
 
@@ -21,91 +20,106 @@
                 </el-form>
             </div>
         </el-drawer>
+
         <!--{/notempty}-->
 
         <!--{if isset($grid)}-->
-        <div class="headContainer">
-            <!--{notempty name="title"}-->
-            <!--{if !isset($trashed) || $trashed===false}-->
-            <div style="padding-top: 10px;">{$title}</div>
-            <hr style="border: none;height: 1px;background-color: #e5e5e5;">
-            <!--{/if}-->
+        <div ref="gridHeader">
+            <!--{notempty name="$header"}-->
+            {$header|raw}
             <!--{/notempty}-->
+            <div class="headContainer">
 
-            <!--{if !isset($hideTools)}-->
-            <el-row style="padding-top: 10px">
-                <el-col :span="24">
-                    <!--{if isset($quickSearch)}-->
-                    <!-- PC端-->
-                    <el-input class="hidden-md-and-down"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
-                    <el-button class="hidden-md-and-down"  type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
-                    <!-- 移动端-->
-                    <el-input class="hidden-md-and-up"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
-                    <!--{/if}-->
-                    <!--{if !isset($hideAddButton)}-->
-                    <!-- PC端-->
-                    <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
-                    <!-- 移动端-->
-                    <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-plus" @click="showDialog('添加',1)"></el-button>
-                    <!--{/if}-->
-                    <!--{if isset($exportOpen)}-->
-                    <el-dropdown trigger="click" style="margin-left: 10px;">
+                <!--{notempty name="title"}-->
+                <!--{if !isset($trashed) || $trashed===false}-->
+                <div style="padding-top: 10px;">{$title}</div>
+                <hr style="border: none;height: 1px;background-color: #e5e5e5;">
+                <!--{/if}-->
+                <!--{/notempty}-->
+
+                <!--{if !isset($hideTools)}-->
+                <el-row style="padding-top: 10px">
+                    <el-col :span="24">
+                        <!--{if isset($quickSearch)}-->
                         <!-- PC端-->
-                        <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-download">
-                            导出<i class="el-icon-arrow-down el-icon--right"></i>
-                        </el-button>
+                        <el-input class="hidden-md-and-down"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
+                        <el-button class="hidden-md-and-down"  type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
                         <!-- 移动端-->
-                        <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-download"></el-button>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item @click.native="exportData(1)">导出当前页</el-dropdown-item>
-                            <el-dropdown-item @click.native="exportData(2)" v-show="this.selectionData.length > 0">导出选中行</el-dropdown-item>
-                            <el-dropdown-item @click.native="exportData(0)">导出全部</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                    <!--{/if}-->
-
-                    <!-- PC端-->
-                    <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
-                    <!-- 移动端-->
-                    <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
-
-                    <!--{if !isset($hideDeletesButton)}-->
-                    <!-- PC端-->
-                    <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
-                    <el-button class="hidden-md-and-down" plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
-                    <el-button class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
-                    <!-- 移动端-->
-                    <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect"></el-button>
-                    <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
-                    <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
-                    <!--{/if}-->
-
-
-                    <!--{notempty name="$filter"}-->
-                    <!-- PC端-->
-                    <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
-                    <!-- 移动端-->
-                    <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
-                    <!--{/notempty}-->
-                    <!--{if isset($toolbar)}-->
-                    {$toolbar|raw}
-                    <!--{/if}-->
-                    <div style="float: right;margin-right: 15px">
-                        <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
-                        <el-dropdown trigger="click" :hide-on-click="false">
-                            <el-button icon="el-icon-s-grid" size="mini"></el-button>
+                        <el-input class="hidden-md-and-up"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
+                        <!--{/if}-->
+                        <!--{if !isset($hideAddButton)}-->
+                        <!-- PC端-->
+                        <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-plus" @click="showDialog('添加',1)">添加</el-button>
+                        <!-- 移动端-->
+                        <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-plus" @click="showDialog('添加',1)"></el-button>
+                        <!--{/if}-->
+                        <!--{if isset($exportOpen)}-->
+                        <el-dropdown trigger="click" style="margin-left: 10px;">
+                            <!-- PC端-->
+                            <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-download">
+                                导出<i class="el-icon-arrow-down el-icon--right"></i>
+                            </el-button>
+                            <!-- 移动端-->
+                            <el-button class="hidden-md-and-up" type="primary" size="mini" icon="el-icon-download"></el-button>
                             <el-dropdown-menu slot="dropdown">
-                                <el-checkbox-group v-model="checkboxColumn">
-                                    <el-dropdown-item v-for="(item,index) in checkboxOptions">
-                                        <el-checkbox  :label="item.field" v-if="item.label">{{item.label}}</el-checkbox>
-                                    </el-dropdown-item>
-                                </el-checkbox-group>
+                                <el-dropdown-item @click.native="exportData(1)">导出当前页</el-dropdown-item>
+                                <el-dropdown-item @click.native="exportData(2)" v-show="this.selectionData.length > 0">导出选中行</el-dropdown-item>
+                                <el-dropdown-item @click.native="exportData(0)">导出全部</el-dropdown-item>
                             </el-dropdown-menu>
                         </el-dropdown>
-                    </div>
-                </el-col>
-            </el-row>
-            <!--{/if}-->
+                        <!--{/if}-->
+
+                        <!-- PC端-->
+                        <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
+                        <!-- 移动端-->
+                        <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-circle-check" type="primary" v-show="selectButtonShow && iframeMode && iframeMultiple" @click="confirmSelect">确认选中</el-button>
+
+                        <!--{if !isset($hideDeletesButton)}-->
+                        <!-- PC端-->
+                        <el-button class="hidden-md-and-down" plain size="small" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect">删除选中</el-button>
+                        <el-button class="hidden-md-and-down" plain type="primary" size="small" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()">恢复选中</el-button>
+                        <el-button class="hidden-md-and-down" type="danger" size="small" icon="el-icon-delete" @click="deleteAll()">{{deleteButtonText}}</el-button>
+                        <!-- 移动端-->
+                        <el-button class="hidden-md-and-up" plain size="mini" icon="el-icon-delete" v-show="selectButtonShow" @click="DeleteSelect"></el-button>
+                        <el-button class="hidden-md-and-up" plain type="primary" size="mini" icon="el-icon-zoom-in" v-show="selectButtonShow && deleteColumnShow" @click="recoverySelect()"></el-button>
+                        <el-button class="hidden-md-and-up" type="danger" size="mini" icon="el-icon-delete" @click="deleteAll()"></el-button>
+                        <!--{/if}-->
+                        <!--{notempty name="$filter"}-->
+                        <template v-if="filterMode == 'filter'">
+                        <!-- PC端-->
+                        <el-button class="hidden-md-and-down" size="small"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true">高级筛选</el-button>
+                        <!-- 移动端-->
+                        <el-button class="hidden-md-and-up" size="mini"  type="primary" icon="el-icon-zoom-in"  @click="filterVisible=true"></el-button>
+                        </template>
+                        <!--{/notempty}-->
+                        <!--{if isset($toolbar)}-->
+                        {$toolbar|raw}
+                        <!--{/if}-->
+
+                        <div style="float: right;margin-right: 15px">
+                            <el-button icon="el-icon-refresh" size="mini" circle style="margin-right: 10px"  @click="requestPageData"></el-button>
+                            {if isset($onTableView)}
+                            {$tableFieldView|raw}
+                            {else/}
+                            <el-dropdown trigger="click" :hide-on-click="false">
+                                <el-button icon="el-icon-s-grid" size="mini"></el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-checkbox-group v-model="checkboxColumn">
+                                        <el-dropdown-item v-for="(item,index) in checkboxOptions">
+                                            <el-checkbox  :label="item.field" v-if="item.label">{{item.label}}</el-checkbox>
+                                        </el-dropdown-item>
+                                    </el-checkbox-group>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                            {/if}
+                        </div>
+                        <div>
+                            <el-tag size="small" closable type="info" style="margin-top: 5px;margin-right: 5px" v-for="item in filterTags" @close="removeFilter(item.field)">{{item.label}}</el-tag>
+                        </div>
+                    </el-col>
+                </el-row>
+                <!--{/if}-->
+            </div>
         </div>
         <!--{/if}-->
         <!--{if isset($trashed) && $trashed===true}-->
@@ -118,11 +132,11 @@
             </el-tab-pane>
         </el-tabs>
         <!--{else/}-->
-        <div style="position: relative;z-index: 10;">
+        <div style="position: relative;z-index: 10;flex: 1;" ref="tableBox">
             {$tableHtml|raw}
         </div>
         <!--{/if}-->
-        <el-pagination class="hidden-md-and-down" style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
+        <el-pagination class="hidden-md-and-down" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
                        v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -133,7 +147,7 @@
                        :total="total"
                        layout="total, sizes, prev, pager, next, jumper">
         </el-pagination>
-        <el-pagination class="hidden-md-and-up" style=" background: #fff; padding: 20px 16px;border-radius: 4px;"
+        <el-pagination class="hidden-md-and-up" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
                        v-if="!pageHide"
                        small
                        @size-change="handleSizeChange"
@@ -170,8 +184,11 @@
         },
         data(){
             return {
+                filterMode:'filter',
                 quickSearch: '',
                 form:{},
+                filterTags:[],
+                filterTmpTags:[],
                 filterVisible:false,
                 sortableParams:{},
                 sortable:null,
@@ -189,6 +206,7 @@
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
+                tableHeight: window.innerHeight ,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},
@@ -206,38 +224,29 @@
             device() {
                 return this.$store.state.app.device
             },
-            tableHeight(){
-                if(this.tableMaxHeight > 0){
-
-                    return this.tableMaxHeight
-                }
-                if(this.iframeMode){
-
-                    return window.innerHeight / 2
-                }
-                /*{if isset($hideTools)}*/
-                let height = -40
-                /*{else/}*/
-                let height = 0
-                /*{/if}*/
-
-                if(this.pageHide){
-                    height -= 65
-                }
-
-                /*{if isset($trashed) && $trashed===true}*/
-                return window.innerHeight - 340 - height
-                /*{/if}*/
-                /*{notempty name="title"}*/
-
-                return window.innerHeight - 305 - height
-                /*{else/}*/
-                return window.innerHeight - 265 - height
-
-                /*{/notempty}*/
-            }
+        },
+        mounted() {
+            this.$nextTick(()=>{
+                setTimeout(()=>{
+                    if(this.tableMaxHeight > 0){
+                        this.tableHeight = this.tableMaxHeight
+                     }else if(this.iframeMode){
+                        this.tableHeight = window.innerHeight / 2
+                    }else{
+                        this.tableHeight = window.innerHeight - this.$refs.gridHeader.clientHeight -  this.$refs.gridContainer.offsetTop
+                        if(this.pageHide){
+                            this.tableHeight -= 15
+                        }else{
+                            this.tableHeight -= 65
+                        }
+                    }
+                },10)
+            })
         },
         created(){
+            /*{if isset($filterMode)}*/
+            this.filterMode = '{$filterMode}'
+            /*{/if}*/
             /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
@@ -304,6 +313,73 @@
             },
         },
         methods: {
+            //移除筛选字段
+            removeFilter(field){
+                if(field.indexOf('__betweens') !== -1){
+                    let formField = field.replace('__betweens','')
+                    this.form[formField + '__between_start'] = ''
+                    this.form[formField + '__between_end'] = ''
+                }else{
+                    if(this.form[field] instanceof Array){
+                        this.form[field] = []
+                    }else{
+                        this.form[field] = ''
+                    }
+                }
+                this.$delete(this.filterTags,field)
+                this.handleFilter(false)
+            },
+            //列字段筛选
+            filterColumnChange(val,field,label,itemType,usingData){
+                if(field.indexOf('__between_start') !== -1 || field.indexOf('__between_end') !== -1){
+                    field = field.replace('__between_start','')
+                    field = field.replace('__between_end','')
+                    if(this.form[field+'__between_start'] && this.form[field+'__between_end']){
+                        val = this.form[field+'__between_start'] + ' ~ ' + this.form[field+'__between_end']
+                        field = field + '__betweens'
+                    }else if(!this.form[field+'__between_start'] && !this.form[field+'__between_end']){
+                        val = ''
+                        field = field + '__betweens'
+                    }else{
+                        return
+                    }
+                }
+                //列筛选空值移除
+                if(!val || (val instanceof Array && val.length  == 0)){
+                    if(this.filterMode == 'column') {
+                        this.removeFilter(field)
+                    }
+                    return
+                }
+                let showValue = val
+                if(itemType == 'radio' || itemType == 'select' || itemType == 'checkbox'){
+                    if(val instanceof Array){
+                        let showValueArr = []
+                        val.forEach(item=>{
+                            showValueArr.push(usingData[item])
+                        })
+                        showValue = showValueArr.join(',')
+                    }else{
+                        showValue = usingData[val]
+                    }
+                }
+                if(this.filterMode == 'filter') {
+                    let filterTags = JSON.parse(JSON.stringify(this.filterTags));
+                    this.filterTmpTags = Object.assign(filterTags,this.filterTmpTags)
+                    this.filterTmpTags[field] = {
+                        label:label + ': ' + showValue,
+                        field:field
+                    }
+                }else if(this.filterMode == 'column'){
+                    this.filterTags[field] = {
+                        label:label + ': ' + showValue,
+                        field:field
+                    }
+                }
+                if(this.filterMode == 'column'){
+                    this.handleFilter(false)
+                }
+            },
             // selectionChange(selection){
             //     if(selection.length > 2){
             //         selection.pop()
@@ -411,13 +487,23 @@
             //查询过滤
             handleFilter(quick){
                 if(quick){
-                    this.form = {}
+                    this.filterTags = []
+                    for(field in this.form){
+                        this.form[field] = ''
+                    }
                     this.form.quickSearch = this.quickSearch
                 }else{
+                    this.filterTags = Object.assign({}, this.filterTags,this.filterTmpTags)
                     this.quickSearch = ''
+                    this.form.quickSearch = ''
+                    for(field in this.form){
+                        if(!this.form[field] || (this.form[field] instanceof Array && this.form[field].length  == 0)){
+                            this.$delete(this.filterTags,field)
+                        }
+                    }
                 }
-                this.page = 1
-                this.requestPageData()
+               this.page = 1
+               this.requestPageData()
             },
             handleTabsClick(tab, event){
                 this.page = 1
@@ -449,9 +535,21 @@
                     /*{/foreach}*/
                     /*{/if}*/
                 }else if(type == 2){
-                    url += '/'+this.showEditId+'/edit.rest'
+                    /*{if isset($editUrl) && $editRest}*/
+                    url = '{$editUrl}/'+this.showEditId + '/edit.rest'
+                    /*{elseif isset($editUrl)}*/
+                    url = '{$editUrl}?id='+this.showEditId
+                    /*{else/}*/
+                    url += '/'+this.showEditId + '/edit.rest'
+                    /*{/if}*/
                 }else if(type == 3){
+                    /*{if isset($detailUrl) && $detailRest}*/
+                    url = '{$detailUrl}/'+this.showDetailId + '.rest'
+                    /*{elseif isset($detailUrl)}*/
+                    url = '{$detailUrl}?id=' + this.showDetailId
+                    /*{else/}*/
                     url += '/'+this.showDetailId+'.rest'
+                    /*{/if}*/
                 }
                 if(this.isDialog){
                     params.build_dialog = true
@@ -684,6 +782,7 @@
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
                 requestParams.eadmin_component = true
+                requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.tableData = []
                 this.$request({
                     url: url,
@@ -730,7 +829,7 @@
         position: relative;
         border-radius: 4px;
         padding-left: 10px;
-        padding-bottom: 20px;
+        padding-bottom: 10px;
     }
     .container {
         background: #fff;
@@ -745,5 +844,19 @@
     }
     .el-tabs__nav-wrap{
         z-index: 0;
+    }
+    .eadmin_popover_filter{
+        height: auto!important;
+        padding: 0!important;
+    }
+    .eadmin_form_box .el-form-item{
+        margin-bottom: 0px;!important;
+        border-bottom: 1px solid #ebebf0!important;
+        padding: 5px 10px;
+        width: 100%;
+
+    }
+    .eadmin_form_box .el-date-editor--daterange.el-input__inner{
+        width: 100%;
     }
 </style>

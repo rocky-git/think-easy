@@ -27,6 +27,7 @@ class TokenService extends Service
     //当前token
     protected static $token = '';
     protected $model = '';
+    protected static $userModel = null;
     protected $unique = false;
     public function __construct()
     {
@@ -219,7 +220,10 @@ class TokenService extends Service
         if (is_null($this->id())) {
             return null;
         }
-        $user = new $this->model;
-        return $user->lock($lock)->find($this->id());
+        if(is_null(self::$userModel)){
+            $user = new $this->model;
+            self::$userModel =  $user->lock($lock)->find($this->id());
+        }
+        return self::$userModel;
     }
 }

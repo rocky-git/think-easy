@@ -7,9 +7,11 @@
  */
 
 namespace thinkEasy\grid;
+
 use thinkEasy\form\Dialog;
 use think\helper\Str;
 use thinkEasy\form\Drawer;
+use thinkEasy\service\TableViewService;
 use thinkEasy\View;
 
 class Table extends View
@@ -83,13 +85,14 @@ class Table extends View
         $this->setVar('dialogTitleVar', $dialog->getTitleVar());
         $this->scriptArr = array_merge($this->scriptArr, $dialog->getScriptVar());
     }
+
     /**
      * 抽屉表单
      * @param $title 标题
      * @param bool $direction 打开的方向 rtl / ltr / ttb / btt
      * @param string $size 窗体的大小
      */
-    public function setFormDrawer($title, $direction = 'rtl',$size = '30%')
+    public function setFormDrawer($title, $direction = 'rtl', $size = '30%')
     {
         $drawer = new Drawer($title, "<component :is='plugDialog' :dialogVisible.sync='dialogVisible' :tableDataUpdate.sync='tableDataUpdate'></component>");
         $drawer->setAttr('size', $size);
@@ -100,6 +103,7 @@ class Table extends View
         $this->setVar('dialogTitleVar', $drawer->getTitleVar());
         $this->scriptArr = array_merge($this->scriptArr, $drawer->getScriptVar());
     }
+
     /**
      * 设置列
      * @param $cloumns
@@ -123,27 +127,55 @@ class Table extends View
         $columnHtml = '';
         $mobileHtml = '';
         $i = 0;
+        $tableGrid = TableViewService::instance()->grid();
+        $checkboxOptions = [];
+        $checkboxColumn = [];
+        $columns = [];
+        $eadminColumn = [];
+        $insertIndex = 1;
         foreach ($this->headers as $field => $label) {
             if ($label instanceof Column) {
                 $column = $label;
             } else {
                 $column = new Column($field, $label);
             }
-            if($column->label == '删除时间'){
-                $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1 && deleteColumnShow");
+            $label = trim(strip_tags($column->label));
+            $key = $column->field . $label;
+            $columns[$key] = $column;
+            if(strpos($column->field,'eadminColumnIndex') !== false){
+                $eadminColumn[] = $column;
+            }elseif (strpos($column->field,'eadminColumnAction') !== false){
+                $insertIndex = count($eadminColumn);
+                $eadminColumn[] = $column;
+            }
+            if (!$column->isHide()){
                 $checkboxOptions[] = [
-                    'field'=>$column->field,
-                    'label'=>$column->label,
+                    'field' => $column->field,
+                    'label' => $label,
                 ];
+            }
+        }
+        //选择当前自定义视图表格字段方案
+        if (!empty($tableGrid)) {
+            $fields = array_flip($tableGrid['fields']);
+            $columns = array_replace($fields,$columns);
+            $columns = array_intersect_key($columns,$fields);
+            array_splice($eadminColumn,$insertIndex,0,$columns);
+            $columns = $eadminColumn;
+
+        }
+
+        foreach ($columns as $column) {
+            if (!($column instanceof Column)) {
+                continue;
+            }
+            if ($column->label == '删除时间') {
+                $column->setAttr('v-if', "checkboxColumn.indexOf(\"$column->field\") !== -1 && deleteColumnShow");
                 $checkboxColumn[] = $column->field;
-            }elseif ($column->isHide()){
-                $column->setAttr('v-if',"1 == 0");
-            }else{
-                $column->setAttr('v-if',"checkboxColumn.indexOf(\"$column->field\") !== -1");
-                $checkboxOptions[] = [
-                    'field'=>$column->field,
-                    'label'=>$column->label,
-                ];
+            } elseif ($column->isHide()) {
+                $column->setAttr('v-if', "1 == 0");
+            } else {
+                $column->setAttr('v-if', "checkboxColumn.indexOf(\"$column->field\") !== -1");
                 $checkboxColumn[] = $column->field;
             }
             $this->cellComponent[] = $column->getDisplay($i, 'tableData');
@@ -151,22 +183,26 @@ class Table extends View
             $columnHtml .= $column->render();
             $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
-
         }
+
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
             $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
         }
         $mobileHtml = "<el-table-column type='expand' v-if=\"device === 'mobile'\"><template slot-scope=\"scope\"><el-form label-position='left'>$mobileHtml</el-form></template></el-table-column>";
-        $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' .$mobileHtml. $columnHtml . '</el-table>';
+        $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' . $mobileHtml . $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);
         $this->setVar('tableDataScriptVar', 'tableData' . $this->varMark);
+        $this->setVar('checkboxOptions', json_encode($checkboxOptions, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableScriptVar', $tableScriptVar);
-        $this->setVar('checkboxOptions', json_encode($checkboxOptions,JSON_UNESCAPED_UNICODE));
-        $this->setVar('checkboxColumn', json_encode($checkboxColumn,JSON_UNESCAPED_UNICODE));
+        $this->setVar('checkboxColumn', json_encode($checkboxColumn, JSON_UNESCAPED_UNICODE));
+
+        $tableFieldView = new TableFieldView();
+        $this->setVar('tableFieldView', "<eadmin-component data='" . rawurlencode($tableFieldView->render()) . "' :fields='checkboxOptions'></eadmin-component>");
         return $this->render();
     }
+
 
 }

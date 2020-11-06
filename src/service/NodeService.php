@@ -23,11 +23,11 @@ class NodeService extends Service
     public function all(){
 
         if($this->app->cache->has($this->cacheKey) && !env('APP_DEBUG')){
-            return unserialize($this->app->cache->get($this->cacheKey));
+            return $this->app->cache->get($this->cacheKey);
         }else{
             $files = $this->getControllerFiles();
             $data =  $this->parse($files);
-            $this->app->cache->set($this->cacheKey,serialize($data));
+            $this->app->cache->set($this->cacheKey,$data);
             return $data;
         }
     }

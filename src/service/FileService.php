@@ -132,15 +132,15 @@ class FileService extends Service
      */
     public function upload($file, $fileName = null,$saveDir = '/',$upType='',bool $isUniqidmd5 = false)
     {
-        if(empty($upType)){
-            $upType = $this->upType;
+        if(!empty($upType)){
+            $this->upType = $upType;
         }
         if($isUniqidmd5){
-            $saveName = Filesystem::disk($upType)->putFile($saveDir, $file);
+            $saveName = Filesystem::disk($this->upType)->putFile($saveDir, $file);
         }elseif(empty($fileName)){
-            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $file->getOriginalName());
+            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $file->getOriginalName());
         }else{
-            $saveName = Filesystem::disk($upType)->putFileAs($saveDir, $file, $fileName);
+            $saveName = Filesystem::disk($this->upType)->putFileAs($saveDir, $file, $fileName);
         }
         if ($saveName) {
             $filename = Filesystem::disk($this->upType)->path($saveName);
@@ -199,7 +199,6 @@ class FileService extends Service
             return false;
         }
     }
-
     /**
      * 获取访问路径
      * @param $name 文件名
@@ -211,11 +210,14 @@ class FileService extends Service
         if($this->upType == 'safe'){
             return $name;
         }else{
-            return $this->app->request->domain() . $config->get('url') . DIRECTORY_SEPARATOR . $name;
+            if($this->upType == 'local'){
+                return $this->app->request->domain() . $config->get('url') . '/'  . $name;
+            }else{
+                $domain = config('filesystem.disks.'.$this->upType.'.domain');
+                return $domain . '/' . $name;
+            }
         }
-
     }
-
     /**
      * 合并分片文件
      * @param $chunkSaveDir 分片保存目录
@@ -262,22 +264,78 @@ class FileService extends Service
      * @param $filename 文件路径
      */
     private function compressImage($filename){
-        list($width, $height, $type, $attr) = getimagesize($filename);
-        if($type > 1 && $type < 17){
-            $extension = image_type_to_extension($type,false);
-            $fun = "imagecreatefrom".$extension;
-            $image = $fun($filename);
-            $image_thump = imagecreatetruecolor($width,$height);
-            if($type == 3){
-                $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
-                imagefill($image_thump, 0, 0, $alpha);
-                imagesavealpha($image_thump, true);
+        if(file_exists($filename)){
+            $quality = Filesystem::getDiskConfig('local','quality',90);
+            list($width, $height, $type, $attr) = getimagesize($filename);
+            if($type > 1 && $type < 17 && $quality){
+                $extension = image_type_to_extension($type,false);
+                $fun = "imagecreatefrom".$extension;
+                $image = $fun($filename);
+                $image_thump = imagecreatetruecolor($width,$height);
+                if($type == 3){
+                    $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
+                    imagefill($image_thump, 0, 0, $alpha);
+                    imagesavealpha($image_thump, true);
+                }
+                imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
+                imagedestroy($image);
+                $funcs = "image".$extension;
+                if($type == 2){
+                    imagepng($image_thump,$filename,90);
+                    $funcs($image_thump,$filename,$quality);
+                }else{
+                    $funcs($image_thump,$filename);
+                }
+                imagedestroy($image_thump);
             }
-            imagecopyresampled($image_thump,$image,0,0,0,0,$width,$height,$width,$height);
-            imagedestroy($image);
-            $funcs = "image".$extension;
-            $funcs($image_thump,$filename);
-            imagedestroy($image_thump);
         }
+    }
+
+    /**
+     * 注册上传路由
+     */
+    public function registerRoute(){
+        $this->app->route->any('eadmin/upload', function () {
+            $file = $this->app->request->file('file');
+            $filename = $this->app->request->param('filename');
+            $chunks = $this->app->request->param('totalChunks');
+            $chunk = $this->app->request->param('chunkNumber');
+            $saveDir = $this->app->request->param('saveDir','/');
+            $totalSize = $this->app->request->param('totalSize');
+            $chunkSize = $this->app->request->param('chunkSize');
+            $isUniqidmd5 = $this->app->request->param('isUniqidmd5',false);
+            $upType = $this->app->request->param('upType','local');
+            if($isUniqidmd5 == 'true'){
+                $isUniqidmd5 = true;
+            }else{
+                $isUniqidmd5 = false;
+            }
+            if($this->app->request->method() == 'POST' && empty($chunk)){
+                $res = FileService::instance()->upload($file,$filename,$saveDir.'editor',$upType,$isUniqidmd5);
+                if (!$res) {
+                    return json(['code'=>999,'message'=>'上传失败'],404);
+                } else{
+                    return json(['code'=>200,'data'=>$res],200);
+                }
+            }
+            $res = FileService::instance()->chunkUpload($file, $filename, $chunk,$chunks, $chunkSize,$totalSize,$saveDir,$isUniqidmd5,$upType);
+            if($this->app->request->method() == 'POST'){
+                if (!$res) {
+                    return json(['code'=>999,'message'=>'上传失败'],404);
+                } elseif ($res !== true) {
+                    return json(['code'=>200,'data'=>$res],200);
+                }elseif ($res === true) {
+                    return json(['code'=>200,'message'=>'分片上传成功'],201);
+                }
+            }else{
+                if ($res == -1) {
+                    return json(['code'=>999,'message'=>'文件名重复,请重命名文件重新上传'],404);
+                } elseif ($res) {
+                    return json(['code'=>200,'data'=>$res,'message'=>'秒传成功'],202);
+                } else{
+                    return json(['code'=>200,'message'=>'请重新上传分片'],203);
+                }
+            }
+        });
     }
 }

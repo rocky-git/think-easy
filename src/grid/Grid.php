@@ -14,6 +14,8 @@ use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphMany;
+use think\model\relation\MorphOne;
 use thinkEasy\facade\Button;
 use thinkEasy\facade\Component;
 use thinkEasy\form\Dialog;
@@ -45,6 +47,12 @@ class Grid extends View
     //是否开启树形表格
     protected $treeTable = false;
 
+    //树形上级id
+    protected $treeParent = 'pid';
+
+    //树形追加数据
+    protected $treeAppendData = [];
+
     //是否开启分页
     protected $isPage = true;
 
@@ -56,9 +64,6 @@ class Grid extends View
 
     //操作列
     protected $actionColumn;
-
-    //树形上级id
-    protected $treeParent = 'pid';
 
     //软删除字段
     protected $softDeleteField = 'delete_time';
@@ -83,13 +88,18 @@ class Grid extends View
     //导出文件名
     protected $exportFileName = null;
     protected $relations = [];
+    //表格对齐方式
+    protected $headerAlign = 'left';
+    //初始化
+    protected static $init = null;
 
     public function __construct(Model $model)
     {
+
         $this->model = $model;
         $this->db = $this->model->db();
         $this->tableFields = $this->model->getTableFields();
-        $this->actionColumn = new Actions('actionColumn', '');
+        $this->actionColumn = new Actions('eadminColumnAction', '');
         $this->table = new Table($this->columns, []);
         $this->table->setAttr(':max-height', 'tableHeight');
         $this->table->setAttr('style', 'z-index:0');
@@ -104,26 +114,35 @@ class Grid extends View
             $this->trashed(true);
         }
         $this->table->setVar('grid', true);
+        if (!is_null(self::$init)) {
+            call_user_func(self::$init, $this);
+        }
     }
 
     /**
      * 头部内容
      */
-    public function header($html){
-        $this->table->setVar('header',$html);
+    public function header($html)
+    {
+        $this->table->setVar('header', $html);
     }
+
     /**
      * 双击编辑
      */
-    public function dbclickEdit(){
-        $this->table->setVar('dbclickEdit',true);
+    public function dbclickEdit()
+    {
+        $this->table->setVar('dbclickEdit', true);
     }
+
     /**
      * 双击详情
      */
-    public function dbclickDetail(){
-        $this->table->setVar('dbclickDetail',true);
+    public function dbclickDetail()
+    {
+        $this->table->setVar('dbclickDetail', true);
     }
+
     /**
      * 拖拽排序列
      * @param $field 排序字段
@@ -229,12 +248,18 @@ EOF;
     /**
      * 开启树形表格
      * @param string $pid 父级字段
+     * @param array $appendData 追加数据
+     * @param bool $expand 是否展开
      */
-    public function treeTable($pidField = 'pid')
+    public function treeTable($pidField = 'pid', $appendData = [], $expand = true)
     {
         $this->treeParent = $pidField;
         $this->isPage = false;
         $this->treeTable = true;
+        $this->treeAppendData = $appendData;
+        if ($expand) {
+            $this->table->setAttr('default-expand-all', true);
+        }
     }
 
     protected function tree($list, $pid = 0)
@@ -262,7 +287,7 @@ EOF;
         $column = $this->column($nickname, $label);
         return $column->display(function ($val, $data) use ($column, $headimg) {
             $headimgValue = $column->getValue($data, $headimg);
-            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$headimgValue}' fit='fit' :preview-src-list='[\"{$headimgValue}\"]'></el-image><br>{$val}";
+            return "<el-image style='width: 80px; height: 80px;border-radius: 50%' src='{$headimgValue}' fit='cover' :preview-src-list='[\"{$headimgValue}\"]'></el-image><br>{$val}";
         })->align('center');
     }
 
@@ -333,10 +358,16 @@ EOF;
      */
     public function column($field, $label)
     {
-        $column = new Column($field, $label);
+
+        $column = new Column($field, $label, $this);
+        $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
             $this->relations[] = array_shift($fields);
+        } else {
+            if (method_exists($this->model, $field) && ($this->model->$field() instanceof BelongsToMany || $this->model->$field() instanceof HasMany)) {
+                $this->relations[] = $field;
+            }
         }
         array_push($this->columns, $column);
         return $column;
@@ -349,10 +380,8 @@ EOF;
      */
     public function indexColumn($type = 'selection')
     {
-        $column = $this->column('', '');
+        $column = $this->column('eadminColumnIndex' . $type, '');
         $column->setAttr('type', $type);
-
-
         return $column;
     }
 
@@ -365,6 +394,12 @@ EOF;
         //是否隐藏操作列
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
+        }
+        if (count($this->treeAppendData) > 0) {
+            $this->data = $this->data->merge($this->treeAppendData);
+            $this->data = $this->data->sort(function ($a, $b) {
+                return $a['sort'] > $b['sort'];
+            });
         }
         if (count($this->data) > 0) {
             foreach ($this->data as $key => &$rows) {
@@ -412,16 +447,16 @@ EOF;
                 ->buildSql();
             $this->model->where($this->model->getPk(), $sortable_data['id'])->update([$this->sortField => $sortable_data['sort']]);
             $res = Db::execute("update {$this->model->getTable()} inner join {$sortSql} a on a.id={$this->model->getTable()}.id set {$this->sortField}=a.rownum");
-            if($res){
-                Component::notification()->success('操作成功','排序完成');
+            if ($res) {
+                Component::notification()->success('操作成功', '排序完成');
             }
         } else {
             $res = $this->model->removeWhereField($this->softDeleteField)->strict(false)->whereIn($this->model->getPk(), $ids)->update($data);
-            if($res && isset($data[$this->sortField])){
-                Component::notification()->success('操作成功','排序完成');
-            }elseif($res){
+            if ($res && isset($data[$this->sortField])) {
+                Component::notification()->success('操作成功', '排序完成');
+            } elseif ($res) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -470,9 +505,17 @@ EOF;
     public function filter($callback)
     {
         if ($callback instanceof \Closure) {
-            $this->filter = new Filter($this->db);
-            call_user_func($callback, $this->filter);
+
+            call_user_func($callback, $this->getFilter());
         }
+    }
+
+    public function getFilter()
+    {
+        if (is_null($this->filter)) {
+            $this->filter = new Filter($this->db);
+        }
+        return $this->filter;
     }
 
     /**
@@ -638,37 +681,53 @@ EOF;
             $this->hideDeleteButton();
         }
     }
+
+    //预关联加载
+    protected function withRelations()
+    {
+        $this->relations = array_unique($this->relations);
+        $with = $this->db->getOptions('with');
+        if (is_null($with)) {
+            $with = [];
+        }
+        $with = array_merge($with, $this->relations);
+        if (count($with) > 0) {
+            $this->db->with($with);
+        }
+    }
+
+    //快捷搜索
     protected function quickFilter()
     {
-        $keyword = Request::get('quickSearch','',['trim']);
-        if($keyword){
+        $keyword = Request::get('quickSearch', '', ['trim']);
+        if ($keyword) {
             $whereFields = [];
             $whereOr = [];
             $relationWhereFields = [];
             $relationWhereOr = [];
-            foreach ($this->columns as $column){
-                $fields = explode('.',  $column->field);
+            foreach ($this->columns as $column) {
+                $fields = explode('.', $column->field);
                 $field = $column->getField();
                 $usings = $column->getUsings();
                 if (count($fields) > 1) {
                     $relation = array_shift($fields);
-                    if(empty($usings)){
+                    if (empty($usings)) {
                         $relationWhereFields[$relation][] = $field;
-                    }else{
-                        foreach ($usings as $key=>$value){
-                            if(strpos($value,$keyword) !== false){
+                    } else {
+                        foreach ($usings as $key => $value) {
+                            if (strpos($value, $keyword) !== false) {
                                 $relationWhereOr[$relation][$field] = $key;
                             }
                         }
                     }
 
-                }else{
-                    if(in_array($column->getField(),$this->tableFields)){
-                        if(empty($usings)){
+                } else {
+                    if (in_array($column->getField(), $this->tableFields)) {
+                        if (empty($usings)) {
                             $whereFields[] = $field;
-                        }else{
-                            foreach ($usings as $key=>$value){
-                                if(stripos($value,$keyword) !== false){
+                        } else {
+                            foreach ($usings as $key => $value) {
+                                if (stripos($value, $keyword) !== false) {
                                     $whereOr[$field] = $key;
                                 }
                             }
@@ -679,7 +738,6 @@ EOF;
             //快捷搜索
             $relationWhereSqls = [];
             foreach ($this->relations as $relationName) {
-                $sql = $this->model->hasWhere($relationName)->buildSql();
                 $relation = $this->model->$relationName();
                 $relationTable = $relation->getTable();
                 $relationTableFields = $relation->getTableFields();
@@ -687,33 +745,43 @@ EOF;
                 $pk = $relation->getLocalKey();
                 $db = null;
                 if ($relation instanceof HasMany) {
-                    $db = $relation->whereRaw("{$relationTable}.{$pk}={$this->db->getTable()}.{$foreignKey}");
+                    $db = $relation->whereRaw("{$relationTable}.{$foreignKey}={$this->db->getTable()}.{$pk}");
                 } elseif ($relation instanceof BelongsTo) {
                     $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
                 } else if ($relation instanceof HasOne) {
                     $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
+                } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                    $reflectionClass = new \ReflectionClass($relation);
+                    $propertys = ['morphKey', 'morphType', 'type'];
+                    $propertyValues = [];
+                    foreach ($propertys as $var) {
+                        $property = $reflectionClass->getProperty($var);
+                        $property->setAccessible(true);
+                        $propertyValues[] = $property->getValue($relation);
+                    }
+                    list($morphKey, $morphType, $typeValue) = $propertyValues;
+                    $db = $relation->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType, $typeValue);
                 }
-                if($db){
-                    $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName],$relationTableFields);
+                if ($db && isset($relationWhereFields[$relationName])) {
+                    $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
-                    $sql = $db->where(function ($q) use($fields,$keyword,$relationWhereCondtion){
-                        foreach ($relationWhereCondtion as $field=>$value){
+                    $sql = $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
+                        foreach ($relationWhereCondtion as $field => $value) {
                             $q->whereOr($field, $value);
                         }
-                        $q->whereLike($fields, "%{$keyword}%",'OR');
+                        $q->whereLike($fields, "%{$keyword}%", 'OR');
                     })->buildSql();
                     $relationWhereSqls[] = $sql;
                 }
-
             }
             $fields = implode('|', $whereFields);
-            $this->db->where(function ($q) use($relationWhereSqls,$fields,$keyword,$whereOr){
-                $q->whereLike($fields, "%{$keyword}%",'OR');
-                foreach ($whereOr as $field=>$value){
+            $this->db->where(function ($q) use ($relationWhereSqls, $fields, $keyword, $whereOr) {
+                $q->whereLike($fields, "%{$keyword}%", 'OR');
+                foreach ($whereOr as $field => $value) {
                     $q->whereOr($field, $value);
                 }
-                foreach ($relationWhereSqls as $sql){
+                foreach ($relationWhereSqls as $sql) {
                     $q->whereExists($sql, 'OR');
                 }
             });
@@ -726,6 +794,8 @@ EOF;
      */
     public function view()
     {
+        //预关联加载
+        $this->withRelations();
         //快捷搜索
         $this->quickFilter();
         //排序
@@ -737,11 +807,12 @@ EOF;
             $this->table->setVar('pageHide', 'false');
             $sql = $this->db->buildSql();
             $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-            $res  = Db::query($sql);
+            $res = Db::query($sql);
             $count = $res[0]['COUNT(*)'];
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->table->setVar('pageTotal', $count);
             $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
+
         } else {
             $this->data = $this->db->select();
         }
@@ -751,7 +822,7 @@ EOF;
             if (request()->has('is_deleted')) {
                 $this->column($this->softDeleteField, '删除时间');
                 $this->hideAction();
-                $this->column('action_delete', '操作')->display(function ($val, $data) {
+                $this->column('eadminColumnActionDelete', '')->display(function ($val, $data) {
                     $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
                         ->delete($data['id'], '此操作将恢复该数据, 是否继续?', 2);
                     $button .= Button::create('永久删除', 'danger', 'small', 'el-icon-delete')
@@ -773,6 +844,7 @@ EOF;
         //查询过滤
         if (!is_null($this->filter)) {
             $this->table->setVar('filter', $this->filter->render());
+            $this->table->setVar('filterMode', $this->filter->mode());
             $this->table->setScriptArr($this->filter->scriptArr);
         }
         //树形
@@ -780,26 +852,19 @@ EOF;
             $treeData = $this->tree($this->getDataArray());
             $this->data = $treeData;
             $this->table->setAttr('data', $treeData);
-            $this->table->setAttr('default-expand-all', true);
             $this->table->setAttr('tree-props', [
                 'children' => 'children',
                 'hasChildren' => 'hasChildren',
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-        $submitUrl = app('http')->getName() . '/' . request()->controller();
-        $submitUrl = str_replace('.rest', '', $submitUrl);
-        $this->table->setVar('submitUrl', $submitUrl);
-        $this->table->setVar('submitParams', request()->param());
 
+        $this->table->setVar('submitUrl', $this->getRequestUrl());
+        $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                $sql = $this->db->removeOption('page')->removeOption('limit')->buildSql();
-                $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-                $res  = Db::query($sql);
-                $count = $res[0]['COUNT(*)'];
                 $result['total'] = $count;
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;
@@ -807,5 +872,53 @@ EOF;
             default:
                 return $this->table->view();
         }
+    }
+
+    /**
+     * 设置表格对其方式
+     * @param string $align left/center/right
+     */
+    public function headerAlign($align = 'center')
+    {
+        $this->headerAlign = $align;
+    }
+
+    /**
+     * 开启表格视图方案保存模式
+     */
+    public function onTableView()
+    {
+        $this->table->setVar('onTableView', true);
+    }
+
+    /**
+     * 设置编辑url
+     * @param string $url
+     * @param bool $rest
+     */
+    public function setEditUrl(string $url, bool $rest = false)
+    {
+        $this->table->setVar('editUrl', $url);
+        $this->table->setVar('editRest', $rest);
+    }
+
+    /**
+     * 设置详情url
+     * @param string $url
+     * @param bool $rest
+     */
+    public function setDetailUrl(string $url, bool $rest = false)
+    {
+        $this->table->setVar('detailUrl', $url);
+        $this->table->setVar('detailRest', $rest);
+    }
+
+    /**
+     * 初始化
+     * @param \Closure $closure
+     */
+    public static function init(\Closure $closure)
+    {
+        self::$init = $closure;
     }
 }

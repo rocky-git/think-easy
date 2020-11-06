@@ -15,6 +15,8 @@ use think\model\Relation;
 use think\model\relation\BelongsTo;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphMany;
+use think\model\relation\MorphOne;
 use thinkEasy\form\field\Input;
 use thinkEasy\View;
 
@@ -27,7 +29,9 @@ class Filter extends View
     //当前模型db
     protected $db;
     protected $fields = [];
-
+    protected $mode = 'filter';
+    protected $columnLabel = '';
+    protected $usingData = [];
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -41,6 +45,21 @@ class Filter extends View
         }
 
         $this->tableFields = $this->db->getTableFields();
+    }
+    public function label($value){
+        $this->columnLabel  = $value;
+    }
+    /**
+     * 筛选模式
+     * @param string $mode
+     * @return Model|null
+     */
+    public function mode(string $mode = '')
+    {
+        if(!empty($mode)){
+            $this->mode = $mode;
+        }
+        return $this->mode;
     }
 
     public function __call($name, $arguments)
@@ -57,7 +76,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function like($field, $label)
+    public function like($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label);
@@ -70,7 +89,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function in($field, $label)
+    public function in($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label);
@@ -83,7 +102,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function notIn($field, $label)
+    public function notIn($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label);
@@ -96,7 +115,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function eq($field, $label)
+    public function eq($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label);
@@ -109,19 +128,20 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function findIn($field, $label)
+    public function findIn($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label);
         return $this;
     }
+
     /**
      * 不等于查询
      * @param $field 字段
      * @param $label 标签
      * @return $this
      */
-    public function neq($field, $label)
+    public function neq($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label)->prepend('不等于');
@@ -134,7 +154,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function egt($field, $label)
+    public function egt($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label)->prepend('大于等于');
@@ -147,7 +167,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function gt($field, $label)
+    public function gt($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label)->prepend('大于');
@@ -160,7 +180,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function elt($field, $label)
+    public function elt($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label)->prepend('小于等于');
@@ -173,7 +193,7 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function lt($field, $label)
+    public function lt($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field, $label)->prepend('小于');
@@ -186,20 +206,21 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function between($field, $label)
+    public function between($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $this->formItem($field . '__between_start', $label)->placeholder("请输入开始$label");
         $this->formItem($field . '__between_end', '-')->placeholder("请输入结束$label");
         return $this;
     }
+
     /**
      * 日期筛选
      * @param $field 字段
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function date($field, $label)
+    public function date($field, $label = '')
     {
         $this->paseFilter('eq', $field);
         $this->formItem($field, $label, 'DateTime');
@@ -212,7 +233,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function time($field, $label)
+    public function time($field, $label = '')
     {
         $this->paseFilter('eq', $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -226,7 +247,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function datetime($field, $label)
+    public function datetime($field, $label = '')
     {
         $this->paseFilter('eq', $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -240,7 +261,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function datetimeRange($field, $label)
+    public function datetimeRange($field, $label = '')
     {
         $this->paseFilter('dateBetween', $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -268,7 +289,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function dateRange($field, $label)
+    public function dateRange($field, $label = '')
     {
         $this->paseFilter('dateBetween', $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -282,7 +303,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function timeRange($field, $label)
+    public function timeRange($field, $label = '')
     {
         $this->paseFilter('dateBetween', $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -296,7 +317,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function year($field, $label)
+    public function year($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -310,7 +331,7 @@ class Filter extends View
      * @param $label 标签
      * @return \thinkEasy\form\DateTime
      */
-    public function month($field, $label)
+    public function month($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
         $formItem = $this->formItem($field, $label, 'DateTime');
@@ -324,10 +345,10 @@ class Filter extends View
      * @param $label 标签
      * @return $this
      */
-    public function notBetween($field, $label)
+    public function notBetween($field, $label = '')
     {
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field . '__between_start', $label)->prepend('不存在区间');
+        $this->formItem($field . '__between_start', $label = '')->prepend('不存在区间');
         $this->formItem($field . '__between_end', '-')->placeholder("请输入$label");
         return $this;
     }
@@ -339,8 +360,12 @@ class Filter extends View
      */
     public function radio(array $options)
     {
+        $this->usingData = $options;
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'radio');
+        if ($this->mode == 'column') {
+            $formItem->vertical();
+        }
         $formItem->options($options);
         return $formItem;
     }
@@ -352,11 +377,16 @@ class Filter extends View
      */
     public function checkbox(array $options)
     {
+        $this->usingData = $options;
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'checkbox');
+        if ($this->mode == 'column') {
+            $formItem->vertical();
+        }
         $formItem->options($options);
         return $formItem;
     }
+
     /**
      * 分组下拉框
      * @param $options 选项值
@@ -364,11 +394,13 @@ class Filter extends View
      */
     public function selectGroup(array $options)
     {
+        $this->usingData = $options;
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'select');
         $formItem->groupOptions($options);
         return $formItem;
     }
+
     /**
      * 下拉框
      * @param $options 选项值
@@ -376,8 +408,12 @@ class Filter extends View
      */
     public function select(array $options)
     {
+        $this->usingData = $options;
         $formItem = array_pop($this->formItem);
         $formItem = $this->formItem($formItem->field, $formItem->label, 'select');
+        if ($this->mode == 'column') {
+            $formItem->width();
+        }
         $formItem->options($options);
         return $formItem;
     }
@@ -395,7 +431,7 @@ class Filter extends View
         $class = "thinkEasy\\form\\field\\" . ucfirst($name);
         $field = str_replace('.', '__', $field);
         $formItem = new $class($field, $label, $arguments);
-        if($formItem instanceof Input){
+        if ($formItem instanceof Input) {
             $formItem->prefixIcon('el-icon-search');
         }
         $this->formItem[] = $formItem;
@@ -404,7 +440,16 @@ class Filter extends View
         } else {
             $this->fields[$field] = '';
         }
+        if ($this->mode == 'column' && $name == 'input') {
+            $formItem->placeholder('搜索 按Enter确认');
+        }
+        $this->usingData = json_encode($this->usingData);
 
+        if(!empty($label) && strpos($field,'__between_end') === false){
+            $this->columnLabel = $label;
+        }
+        $formItem->setAttr('@change',"(e)=>filterColumnChange(e,\"{$field}\",\"{$this->columnLabel}\",\"{$name}\",{$this->usingData})");
+        $this->usingData = [];
         return $formItem;
     }
 
@@ -419,14 +464,23 @@ class Filter extends View
         if (is_string($field)) {
             $field = str_replace('.', '__', $field);
             $fields = explode('__', $field);
-            $dbField = end($fields);
-            if (count($fields) > 1) {
-                return $this->relationWhere($fields[0], function ($filter) use ($dbField, $field, $method) {
+            $dbField = array_pop($fields);
+            if (count($fields) > 0) {
+
+                $func = function (Filter $filter) use ($dbField, $field, $method) {
                     $filter->filterField($method, $dbField, $field);
-                });
+                };
+                while(count($fields) > 1){
+                    $relation = array_pop($fields);
+                    $func = function (Filter $filter) use($relation,$func,$dbField) {
+                        $filter->relationWhere($relation, $func);
+                    };
+                }
+                $relation = array_pop($fields);
+                return $this->relationWhere($relation,$func);
             }
             $requestField = $field;
-        }elseif (is_array($field)){
+        } elseif (is_array($field)) {
             $dbField = $field;
             $requestField = array_shift($field);
         }
@@ -451,45 +505,46 @@ class Filter extends View
         if ($method == 'between' || $method == 'notBetween') {
             $field .= '__between_start';
         }
-        if(is_array($dbField)){
+        if (is_array($dbField)) {
             $dbFields = $dbField;
-        }else{
+        } else {
             $dbFields[] = $dbField;
         }
 
         $whereOr = [];
-        foreach ($dbFields as $f){
+        foreach ($dbFields as $f) {
             if (isset($data[$field]) && $data[$field] !== '') {
-                if(is_array($data[$field]) && $method == 'cascader'){
+                if (is_array($data[$field]) && $method == 'cascader') {
                     $value = array_shift($data[$field]);
-                    if(is_null($value)){
+                    if (is_null($value)) {
                         continue;
                     }
                     $fieldData[$field] = $value;
-                    $res = json_decode($fieldData[$field],true);
-                    if(!is_null($res)){
+                    $res = json_decode($fieldData[$field], true);
+                    if (!is_null($res)) {
                         $fieldData[$field] = $res;
                     }
-                    if(is_array($fieldData[$field])){
+                    if (is_array($fieldData[$field])) {
                         $where = [];
-                        foreach ($fieldData[$field] as $index=>$value){
-                            $where[] = [$dbFields[$index],'=',$value];
+                        foreach ($fieldData[$field] as $index => $value) {
+                            $where[] = [$dbFields[$index], '=', $value];
                         }
                         $whereOr[] = $where;
                         continue;
                     }
-                }else{
+                } else {
                     $fieldData = $data;
                 }
                 $this->parseRule($method, $f, $field, $fieldData);
             }
         }
-        if(!empty($whereOr)){
+        if (!empty($whereOr)) {
             $fieldData[$field] = $whereOr;
             $this->parseRule($method, $f, $field, $fieldData);
         }
         return $this;
     }
+
     /**
      * @param $method
      * @param $dbField
@@ -529,11 +584,11 @@ class Filter extends View
                     $this->db->where($dbField, $data[$field]);
                     break;
                 case 'cascader':
-                    if(is_array($data[$field])){
-                        $this->db->where(function ($q) use($data,$field){
+                    if (is_array($data[$field])) {
+                        $this->db->where(function ($q) use ($data, $field) {
                             $q->whereOr($data[$field]);
                         });
-                    }else{
+                    } else {
                         $this->db->where($dbField, $data[$field]);
                     }
                     break;
@@ -564,6 +619,7 @@ class Filter extends View
             }
         }
     }
+
     /**
      * 关联查询
      * @param $relation_method 关联方法
@@ -576,22 +632,35 @@ class Filter extends View
         if (method_exists($this->model, $relation_method)) {
             $relation = $this->model->$relation_method();
             if ($relation instanceof Relation) {
+                $relationModel = get_class($relation->getModel());
                 $relation_table = $relation->getTable();
                 $foreignKey = $relation->getForeignKey();
                 $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
-                    $this->relationModel = new self($relation_table);
+                    $this->relationModel = new self(new $relationModel);
                     call_user_func($callback, $this->relationModel);
                 }
-                $relationSql = $this->relationModel->db()->buildSql();
+                $tmpDb = clone $this->relationModel->db();
+                $relationSql = $tmpDb->removeWhereField('delete_time')->buildSql();
                 $res = strpos($relationSql, 'WHERE');
                 if ($res !== false) {
                     if ($relation instanceof HasMany) {
-                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
+                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
                     } elseif ($relation instanceof BelongsTo) {
                         $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
                     } else if ($relation instanceof HasOne) {
                         $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                    } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                        $reflectionClass = new \ReflectionClass($relation);
+                        $propertys = ['morphKey','morphType','type'];
+                        $propertyValues = [];
+                        foreach ($propertys as $var){
+                            $property = $reflectionClass->getProperty($var);
+                            $property->setAccessible(true);
+                            $propertyValues[] =  $property->getValue($relation);
+                        }
+                        list($morphKey,$morphType,$typeValue) = $propertyValues;
+                        $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
                     }
                     $this->db->whereExists($sql);
                 }
@@ -612,9 +681,12 @@ class Filter extends View
     public function render()
     {
         $formItemHtml = '';
-
         foreach ($this->formItem as $formItem) {
-            $formItemTmp = "<el-form-item label='{$formItem->label}' prop='{$formItem->field}'>" . $formItem->render() . "</el-form-item>";
+            if ($this->mode == 'column') {
+                $formItemTmp = "<el-form-item prop='{$formItem->field}'>" . $formItem->render() . "</el-form-item>";
+            } else {
+                $formItemTmp = "<el-form-item label='{$formItem->label}' prop='{$formItem->field}'>" . $formItem->render() . "</el-form-item>";
+            }
             if (!empty($formItem->md)) {
                 $formItemHtml .= sprintf($formItem->md, $formItemTmp);
             } else {
@@ -622,7 +694,11 @@ class Filter extends View
             }
             $this->scriptArr = array_merge($this->scriptArr, $formItem->getScriptVar());
         }
+        if ($this->mode == 'column') {
+            $this->formItem = [];
+        }
         array_push($this->scriptArr, "form:" . json_encode($this->fields, JSON_UNESCAPED_UNICODE));
+
         return $formItemHtml;
     }
 

@@ -29,7 +29,7 @@ class Excel
         $title = array_values($columnTitle);
         $fields = array_keys($columnTitle);
         foreach ($title as $key => $item) {
-            $title[$key] = iconv('UTF-8', 'GBK', $item);
+            $title[$key] = mb_convert_encoding( $item,'GBK','UTF-8');
         }
         //将标题写到标准输出中
         if($nums == 0){
@@ -38,8 +38,8 @@ class Excel
         foreach ($datas as $item){
             $row = [];
             foreach ($fields as $field){
-                $value =  empty($item[$field]) ? '' :$item[$field];
-                $row[] =iconv('UTF-8', 'GBK', $value);
+                $value =  empty($item[$field]) ? '' : $item[$field];
+                $row[] = mb_convert_encoding( $value,'GBK','UTF-8');
             }
             fputcsv($fp, $row);
             $nums++;

@@ -69,7 +69,7 @@ use thinkEasy\View;
  */
 class Form extends View
 {
-    use WatchForm,ValidatorForm;
+    use WatchForm, ValidatorForm;
 
     protected $attrs = [
         'model',
@@ -178,18 +178,22 @@ class Form extends View
     {
         $this->setVar('sumbitAlign', $align);
     }
-    public function prependSubmitExtend($entend){
-        if(class_exists($entend)){
-            $field = new $entend('','',[]);
+
+    public function prependSubmitExtend($entend)
+    {
+        if (class_exists($entend)) {
+            $field = new $entend('', '', []);
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
         }
         $this->setVar('prependSubmitExtend', $entend);
 
     }
-    public function appendSubmitExtend($entend){
-        if(class_exists($entend)){
-            $field = new $entend('','',[]);
+
+    public function appendSubmitExtend($entend)
+    {
+        if (class_exists($entend)) {
+            $field = new $entend('', '', []);
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
         }
@@ -261,11 +265,12 @@ class Form extends View
      * 布局行
      * @param \Closure $closure
      * @param $title 标题
+     * @param $gutter 栅格间隔
      * @return $this
      */
-    public function row(\Closure $closure, $title = '')
+    public function row(\Closure $closure, $title = '',$gutter = 0)
     {
-        array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure]);
+        array_push($this->formItem, ['type' => 'layout', 'title' => $title, 'closure' => $closure,'gutter'=>$gutter]);
         return $this;
     }
 
@@ -559,7 +564,7 @@ class Form extends View
      * 解析formItem
      * @return string
      */
-    protected function parseFormItem($formItemHtml = '',$whenTag='')
+    protected function parseFormItem($formItemHtml = '', $whenTag = '')
     {
         foreach ($this->formItem as $key => $formItem) {
             if (is_array($formItem)) {
@@ -583,14 +588,17 @@ class Form extends View
                         $this->hasManyRelation = null;
                         break;
                     case 'hasMany':
+                        $field = new Field('', '', []);
+                        $this->layoutTags[$whenTag][] = $field->getTag();
+
                         $this->hasManyRelation = $formItem['relationMethod'];
                         $this->hasManyData = $this->getData($this->hasManyRelation);
-                        $formItemHtml .= "<el-divider content-position='left'>{$formItem['label']}</el-divider>";
+                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\"><el-divider content-position='left'>{$formItem['label']}</el-divider>";
                         $formItemHtml .= "<div v-for='(manyItem,manyIndex) in form.{$this->hasManyRelation}' :key='manyIndex'>";
                         $formItemHtml = $this->parseFormItem($formItemHtml);
                         $encodeManyData = urlencode(json_encode($this->hasManyRowData, JSON_UNESCAPED_UNICODE));
                         $formItemHtml .= "<el-form-item><el-button type='primary' plain @click=\"addManyData('{$this->hasManyRelation}','{$encodeManyData}')\" size='mini' v-if='form.{$this->hasManyRelation}.length-1 == manyIndex'>新增</el-button><el-button size='mini' type='danger' v-show='form.{$this->hasManyRelation}.length > 1' @click=\"removeManyData('{$this->hasManyRelation}',manyIndex)\">移除</el-button><el-button @click=\"handleUp('{$this->hasManyRelation}',manyIndex)\" v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex > 0' size='mini'>上移</el-button><el-button size='mini' v-show='form.{$this->hasManyRelation}.length > 1 && manyIndex < form.{$this->hasManyRelation}.length-1' @click=\"handleDown('{$this->hasManyRelation}',manyIndex)\">下移</el-button></el-form-item>";
-                        $formItemHtml .= "</div><el-divider></el-divider>";
+                        $formItemHtml .= "</div><el-divider></el-divider></div>";
                         if (count($this->hasManyData) == 0) {
                             $this->formData[$this->hasManyRelation][] = $this->hasManyRowData;
                         } else {
@@ -606,8 +614,7 @@ class Form extends View
                         }
                         $field = new Field('', '', []);
                         $this->layoutTags[$whenTag][] = $field->getTag();
-
-                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row>' . $this->parseFormItem('',$whenTag) . '</el-row></div>';
+                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row :gutter="'.$formItem['gutter'].'">' . $this->parseFormItem('', $whenTag) . '</el-row></div>';
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {
@@ -692,6 +699,7 @@ class Form extends View
                     if (!is_null($formItem->value)) {
                         $this->setData($formItem->field, $formItem->value);
                     }
+                    $this->script($formItem->getWhenInitJs());
                 } else {
                     //一对多解析
                     $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
@@ -794,34 +802,36 @@ EOF;
                 } else {
                     $formItemHtml .= $formItemTmp;
                 }
-                $this->formTags[$formItem->field] = $formItem->getTag().'0';
+                $this->formTags[$formItem->field] = $formItem->getTag() . '0';
                 $this->script($formItem->getScript());
-
-                $this->script($formItem->getWhenInitJs());
                 $whenTags = [];
                 $whenTagsAll = [];
-                if(!empty($whenTag)){
+                if (!empty($whenTag)) {
                     $this->formWhenItem[$whenTag][] = $formItem;
                 }
                 //when显示元素解析，item互动事件显示隐藏
                 foreach ($formItem->getWhenItem() as $whenIndex => $whenItem) {
+
                     $formItemArr = array_slice($this->formItem, $key + 1);
                     $this->formItem = [];
-                    if(is_array($whenItem['value'])){
-                        $indexTag = implode('',$whenItem['value']);
-                    }else{
+                    if (is_array($whenItem['value'])) {
+                        $indexTag = implode('', $whenItem['value']);
+                    } else {
                         $indexTag = $whenItem['value'];
                     }
-                    $whenTagNow = $formItem->getTag().$indexTag;
+                    $whenTagNow = $formItem->getTag() . $indexTag;
                     call_user_func_array($whenItem['closure'], [$this]);
-                    $formItemHtml = $this->parseFormItem($formItemHtml,$whenTagNow);
-                    $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
+                    $formItemHtml = $this->parseFormItem($formItemHtml, $whenTagNow);
+                    $formWhenItem = [];
+                    if (isset($this->formWhenItem[$whenTagNow])) {
+                        $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
+                    }
                     foreach ($formWhenItem as $whenformItem) {
                         $whenTags[$indexTag]['tag'][] = $whenformItem->getTag();
                         $whenTags[$indexTag]['value'] = $whenItem['value'];
                         $whenTagsAll[] = $whenformItem->getTag();
                     }
-                    if(isset($this->layoutTags[$whenTagNow])){
+                    if (isset($this->layoutTags[$whenTagNow])) {
                         foreach ($this->layoutTags[$whenTagNow] as $tag) {
                             $whenTags[$indexTag]['tag'][] = $tag;
                             $whenTags[$indexTag]['value'] = $whenItem['value'];
@@ -829,12 +839,12 @@ EOF;
                         }
                     }
                 }
-                if(count($whenTags) > 0){
+                if (count($whenTags) > 0) {
                     $hideTagsAllArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $whenTagsAll);
                     $HideTagsAllJs = implode(',', $hideTagsAllArr);
-                    $this->radioJs .= "if(tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}".PHP_EOL;
+                    $this->radioJs .= "if(tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}" . PHP_EOL;
                 }
                 foreach ($whenTags as $whenVal) {
                     $tags = $whenVal['tag'];
@@ -848,12 +858,12 @@ EOF;
                         $hideTagsJs .= "this.deleteArr(this.formItemTags,{$tag});";
                     }
                     $whenVals = [];
-                    if(is_array($value)){
+                    if (is_array($value)) {
                         $whenVals = $value;
-                    }else{
+                    } else {
                         $whenVals[] = $value;
                     }
-                    foreach ($whenVals as $val){
+                    foreach ($whenVals as $val) {
                         $this->radioJs .= "if(val == '{$val}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}" . PHP_EOL;
                     }
                 }
@@ -883,9 +893,9 @@ EOF;
         } else {
             if (empty($val)) {
                 $val = SystemConfig::where('name', $field)->value('value');
-                if(is_null($val)){
-                    $val  = '';
-                }else if(is_numeric($val)){
+                if (is_null($val)) {
+                    $val = '';
+                } else if (is_numeric($val)) {
                     $val = (int)$val;
                 }
                 $this->formData[$field] = $val;
@@ -942,7 +952,6 @@ EOF;
     }
 
 
-
     /**
      * 设置标题
      * @param $title
@@ -968,6 +977,7 @@ EOF;
     {
         $this->setVar('hideResetButton', true);
     }
+
     /**
      * 隐藏提交按钮
      */
@@ -975,6 +985,7 @@ EOF;
     {
         $this->setVar('hideSubmitButton', true);
     }
+
     /**
      * 添加表单附加参数
      * @param array $data
