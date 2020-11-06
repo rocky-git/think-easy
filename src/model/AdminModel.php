@@ -9,7 +9,6 @@
 namespace thinkEasy\model;
 
 
-use app\admin\model\SystemUserAuth;
 use think\facade\Db;
 
 class AdminModel extends BaseModel
@@ -24,12 +23,12 @@ class AdminModel extends BaseModel
     }
     //权限
     public function permissions(){
-        $roleIds = Db::name('system_user_auth')->where('user_id',$this->id)->column('role_id');
+        $roleIds = SystemUserAuth::where('user_id',$this->id)->column('role_id');
         return SystemAuthNode::whereIn('auth',$roleIds)->select();
     }
 
     //角色组
     public function roles(){
-        return $this->belongsToMany('system_auth','system_user_auth','role_id','user_id');
+        return $this->belongsToMany('system_auth',SystemUserAuth::class,'role_id','user_id');
     }
 }

@@ -844,10 +844,6 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                $sql = $this->db->removeOption('page')->removeOption('limit')->buildSql();
-                $sql = "SELECT COUNT(*) FROM {$sql} userCount";
-                $res = Db::query($sql);
-                $count = $res[0]['COUNT(*)'];
                 $result['total'] = $count;
                 $result['cellComponent'] = $this->table->cellComponent();
                 return $result;

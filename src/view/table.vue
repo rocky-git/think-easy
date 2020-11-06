@@ -206,7 +206,7 @@
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
-                tableHeight:0,
+                tableHeight: window.innerHeight ,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},

@@ -1,20 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: rocky
- * Date: 2020-04-25
- * Time: 21:02
- */
+
 
 namespace thinkEasy\model;
 
 
-
-
 use think\facade\Cache;
 use think\Model;
+use think\model\Pivot;
 
-class SystemAuthNode extends BaseModel
+class SystemUserAuth extends Pivot
 {
     public static function onAfterInsert(Model $model)
     {

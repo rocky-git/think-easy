@@ -147,7 +147,7 @@ class AdminService extends Service
                 $newNodes[] = $nodes[$key];
             }
         }
-        Cache::set($permissionsKey,$newNodes,5);
+        Cache::tag('eadmin_permissions')->set($permissionsKey,$newNodes);
         return $newNodes;
     }
     /**
