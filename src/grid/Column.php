@@ -605,6 +605,7 @@ EOF;
                     $value = sprintf($this->tag, $value);
                 }
                 $html = sprintf($html, $value);
+
             }
             $this->display = $html;
         } elseif (empty($this->display) && !empty($this->field)) {
@@ -630,9 +631,9 @@ EOF;
             if (count($this->usings) > 0) {
                 foreach ($this->usings as $key => $value) {
                     if (is_string($key)) {
-                        $this->html .= "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} == '{$key}'\">%s</span>";
+                        $this->html .= "<span v-if=\"{$this->relationRowField} && {$this->rowField} == '{$key}'\">%s</span>";
                     } else {
-                        $this->html .= "<span v-if='{$this->relationRowField} === null || {$this->rowField} == {$key}'>%s</span>";
+                        $this->html .= "<span v-if='{$this->relationRowField} && {$this->rowField} == {$key}'>%s</span>";
                     }
                     if (isset($this->tagColor[$key])) {
                         $this->tag($this->tagColor[$key], $this->tagTheme);

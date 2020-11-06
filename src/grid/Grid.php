@@ -14,6 +14,8 @@ use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphMany;
+use think\model\relation\MorphOne;
 use thinkEasy\facade\Button;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
@@ -727,7 +729,6 @@ EOF;
             //快捷搜索
             $relationWhereSqls = [];
             foreach ($this->relations as $relationName) {
-                $sql = $this->model->hasWhere($relationName)->buildSql();
                 $relation = $this->model->$relationName();
                 $relationTable = $relation->getTable();
                 $relationTableFields = $relation->getTableFields();
@@ -740,6 +741,17 @@ EOF;
                     $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
                 } else if ($relation instanceof HasOne) {
                     $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
+                }else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                    $reflectionClass = new \ReflectionClass($relation);
+                    $propertys = ['morphKey','morphType','type'];
+                    $propertyValues = [];
+                    foreach ($propertys as $var){
+                        $property = $reflectionClass->getProperty($var);
+                        $property->setAccessible(true);
+                        $propertyValues[] =  $property->getValue($relation);
+                    }
+                    list($morphKey,$morphType,$typeValue) = $propertyValues;
+                    $db = $relation->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue);
                 }
                 if ($db && isset($relationWhereFields[$relationName])) {
                     $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);

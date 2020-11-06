@@ -241,7 +241,7 @@ abstract class View
         } else {
             abort(999,$path.'不存在');
         }
-        return \think\facade\View::display($content, array_merge($this->attrVars, $this->vars), ['strip_space' => false]);
+        return \think\facade\View::display($content, array_merge($this->attrVars, $this->vars));
     }
 
 }
