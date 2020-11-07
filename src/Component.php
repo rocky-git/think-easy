@@ -36,6 +36,9 @@ class Component
      * @param $content
      */
     public function view($content){
+        if(is_string($content)){
+            $content = base64_encode(gzcompress($content));
+        }
         throw new HttpResponseException(json([
             'code' => 50000,
             'data' => $content
