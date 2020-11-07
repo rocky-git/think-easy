@@ -363,11 +363,17 @@ EOF;
         $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
-            $this->relations[] = array_shift($fields);
+            $relation = array_shift($fields);
         } else {
-            if (method_exists($this->model, $field) && ($this->model->$field() instanceof BelongsToMany || $this->model->$field() instanceof HasMany)) {
-                $this->relations[] = $field;
-            }
+            $relation = $field;
+        }
+        if (method_exists($this->model, $relation) &&
+            ($this->model->$relation() instanceof BelongsTo ||
+                $this->model->$relation() instanceof HasOne ||
+                $this->model->$relation() instanceof HasMany ||
+                $this->model->$relation() instanceof MorphOne ||
+                $this->model->$relation() instanceof MorphMany)) {
+            $this->relations[] = $relation;
         }
         array_push($this->columns, $column);
         return $column;
@@ -380,7 +386,7 @@ EOF;
      */
     public function indexColumn($type = 'selection')
     {
-        $column = $this->column('eadminColumnIndex' . $type, '');
+        $column = $this->column('eadminColumnIndex' . $type, '')->closeExport();
         $column->setAttr('type', $type);
         return $column;
     }
@@ -828,7 +834,7 @@ EOF;
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {
-                $this->column($this->softDeleteField, '删除时间');
+                $this->column($this->softDeleteField, '删除时间')->closeExport();
                 $this->hideAction();
                 $this->column('eadminColumnActionDelete', '')->display(function ($val, $data) {
                     $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
