@@ -21,6 +21,8 @@ use thinkEasy\facade\Component;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
+use thinkEasy\grid\excel\Csv;
+use thinkEasy\grid\excel\Excel;
 use thinkEasy\service\AdminService;
 use thinkEasy\service\TokenService;
 use thinkEasy\View;
@@ -638,7 +640,6 @@ EOF;
         $node = $moudel . '/' . request()->pathinfo();
         $token = TokenService::instance()->get();
         $params = http_build_query(request()->param());
-
         $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token) . '&' . $params);
         $this->exportFileName = empty($fileName) ? date('YmdHis') : $fileName;
     }
@@ -653,22 +654,33 @@ EOF;
                     $columnTitle[$field] = $column->label;
                 }
             }
+            if(is_callable($this->exportFileName)){
+                $excel = new Excel();
+                $excel->file(date('YmdHis'));
+                call_user_func_array($this->exportFileName,[$excel]);
+            }else{
+                $excel = new Csv();
+                $excel->file($this->exportFileName);
+            }
+            $excel->columns($columnTitle);
             if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
-                $this->db->chunk(500, function ($datas) use ($columnTitle) {
-                    $this->data = $datas;
-                    $this->parseColumn();
-                    Excel::export($columnTitle, $this->exportData, $this->exportFileName);
-                    $this->exportData = [];
-                });
-
-                exit;
+                if($excel instanceof Excel){
+                    $excel->rows($this->db->select()->toArray())->export();
+                }else{
+                    $this->db->chunk(500, function ($datas) use ($excel) {
+                        $this->data = $datas;
+                        $this->parseColumn();
+                        $excel->rows($this->exportData)->export();
+                        $this->exportData = [];
+                    });
+                    exit;
+                }
             } elseif (Request::get('export_type') == 'select') {
                 $this->data = $this->model->whereIn($this->model->getPk(), Request::get('ids'))->select();
             }
             $this->parseColumn();
-
-            Excel::export($columnTitle, $this->exportData, $this->exportFileName);
+            $excel->rows($this->exportData)->export();
             exit;
         }
     }
@@ -844,7 +856,7 @@ EOF;
                     return $button;
                 });
             } else {
-                $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow');
+                $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow')->closeExport();
             }
         }
         //如果是导出数据

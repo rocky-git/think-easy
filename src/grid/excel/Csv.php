@@ -2,32 +2,31 @@
 /**
  * Created by PhpStorm.
  * User: rocky
- * Date: 2020-06-15
- * Time: 22:12
+ * Date: 2020-11-08
+ * Time: 09:55
  */
 
-namespace thinkEasy\grid;
+namespace thinkEasy\grid\excel;
 
-
-class Excel
+/**
+ * csv导出
+ * Class Csv
+ * @package thinkEasy\grid\excel
+ */
+class Csv extends AbstractExporter
 {
-    /**
-     * 导出excel
-     * @param $columnTitle 表头标题-格式['test'=>'测试']
-     * @param $datas 二维数组
-     * @param $fileName 导出文件名
-     */
-    public static function export($columnTitle,$datas,$fileName)
+    public function export()
     {
         set_time_limit(0);
         static $nums = 0;
         ini_set('memory_limit', '128M');
         header('Content-Type: application/vnd.ms-execl');
-        header('Content-Disposition: attachment;filename="' . $fileName . '.csv"');
+        header('Content-Disposition: attachment;filename="' . $this->fileName . '.csv"');
         $fp = fopen('php://output', 'a');
+        $this->filterColumns();
         //设置标题
-        $title = array_values($columnTitle);
-        $fields = array_keys($columnTitle);
+        $title = array_values($this->columns);
+        $fields = array_keys($this->columns);
         foreach ($title as $key => $item) {
             $title[$key] = mb_convert_encoding( $item,'GBK','UTF-8');
         }
@@ -35,7 +34,7 @@ class Excel
         if($nums == 0){
             fputcsv($fp, $title);
         }
-        foreach ($datas as $item){
+        foreach ($this->data as $item){
             $row = [];
             foreach ($fields as $field){
                 $value =  empty($item[$field]) ? '' : $item[$field];
