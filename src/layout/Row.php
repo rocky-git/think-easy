@@ -76,7 +76,7 @@ class Row extends View
                                 }
                             }).then(res=>{
                                     this.{$componentKey} = () => new Promise(resolve => {
-                                        resolve(this.\$splitCode(this.\$pakoUnzip(res.data)))
+                                        resolve(this.\$splitCode(res.data))
                                     })
                             })
                         })";

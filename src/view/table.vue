@@ -565,7 +565,7 @@
                         this.{$dialogTitleVar|default='isDialog'} = title
                         let cmponent = response.data
                         this.plugDialog = () => new Promise(resolve => {
-                            resolve(this.$splitCode(this.$pakoUnzip(cmponent)))
+                            resolve(this.$splitCode(cmponent))
                         })
                         this.dialogVisible = true
 
