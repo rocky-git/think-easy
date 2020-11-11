@@ -224,6 +224,13 @@
             device() {
                 return this.$store.state.app.device
             },
+            actionFixed(){
+                if(this.$store.state.app.device == 'mobile'){
+                    return false;
+                }else{
+                    return 'right'
+                }
+            }
         },
         mounted() {
             this.$nextTick(()=>{
