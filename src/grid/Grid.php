@@ -909,7 +909,15 @@ EOF;
     {
         $this->table->setVar('onTableView', true);
     }
-
+    /**
+     * 设置添加url
+     * @param string $url
+     * @param bool $rest
+     */
+    public function setAddUrl(string $url,bool $rest = false){
+        $this->table->setVar('addUrl', $url);
+        $this->table->setVar('addRest', $rest);
+    }
     /**
      * 设置编辑url
      * @param string $url

@@ -32,7 +32,7 @@ class Select extends Field
         $this->setAttr('filterable', true);
         $this->setAttr('placeholder', '请选择' . $label);
     }
-
+    
     /**
      * 设置宽度
      * @param string $num
@@ -160,7 +160,7 @@ EOF;
           v-else-if=\"typeof({$model}) == 'number'\"
           :key='item.value'
           :label='item.label'
-          :value=\"(('' + item.code).trim() == '')?'':parseInt(item.value)\"
+          :value=\"(('' + item.value).trim() == '')?'':parseInt(item.value)\"
           :disabled='item.disabled'>
           <span v-html='item.label'></span>
         </el-option>

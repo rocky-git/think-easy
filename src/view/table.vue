@@ -42,10 +42,10 @@
                     <el-col :span="24">
                         <!--{if isset($quickSearch)}-->
                         <!-- PC端-->
-                        <el-input class="hidden-md-and-down"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
-                        <el-button class="hidden-md-and-down"  type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
+                        <el-input class="hidden-md-and-down" v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
                         <!-- 移动端-->
-                        <el-input class="hidden-md-and-up"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
+                        <el-input class="hidden-md-and-up" v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
+                        <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
                         <!--{/if}-->
                         <!--{if !isset($hideAddButton)}-->
                         <!-- PC端-->
@@ -538,7 +538,14 @@
                 /*{/foreach}*/
                 /*{/if}*/
                 if(type == 1){
+                    /*{if isset($addUrl) && $addRest}*/
+                    url = '{$addUrl}/create.rest'
+                    /*{elseif isset($addUrl)}*/
+                    url = '{$addUrl}'
+                    /*{else/}*/
                     url += '/create.rest'
+                    /*{/if}*/
+
                     /*{if isset($addButtonParam)}*/
                     /*{foreach $addButtonParam as $key=>$value}*/
                     params['{$key}'] = '{$value}'
