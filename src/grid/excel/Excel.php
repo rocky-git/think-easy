@@ -11,6 +11,7 @@ namespace thinkEasy\grid\excel;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Excel extends AbstractExporter
 {
@@ -67,7 +68,8 @@ class Excel extends AbstractExporter
         $letter = $this->getLetter(count($this->columns) - 1);
         $this->sheet->getStyle("A1:{$letter}{$row}")->applyFromArray([
             'alignment' => [
-                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
             ],
         ]);
         $i = 0;
@@ -83,7 +85,7 @@ class Excel extends AbstractExporter
             $this->sheet->getColumnDimension($this->getLetter($i))->setWidth($width);
             $i++;
         }
-
+        $i = 0;
         foreach ($this->columns as $field => $val) {
             $i++;
             $this->sheet->setCellValueByColumnAndRow($i, 1, $val);
