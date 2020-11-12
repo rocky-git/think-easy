@@ -49,6 +49,22 @@ abstract class AbstractExporter
             $this->columns = $columns;
         }
     }
+
+    /**
+     * 指定显示
+     * @param array $columns
+     */
+    public function only(array $columns){
+        $this->only = $columns;
+    }
+
+    /**
+     * 排除列
+     * @param array $columns
+     */
+    public function except(array $columns){
+        $this->except = $columns;
+    }
     /**
      * 设置文件名
      * @param $name

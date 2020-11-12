@@ -19,6 +19,7 @@ class TokenService extends Service
 {
 
     use ApiJson;
+
     const IV = 'yHXo48tHnXWSyUY9';
     //密钥
     protected $key = '';
@@ -29,11 +30,12 @@ class TokenService extends Service
     protected $model = '';
     protected static $userModel = null;
     protected $unique = false;
+
     public function __construct()
     {
         $key = config('admin.token_key', 'QoYEClMJsgOSWUBkSCq26yWkApqSuH3');
         $this->model = config('admin.token_model');
-        $this->unique = config('admin.token_unique',false);
+        $this->unique = config('admin.token_unique', false);
         $this->key = substr(md5($key), 8, 16);
         $this->expire = config('admin.token_expire', 7200);
     }
@@ -128,7 +130,7 @@ class TokenService extends Service
     {
         if (empty($token)) {
             $token = Request::header('Authorization');
-            if(Request::has('Authorization')){
+            if (Request::has('Authorization')) {
                 $token = rawurldecode(Request::get('Authorization'));
             }
         }
@@ -166,8 +168,8 @@ class TokenService extends Service
      */
     public function auth($token = null)
     {
-        if(is_null($token)){
-            $token = self::$token ? self::$token : Request::header('Authorization');
+        if (is_null($token)) {
+            $token = self::$token ? self::$token : Request::header('Authorization') ?? Request::param('Authorization');
         }
         if (empty($token)) {
             $this->errorCode(4000, '请先登陆再访问');
@@ -220,9 +222,9 @@ class TokenService extends Service
         if (is_null($this->id())) {
             return null;
         }
-        if(is_null(self::$userModel)){
+        if (is_null(self::$userModel)) {
             $user = new $this->model;
-            self::$userModel =  $user->lock($lock)->find($this->id());
+            self::$userModel = $user->lock($lock)->find($this->id());
         }
         return self::$userModel;
     }
