@@ -875,7 +875,6 @@ EOF;
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-
         $this->table->setVar('submitUrl', $this->getRequestUrl());
         $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {

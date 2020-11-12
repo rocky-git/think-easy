@@ -446,7 +446,7 @@ class Column extends View
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
 
-        if (!is_null($this->exportClosure)) {
+        if (!is_null($this->exportClosure) && $rowData) {
             $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
             $this->exportValue = $res;
         }

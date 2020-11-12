@@ -23,6 +23,11 @@ class Excel extends AbstractExporter
 
     protected $mapCallback = null;
 
+    //合并行字段条件
+    protected $mergeCondtionField = null;
+    //合并列字段
+    protected $mergeRowFields = [];
+
     public function __construct()
     {
         $this->excel = new Spreadsheet();
@@ -52,24 +57,26 @@ class Excel extends AbstractExporter
     /**
      * @param \Closure $closure
      */
-    public function callback(\Closure $closure){
-        $this->callback  = $closure;
+    public function callback(\Closure $closure)
+    {
+        $this->callback = $closure;
     }
+
     public function export()
     {
-        if(is_callable($this->callback)){
+        if (is_callable($this->callback)) {
             call_user_func($this->callback, $this);
         }
         set_time_limit(0);
         ini_set('memory_limit', '-1');
         $i = 0;
         $this->filterColumns();
-        $row = count($this->data) + 1;
+        $rowCount = count($this->data) + 1;
         $letter = $this->getLetter(count($this->columns) - 1);
-        $this->sheet->getStyle("A1:{$letter}{$row}")->applyFromArray([
+        $this->sheet->getStyle("A1:{$letter}{$rowCount}")->applyFromArray([
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
+                'vertical'   => Alignment::VERTICAL_CENTER
             ],
         ]);
         $i = 0;
@@ -86,18 +93,45 @@ class Excel extends AbstractExporter
             $i++;
         }
         $i = 0;
+        $fieldCellArr = [];
         foreach ($this->columns as $field => $val) {
             $i++;
             $this->sheet->setCellValueByColumnAndRow($i, 1, $val);
+            $fieldCellArr[$field] = $this->getLetter($i - 1);
         }
         $i = 1;
+        $tmpMergeCondtion = '';
+        $tmpMergeIndex = 2;
+        $rowIndex = 1;
         foreach ($this->data as $key => &$val) {
+            $rowIndex++;
             if ($this->mapCallback instanceof \Closure) {
-                $val = call_user_func($this->mapCallback, $val,$this->sheet);
+                $val = call_user_func($this->mapCallback, $val, $this->sheet);
             }
             foreach ($this->columns as $fkey => $fval) {
                 $this->sheet->setCellValueByColumnAndRow($i, $key + 2, $val[$fkey]);
                 $i++;
+            }
+            if (!is_null($this->mergeCondtionField)) {
+                if ($tmpMergeCondtion != $val[$this->mergeCondtionField] || $rowIndex == $rowCount) {
+                    if (!empty($tmpMergeCondtion)) {
+                        foreach ($this->mergeRowFields as $field) {
+                            $letter = $fieldCellArr[$field];
+                            if ($rowIndex == $rowCount) {
+                                if($tmpMergeCondtion != $val[$this->mergeCondtionField]){
+                                    break;
+                                }
+                                $mergeIndex = $rowIndex;
+                            } else {
+                                $mergeIndex = $rowIndex - 1;
+                            }
+
+                            $this->sheet->mergeCells("{$letter}{$tmpMergeIndex}:{$letter}{$mergeIndex}");
+                        }
+                    }
+                    $tmpMergeCondtion = $val[$this->mergeCondtionField];
+                    $tmpMergeIndex = $rowIndex;
+                }
             }
             $i = 1;
         }
@@ -113,5 +147,16 @@ class Excel extends AbstractExporter
     public function map(\Closure $closure)
     {
         $this->mapCallback = $closure;
+    }
+
+    /**
+     * 合并行
+     * @param string $conditonField 条件字段(判断重复合并行)
+     * @param array $fields 合并字段列
+     */
+    public function mergeRow(string $conditonField, array $fields)
+    {
+        $this->mergeCondtionField = $conditonField;
+        $this->mergeRowFields = $fields;
     }
 }
