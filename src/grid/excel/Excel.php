@@ -20,6 +20,8 @@ class Excel extends AbstractExporter
 
     protected $callback = null;
 
+    protected $mapCallback = null;
+
     public function __construct()
     {
         $this->excel = new Spreadsheet();
@@ -46,11 +48,19 @@ class Excel extends AbstractExporter
         }
     }
 
+    /**
+     * @param \Closure $closure
+     */
+    public function callback(\Closure $closure){
+        $this->callback  = $closure;
+    }
     public function export()
     {
+        if(is_callable($this->callback)){
+            call_user_func($this->callback, $this);
+        }
         set_time_limit(0);
         ini_set('memory_limit', '-1');
-
         $i = 0;
         $this->filterColumns();
         $row = count($this->data) + 1;
@@ -80,8 +90,8 @@ class Excel extends AbstractExporter
         }
         $i = 1;
         foreach ($this->data as $key => &$val) {
-            if ($this->callback instanceof \Closure) {
-                $val = call_user_func($this->callback, $val,$this->sheet);
+            if ($this->mapCallback instanceof \Closure) {
+                $val = call_user_func($this->mapCallback, $val,$this->sheet);
             }
             foreach ($this->columns as $fkey => $fval) {
                 $this->sheet->setCellValueByColumnAndRow($i, $key + 2, $val[$fkey]);
@@ -100,6 +110,6 @@ class Excel extends AbstractExporter
 
     public function map(\Closure $closure)
     {
-        $this->callback = $closure;
+        $this->mapCallback = $closure;
     }
 }

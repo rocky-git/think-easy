@@ -82,5 +82,8 @@ abstract class AbstractExporter
         $this->data = $data;
         return $this;
     }
+    public function getData(){
+        return $this->data;
+    }
     abstract public function export();
 }

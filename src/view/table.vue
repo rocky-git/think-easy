@@ -206,6 +206,7 @@
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
+                globalRequestParams:{},
                 tableHeight: window.innerHeight ,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
@@ -406,16 +407,24 @@
             },
             //导出
             exportData(type){
+                if(this.total == 0){
+                    this.$message.warning('暂无数据')
+                    return false
+                }
+                let param = ''
+                for(field in this.globalRequestParams) {
+                    param += '&'+field+'=' +this.globalRequestParams[field]
+                }
                 if(type == 0){
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all"
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all" + param
                 }else if(type == 1){
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size + param
                 }else if(type == 2){
                     let ids  =[]
                     this.selectionData.forEach((item)=>{
                         ids.push(item.id)
                     })
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',')
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',') + param
                 }
             },
             //合计
@@ -805,18 +814,18 @@
                     page:this.page,
                     size:this.size,
                 }
+                this.globalRequestParams = {}
                 /*{if isset($submitParams)}*/
                 /*{foreach $submitParams as $key=>$value}*/
                 /*{php}if(is_array($value))continue;{/php}*/
-                requestParams['{$key}'] = '{$value}'
+                this.globalRequestParams['{$key}'] = '{$value}'
                 /*{/foreach}*/
                 /*{/if}*/
                 if(this.deleteColumnShow){
-                    requestParams = Object.assign(requestParams,{'is_deleted':true})
+                    this.globalRequestParams = Object.assign(this.globalRequestParams,{'is_deleted':true})
                 }
-                requestParams = Object.assign(requestParams,this.form)
-                requestParams = Object.assign(requestParams,this.sortableParams)
-                requestParams = Object.assign(requestParams,this.$route.query)
+                this.globalRequestParams = Object.assign(this.globalRequestParams,this.form,this.sortableParams,this.$route.query)
+                requestParams = Object.assign(requestParams,this.globalRequestParams)
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.tableData = []
                 this.$request({
@@ -826,7 +835,7 @@
                 }).then(res=>{
                     this.loading = false
                     this.tableData = res.data.data
-                    if(res.data.total){
+                    if(res.data.total != undefined){
                         this.total = res.data.total
                     }
                     res.data.cellComponent.forEach((cmponent,index)=>{

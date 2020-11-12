@@ -651,7 +651,7 @@ EOF;
             if(is_callable($this->exportFileName)){
                 $excel = new Excel();
                 $excel->file(date('YmdHis'));
-                call_user_func_array($this->exportFileName,[$excel]);
+                $excel->callback($this->exportFileName);
             }else{
                 $excel = new Csv();
                 $excel->file($this->exportFileName);
@@ -882,7 +882,7 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                if($count > 0){
+                if ($this->isPage && $page == 1){
                     $result['total'] = $count;
                 }
                 $result['cellComponent'] = $this->table->cellComponent();
