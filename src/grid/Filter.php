@@ -32,6 +32,7 @@ class Filter extends View
     protected $mode = 'filter';
     protected $columnLabel = '';
     protected $usingData = [];
+    protected $jsonNode = '';
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -69,10 +70,10 @@ class Filter extends View
             call_user_func_array([$formItem, $name], $arguments);
         }
     }
-
     /**
      * 模糊查询
      * @param $field 字段
+     * @param $node json属性字段
      * @param $label 标签
      * @return $this
      */
@@ -82,7 +83,47 @@ class Filter extends View
         $this->formItem($field, $label);
         return $this;
     }
-
+    /**
+     * json查询
+     * @param $field 字段
+     * @param $node json属性字段
+     * @param $label 标签
+     * @return $this
+     */
+    public function json($field,$node, $label = '')
+    {
+        $this->jsonNode = $node;
+        $this->paseFilter(__FUNCTION__, $field);
+        $this->formItem($field, $label);
+        return $this;
+    }
+    /**
+     * json模糊查询
+     * @param $field 字段
+     * @param $node json属性字段
+     * @param $label 标签
+     * @return $this
+     */
+    public function jsonLike($field, $node,$label = '')
+    {
+        $this->jsonNode = $node;
+        $this->paseFilter(__FUNCTION__, $field);
+        $this->formItem($field, $label);
+        return $this;
+    }
+    /**
+     * json数组模糊查询
+     * @param $field 字段
+     * @param $node json属性字段
+     * @param $label 标签
+     * @return $this
+     */
+    public function jsonArrLike($field, $node,$label = ''){
+        $this->jsonNode = $node;
+        $this->paseFilter(__FUNCTION__, $field);
+        $this->formItem($field, $label);
+        return $this;
+    }
     /**
      * in查询
      * @param $field 字段
@@ -615,6 +656,15 @@ class Filter extends View
                     break;
                 case 'notIn':
                     $this->db->whereNotIn($dbField, $data[$field]);
+                    break;
+                case 'json':
+                    $this->db->whereRaw("JSON_EXTRACT({$dbField},'$.{$this->jsonNode}') = '{$data[$field]}'");
+                    break;
+                case 'jsonLike':
+                    $this->db->whereRaw("JSON_EXTRACT({$dbField},'$.{$this->jsonNode}') LIKE \"%{$data[$field]}%\"");
+                    break;
+                case 'jsonArrLike':
+                    $this->db->whereRaw("JSON_EXTRACT({$dbField},'$[*].{$this->jsonNode}') LIKE \"%{$data[$field]}%\"");
                     break;
             }
         }

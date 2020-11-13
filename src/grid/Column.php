@@ -446,7 +446,7 @@ class Column extends View
             $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
         }
 
-        if (!is_null($this->exportClosure)) {
+        if (!is_null($this->exportClosure) && $rowData) {
             $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
             $this->exportValue = $res;
         }
@@ -631,9 +631,9 @@ EOF;
             if (count($this->usings) > 0) {
                 foreach ($this->usings as $key => $value) {
                     if (is_string($key)) {
-                        $this->html .= "<span v-if=\"{$this->relationRowField} && {$this->rowField} == '{$key}'\">%s</span>";
+                        $this->html .= "<span v-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
                     } else {
-                        $this->html .= "<span v-if='{$this->relationRowField} && {$this->rowField} == {$key}'>%s</span>";
+                        $this->html .= "<span v-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
                     }
                     if (isset($this->tagColor[$key])) {
                         $this->tag($this->tagColor[$key], $this->tagTheme);

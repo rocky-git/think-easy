@@ -43,7 +43,7 @@ trait  ApiJson
      */
     public function errorCode($code = 999, $msg = '',$data=[], $http_code = 200)
     {
-        $response = $this->responseJsonData([], $code, $msg, $http_code);
+        $response = $this->responseJsonData($data, $code, $msg, $http_code);
         throw new HttpResponseException($response);
     }
 

@@ -42,10 +42,10 @@
                     <el-col :span="24">
                         <!--{if isset($quickSearch)}-->
                         <!-- PC端-->
-                        <el-input class="hidden-md-and-down"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
-                        <el-button class="hidden-md-and-down"  type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
+                        <el-input class="hidden-md-and-down" v-model="quickSearch" clearable prefix-icon="el-icon-search" size="small" style="width: 200px;" placeholder="请输入关键字"  @change="handleFilter(true)"></el-input>
                         <!-- 移动端-->
-                        <el-input class="hidden-md-and-up"  v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
+                        <el-input class="hidden-md-and-up" v-model="quickSearch" clearable prefix-icon="el-icon-search" size="mini" style="padding-right: 5px;margin-bottom: 5px" placeholder="请输入关键字"  @input="handleFilter(true)"></el-input>
+                        <el-button class="hidden-md-and-down" type="primary" size="small" icon="el-icon-search" @click="handleFilter(true)">搜索</el-button>
                         <!--{/if}-->
                         <!--{if !isset($hideAddButton)}-->
                         <!-- PC端-->
@@ -206,6 +206,7 @@
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
+                globalRequestParams:{},
                 tableHeight: window.innerHeight ,
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
@@ -224,6 +225,13 @@
             device() {
                 return this.$store.state.app.device
             },
+            actionFixed(){
+                if(this.$store.state.app.device == 'mobile'){
+                    return false;
+                }else{
+                    return 'right'
+                }
+            }
         },
         mounted() {
             this.$nextTick(()=>{
@@ -399,16 +407,24 @@
             },
             //导出
             exportData(type){
+                if(this.total == 0){
+                    this.$message.warning('暂无数据')
+                    return false
+                }
+                let param = ''
+                for(field in this.globalRequestParams) {
+                    param += '&'+field+'=' +this.globalRequestParams[field]
+                }
                 if(type == 0){
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all"
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all" + param
                 }else if(type == 1){
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=page&page=" + this.page + "&size=" + this.size + param
                 }else if(type == 2){
                     let ids  =[]
                     this.selectionData.forEach((item)=>{
                         ids.push(item.id)
                     })
-                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',')
+                    location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=select&ids=" + ids.join(',') + param
                 }
             },
             //合计
@@ -531,7 +547,14 @@
                 /*{/foreach}*/
                 /*{/if}*/
                 if(type == 1){
+                    /*{if isset($addUrl) && $addRest}*/
+                    url = '{$addUrl}/create.rest'
+                    /*{elseif isset($addUrl)}*/
+                    url = '{$addUrl}'
+                    /*{else/}*/
                     url += '/create.rest'
+                    /*{/if}*/
+
                     /*{if isset($addButtonParam)}*/
                     /*{foreach $addButtonParam as $key=>$value}*/
                     params['{$key}'] = '{$value}'
@@ -772,19 +795,25 @@
                     page:this.page,
                     size:this.size,
                 }
+                this.globalRequestParams = {}
                 /*{if isset($submitParams)}*/
                 /*{foreach $submitParams as $key=>$value}*/
                 /*{php}if(is_array($value))continue;{/php}*/
-                requestParams['{$key}'] = '{$value}'
+                this.globalRequestParams['{$key}'] = '{$value}'
                 /*{/foreach}*/
                 /*{/if}*/
                 if(this.deleteColumnShow){
-                    requestParams = Object.assign(requestParams,{'is_deleted':true})
+                    this.globalRequestParams = Object.assign(this.globalRequestParams,{'is_deleted':true})
                 }
+<<<<<<< HEAD
                 requestParams = Object.assign(requestParams,this.form)
                 requestParams = Object.assign(requestParams,this.sortableParams)
                 requestParams = Object.assign(requestParams,this.$route.query)
                 requestParams.eadmin_component = true
+=======
+                this.globalRequestParams = Object.assign(this.globalRequestParams,this.form,this.sortableParams,this.$route.query)
+                requestParams = Object.assign(requestParams,this.globalRequestParams)
+>>>>>>> 1.0
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.tableData = []
                 this.$request({
@@ -794,7 +823,7 @@
                 }).then(res=>{
                     this.loading = false
                     this.tableData = res.data.data
-                    if(res.data.total){
+                    if(res.data.total != undefined){
                         this.total = res.data.total
                     }
                     res.data.cellComponent.forEach((cmponent,index)=>{

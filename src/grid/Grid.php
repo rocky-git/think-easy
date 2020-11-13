@@ -21,6 +21,8 @@ use thinkEasy\facade\Component;
 use thinkEasy\form\Dialog;
 use think\facade\Request;
 use think\Model;
+use thinkEasy\grid\excel\Csv;
+use thinkEasy\grid\excel\Excel;
 use thinkEasy\service\AdminService;
 use thinkEasy\service\TokenService;
 use thinkEasy\View;
@@ -363,11 +365,17 @@ EOF;
         $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
-            $this->relations[] = array_shift($fields);
+            $relation = array_shift($fields);
         } else {
-            if (method_exists($this->model, $field) && ($this->model->$field() instanceof BelongsToMany || $this->model->$field() instanceof HasMany)) {
-                $this->relations[] = $field;
-            }
+            $relation = $field;
+        }
+        if (method_exists($this->model, $relation) &&
+            ($this->model->$relation() instanceof BelongsTo ||
+                $this->model->$relation() instanceof HasOne ||
+                $this->model->$relation() instanceof HasMany ||
+                $this->model->$relation() instanceof MorphOne ||
+                $this->model->$relation() instanceof MorphMany)) {
+            $this->relations[] = $relation;
         }
         array_push($this->columns, $column);
         return $column;
@@ -380,7 +388,7 @@ EOF;
      */
     public function indexColumn($type = 'selection')
     {
-        $column = $this->column('eadminColumnIndex' . $type, '');
+        $column = $this->column('eadminColumnIndex' . $type, '')->closeExport();
         $column->setAttr('type', $type);
         return $column;
     }
@@ -632,7 +640,6 @@ EOF;
         $node = $moudel . '/' . request()->pathinfo();
         $token = TokenService::instance()->get();
         $params = http_build_query(request()->param());
-
         $this->table->setVar('exportUrl', request()->domain() . '/' . $node . '?Authorization=' . rawurlencode($token) . '&' . $params);
         $this->exportFileName = empty($fileName) ? date('YmdHis') : $fileName;
     }
@@ -647,22 +654,33 @@ EOF;
                     $columnTitle[$field] = $column->label;
                 }
             }
+            if(is_callable($this->exportFileName)){
+                $excel = new Excel();
+                $excel->file(date('YmdHis'));
+                $excel->callback($this->exportFileName);
+            }else{
+                $excel = new Csv();
+                $excel->file($this->exportFileName);
+            }
+            $excel->columns($columnTitle);
             if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
-                $this->db->chunk(500, function ($datas) use ($columnTitle) {
-                    $this->data = $datas;
-                    $this->parseColumn();
-                    Excel::export($columnTitle, $this->exportData, $this->exportFileName);
-                    $this->exportData = [];
-                });
-
-                exit;
+                if($excel instanceof Excel){
+                    $excel->rows($this->db->select()->toArray())->export();
+                }else{
+                    $this->db->chunk(500, function ($datas) use ($excel) {
+                        $this->data = $datas;
+                        $this->parseColumn();
+                        $excel->rows($this->exportData)->export();
+                        $this->exportData = [];
+                    });
+                    exit;
+                }
             } elseif (Request::get('export_type') == 'select') {
                 $this->data = $this->model->whereIn($this->model->getPk(), Request::get('ids'))->select();
             }
             $this->parseColumn();
-
-            Excel::export($columnTitle, $this->exportData, $this->exportFileName);
+            $excel->rows($this->exportData)->export();
             exit;
         }
     }
@@ -828,7 +846,7 @@ EOF;
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {
-                $this->column($this->softDeleteField, '删除时间');
+                $this->column($this->softDeleteField, '删除时间')->closeExport();
                 $this->hideAction();
                 $this->column('eadminColumnActionDelete', '')->display(function ($val, $data) {
                     $button = Button::create('恢复数据', '', 'small', 'el-icon-zoom-in')
@@ -838,7 +856,7 @@ EOF;
                     return $button;
                 });
             } else {
-                $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow');
+                $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow')->closeExport();
             }
         }
         //如果是导出数据
@@ -866,14 +884,13 @@ EOF;
             ]);
         }
         $build_request_type = Request::get('build_request_type');
-
         $this->table->setVar('submitUrl', $this->getRequestUrl());
         $this->table->setVar('submitParams', request()->param());
         switch ($build_request_type) {
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                if($count > 0){
+                if ($this->isPage && $page == 1){
                     $result['total'] = $count;
                 }
                 $result['cellComponent'] = $this->table->cellComponent();
@@ -900,7 +917,15 @@ EOF;
     {
         $this->table->setVar('onTableView', true);
     }
-
+    /**
+     * 设置添加url
+     * @param string $url
+     * @param bool $rest
+     */
+    public function setAddUrl(string $url,bool $rest = false){
+        $this->table->setVar('addUrl', $url);
+        $this->table->setVar('addRest', $rest);
+    }
     /**
      * 设置编辑url
      * @param string $url

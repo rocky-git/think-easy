@@ -96,6 +96,7 @@ class DateTime extends Field
      * @param $format
      */
     public function format($format){
+        $this->setAttr('value-format', $format);
         if($this->type == 'time'){
             $this->setAttr('picker-options',['format'=>$format]);
         }else{
