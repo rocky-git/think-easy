@@ -28,11 +28,14 @@ class Filter extends View
     protected $model;
     //当前模型db
     protected $db;
+    //
+
     protected $fields = [];
     protected $mode = 'filter';
     protected $columnLabel = '';
     protected $usingData = [];
     protected $jsonNode = '';
+    protected $relationExistSql = '';
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -44,7 +47,7 @@ class Filter extends View
         } else {
             $this->db = Db::name($model);
         }
-
+        $this->cloneDb = $this->db;
         $this->tableFields = $this->db->getTableFields();
     }
     public function label($value){
@@ -500,7 +503,7 @@ class Filter extends View
      * @param $field 字段
      * @return mixed
      */
-    protected function paseFilter($method, $field)
+    public function paseFilter($method, $field)
     {
         if (is_string($field)) {
             $field = str_replace('.', '__', $field);
@@ -693,32 +696,36 @@ class Filter extends View
                 $tmpDb = clone $this->relationModel->db();
                 $relationSql = $tmpDb->removeWhereField('delete_time')->buildSql();
                 $res = strpos($relationSql, 'WHERE');
-                if ($res !== false) {
-                    if ($relation instanceof HasMany) {
-                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
-                    } elseif ($relation instanceof BelongsTo) {
-                        $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
-                    } else if ($relation instanceof HasOne) {
-                        $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
-                    } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
-                        $reflectionClass = new \ReflectionClass($relation);
-                        $propertys = ['morphKey','morphType','type'];
-                        $propertyValues = [];
-                        foreach ($propertys as $var){
-                            $property = $reflectionClass->getProperty($var);
-                            $property->setAccessible(true);
-                            $propertyValues[] =  $property->getValue($relation);
-                        }
-                        list($morphKey,$morphType,$typeValue) = $propertyValues;
-                        $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
+                if ($relation instanceof HasMany) {
+                    $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                } elseif ($relation instanceof BelongsTo) {
+                    $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
+                } else if ($relation instanceof HasOne) {
+                    $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                    $reflectionClass = new \ReflectionClass($relation);
+                    $propertys = ['morphKey','morphType','type'];
+                    $propertyValues = [];
+                    foreach ($propertys as $var){
+                        $property = $reflectionClass->getProperty($var);
+                        $property->setAccessible(true);
+                        $propertyValues[] =  $property->getValue($relation);
                     }
+                    list($morphKey,$morphType,$typeValue) = $propertyValues;
+                    $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
+                }
+                $this->relationExistSql = $sql;
+                $this->cloneDb->whereExists($sql);
+                if ($res !== false) {
                     $this->db->whereExists($sql);
                 }
             }
         }
         return $this;
     }
-
+    public function getRelationExistSql(){
+        return $this->relationExistSql;
+    }
     /**
      * 返回db对象
      * @return Db

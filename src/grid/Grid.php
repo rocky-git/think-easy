@@ -359,27 +359,36 @@ EOF;
      */
     public function column($field, $label)
     {
-
         $column = new Column($field, $label, $this);
         $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
-            $relation = array_shift($fields);
+            array_pop($fields);
+            $relation = implode('.', $fields);
         } else {
             $relation = $field;
         }
-        if (method_exists($this->model, $relation) &&
-            ($this->model->$relation() instanceof BelongsTo ||
-                $this->model->$relation() instanceof HasOne ||
-                $this->model->$relation() instanceof HasMany ||
-                $this->model->$relation() instanceof MorphOne ||
-                $this->model->$relation() instanceof MorphMany)) {
-            $this->relations[] = $relation;
+        if (count($fields) > 1) {
+            foreach ($fields as $field) {
+                $this->setRelation($field, $relation);
+            }
+        } else {
+            $this->setRelation($relation, $relation);
         }
         array_push($this->columns, $column);
         return $column;
     }
-
+    private function setRelation($ifRelation, $relation)
+    {
+        if (method_exists($this->model, $ifRelation) &&
+            ($this->model->$ifRelation() instanceof BelongsTo ||
+                $this->model->$ifRelation() instanceof HasOne ||
+                $this->model->$ifRelation() instanceof HasMany ||
+                $this->model->$ifRelation() instanceof MorphOne ||
+                $this->model->$ifRelation() instanceof MorphMany)) {
+            $this->relations[] = $relation;
+        }
+    }
     /**
      * 设置索引列
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
@@ -719,7 +728,8 @@ EOF;
                 $field = $column->getField();
                 $usings = $column->getUsings();
                 if (count($fields) > 1) {
-                    $relation = array_shift($fields);
+                    array_pop($fields);
+                    $relation = array_pop($fields);;
                     if (empty($usings)) {
                         $relationWhereFields[$relation][] = $field;
                     } else {
@@ -729,7 +739,6 @@ EOF;
                             }
                         }
                     }
-
                 } else {
                     if (in_array($column->getField(), $this->tableFields)) {
                         if (empty($usings)) {
@@ -747,31 +756,25 @@ EOF;
             //快捷搜索
             $relationWhereSqls = [];
             foreach ($this->relations as $relationName) {
-                $relation = $this->model->$relationName();
-                $relationTable = $relation->getTable();
-                $relationTableFields = $relation->getTableFields();
-                $foreignKey = $relation->getForeignKey();
-                $pk = $relation->getLocalKey();
-                $db = null;
-                if ($relation instanceof HasMany) {
-                    $db = $relation->whereRaw("{$relationTable}.{$foreignKey}={$this->db->getTable()}.{$pk}");
-                } elseif ($relation instanceof BelongsTo) {
-                    $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
-                } else if ($relation instanceof HasOne) {
-                    $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
-                }else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
-                    $reflectionClass = new \ReflectionClass($relation);
-                    $propertys = ['morphKey','morphType','type'];
-                    $propertyValues = [];
-                    foreach ($propertys as $var){
-                        $property = $reflectionClass->getProperty($var);
-                        $property->setAccessible(true);
-                        $propertyValues[] =  $property->getValue($relation);
-                    }
-                    list($morphKey,$morphType,$typeValue) = $propertyValues;
-                    $db = $relation->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue);
+                $relations = explode('.', $relationName);
+                $Tmprelations = $relations;
+                $relation = array_pop($Tmprelations);
+                $relationName = implode('.', $relations);
+                $db = clone $this->db;
+                $filter = new Filter($db);
+                $filter->paseFilter(null, $relationName . '.');
+                $existSql = $filter->getRelationExistSql();
+                $db = $this->model;
+                foreach ($relations as $relation) {
+                    $db = $db->getModel()->$relation();
                 }
-                if ($db && isset($relationWhereFields[$relationName])) {
+                if ($existSql) {
+                    $db->whereExists($existSql);
+                }
+                $relationName = $relation;
+                $relationTableFields = $db->getTableFields();
+                if (isset($relationWhereFields[$relationName])) {
+
                     $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
@@ -795,7 +798,6 @@ EOF;
                 }
             });
         }
-
     }
     //获取数据总条数
     private function getRowTotal(){

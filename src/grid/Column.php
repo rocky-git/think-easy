@@ -36,7 +36,7 @@ class Column extends View
     public $field = '';
 
     public $label = '';
-
+    protected $filterLabel = '';
     //组件行字段
     protected $rowField = '';
     protected $relationRowField = '';
@@ -559,6 +559,7 @@ class Column extends View
   </el-popover>
 EOF;
         $this->label .= $html;
+        $this->filterLabel .= $html;
         return $this;
     }
 
@@ -657,6 +658,6 @@ EOF;
             $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }
-        return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">$this->label</template>" . $this->display . "</el-table-column>";
+        return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
     }
 }
