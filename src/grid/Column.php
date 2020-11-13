@@ -558,7 +558,6 @@ class Column extends View
     <i class="el-icon-caret-bottom" style="color: #c0c4cc;cursor: pointer;padding:5px 10px" slot="reference" @click.stop=""></i>
   </el-popover>
 EOF;
-        $this->label .= $html;
         $this->filterLabel .= $html;
         return $this;
     }
