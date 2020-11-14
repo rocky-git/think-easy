@@ -252,13 +252,13 @@ EOF;
      * @param array $appendData 追加数据
      * @param bool $expand 是否展开
      */
-    public function treeTable($pidField = 'pid',$appendData = [],$expand = true)
+    public function treeTable($pidField = 'pid', $appendData = [], $expand = true)
     {
         $this->treeParent = $pidField;
         $this->isPage = false;
         $this->treeTable = true;
         $this->treeAppendData = $appendData;
-        if($expand){
+        if ($expand) {
             $this->table->setAttr('default-expand-all', true);
         }
     }
@@ -378,6 +378,7 @@ EOF;
         array_push($this->columns, $column);
         return $column;
     }
+
     private function setRelation($ifRelation, $relation)
     {
         if (method_exists($this->model, $ifRelation) &&
@@ -389,6 +390,7 @@ EOF;
             $this->relations[] = $relation;
         }
     }
+
     /**
      * 设置索引列
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
@@ -411,9 +413,9 @@ EOF;
         if (!$this->hideAction) {
             array_push($this->columns, $this->actionColumn);
         }
-        if(count($this->treeAppendData) > 0){
+        if (count($this->treeAppendData) > 0) {
             $this->data = $this->data->merge($this->treeAppendData);
-            $this->data = $this->data->sort(function($a,$b){
+            $this->data = $this->data->sort(function ($a, $b) {
                 return $a['sort'] > $b['sort'];
             });
         }
@@ -657,20 +659,20 @@ EOF;
                     $columnTitle[$field] = $column->label;
                 }
             }
-            if(is_callable($this->exportFileName)){
+            if (is_callable($this->exportFileName)) {
                 $excel = new Excel();
                 $excel->file(date('YmdHis'));
                 $excel->callback($this->exportFileName);
-            }else{
+            } else {
                 $excel = new Csv();
                 $excel->file($this->exportFileName);
             }
             $excel->columns($columnTitle);
             if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
-                if($excel instanceof Excel){
+                if ($excel instanceof Excel) {
                     $excel->rows($this->db->select()->toArray())->export();
-                }else{
+                } else {
                     $this->db->chunk(500, function ($datas) use ($excel) {
                         $this->data = $datas;
                         $this->parseColumn();
@@ -702,18 +704,21 @@ EOF;
             $this->hideDeleteButton();
         }
     }
+
     //预关联加载
-    protected function withRelations(){
-        $this->relations =  array_unique($this->relations);
+    protected function withRelations()
+    {
+        $this->relations = array_unique($this->relations);
         $with = $this->db->getOptions('with');
-        if(is_null($with)){
+        if (is_null($with)) {
             $with = [];
         }
-        $with = array_merge($with,$this->relations);
-        if(count($with) > 0){
+        $with = array_merge($with, $this->relations);
+        if (count($with) > 0) {
             $this->db->with($with);
         }
     }
+
     //快捷搜索
     protected function quickFilter()
     {
@@ -759,32 +764,35 @@ EOF;
                 $relations = explode('.', $relationName);
                 $Tmprelations = $relations;
                 $relation = array_pop($Tmprelations);
-                $relationName = implode('.', $relations);
-                $db = clone $this->db;
-                $filter = new Filter($db);
-                $filter->paseFilter(null, $relationName . '.');
-                $existSql = $filter->getRelationExistSql();
+                $relationFilter = implode('.', $relations);
+                $model = get_class($this->model);
+                $filter = new Filter(new $model);
+                $filter->setIfWhere(false);
                 $db = $this->model;
                 foreach ($relations as $relation) {
                     $db = $db->getModel()->$relation();
                 }
-                if ($existSql) {
-                    $db->whereExists($existSql);
-                }
+                $filter->relationLastDb($db,$relation);
                 $relationName = $relation;
                 $relationTableFields = $db->getTableFields();
                 if (isset($relationWhereFields[$relationName])) {
-
                     $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
-                    $sql = $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
+                    $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
                         foreach ($relationWhereCondtion as $field => $value) {
                             $q->whereOr($field, $value);
                         }
                         $q->whereLike($fields, "%{$keyword}%", 'OR');
-                    })->buildSql();
-                    $relationWhereSqls[] = $sql;
+                    });
+                    $filter->paseFilter(null, $relationFilter . '.');
+                    $wheres = $filter->db()->getOptions('where');
+                    foreach ($wheres['AND'] as $where){
+                        if($where[1] == 'EXISTS'){
+                            $relationWhereSqls[]  = $where[2];
+                            break;
+                        }
+                    }
                 }
             }
             $fields = implode('|', $whereFields);
@@ -799,14 +807,17 @@ EOF;
             });
         }
     }
+
     //获取数据总条数
-    private function getRowTotal(){
+    private function getRowTotal()
+    {
         $sql = $this->db->buildSql();
         $sql = "SELECT COUNT(*) FROM {$sql} userCount";
         $res = Db::query($sql);
         $count = $res[0]['COUNT(*)'];
         return $count;
     }
+
     /**
      * 视图渲染
      */
@@ -825,7 +836,7 @@ EOF;
         //分页
         if ($this->isPage) {
             $page = Request::get('page', 1);
-            if($page == 1){
+            if ($page == 1) {
                 $count = $this->getRowTotal();
             }
             $this->table->setVar('pageTotal', $count);
@@ -835,7 +846,6 @@ EOF;
         } else {
             $this->data = $this->db->select();
         }
-
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {
@@ -883,7 +893,7 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                if ($this->isPage && $page == 1){
+                if ($this->isPage && $page == 1) {
                     $result['total'] = $count;
                 }
                 $result['cellComponent'] = $this->table->cellComponent();
@@ -910,33 +920,40 @@ EOF;
     {
         $this->table->setVar('onTableView', true);
     }
+
     /**
      * 设置添加url
      * @param string $url
      * @param bool $rest
      */
-    public function setAddUrl(string $url,bool $rest = false){
+    public function setAddUrl(string $url, bool $rest = false)
+    {
         $this->table->setVar('addUrl', $url);
         $this->table->setVar('addRest', $rest);
     }
+
     /**
      * 设置编辑url
      * @param string $url
      * @param bool $rest
      */
-    public function setEditUrl(string $url,bool $rest = false){
+    public function setEditUrl(string $url, bool $rest = false)
+    {
         $this->table->setVar('editUrl', $url);
         $this->table->setVar('editRest', $rest);
     }
+
     /**
      * 设置详情url
      * @param string $url
      * @param bool $rest
      */
-    public function setDetailUrl(string $url,bool $rest = false){
+    public function setDetailUrl(string $url, bool $rest = false)
+    {
         $this->table->setVar('detailUrl', $url);
         $this->table->setVar('detailRest', $rest);
     }
+
     /**
      * 初始化
      * @param \Closure $closure

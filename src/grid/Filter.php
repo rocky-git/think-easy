@@ -36,6 +36,9 @@ class Filter extends View
     protected $usingData = [];
     protected $jsonNode = '';
     protected $relationExistSql = '';
+    protected $ifWhere = true;
+    protected $relationLastDb = null;
+    protected $relationLastMethod = '';
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -47,7 +50,6 @@ class Filter extends View
         } else {
             $this->db = Db::name($model);
         }
-        $this->cloneDb = $this->db;
         $this->tableFields = $this->db->getTableFields();
     }
     public function label($value){
@@ -691,6 +693,9 @@ class Filter extends View
                 $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
                     $this->relationModel = new self(new $relationModel);
+                    $this->relationModel->relationLastDb($this->relationLastDb,$this->relationLastMethod);
+                    $this->relationModel->setRelationLastDb($relation_method);
+                    $this->relationModel->setIfWhere($this->ifWhere);
                     call_user_func($callback, $this->relationModel);
                 }
                 $tmpDb = clone $this->relationModel->db();
@@ -715,17 +720,29 @@ class Filter extends View
                     $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
                 }
                 $this->relationExistSql = $sql;
-                $this->cloneDb->whereExists($sql);
-                if ($res !== false) {
+                if ($res !== false || $this->ifWhere == false) {
                     $this->db->whereExists($sql);
                 }
             }
         }
         return $this;
     }
+    public function setRelationLastDb($method){
+        if($this->relationLastMethod == $method){
+            $this->db = $this->relationLastDb;
+        }
+    }
+    public function relationLastDb($db,$method){
+        $this->relationLastDb = $db;
+        $this->relationLastMethod  = $method;
+    }
+    public function setIfWhere(bool $bool){
+        $this->ifWhere = $bool;
+    }
     public function getRelationExistSql(){
         return $this->relationExistSql;
     }
+
     /**
      * 返回db对象
      * @return Db
