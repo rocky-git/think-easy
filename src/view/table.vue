@@ -206,6 +206,7 @@
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
+                actionWidth:1,
                 globalRequestParams:{},
                 tableHeight: window.innerHeight ,
                 activeTabsName:'data',
@@ -293,6 +294,9 @@
         watch:{
             tableData(val){
                 this.{$tableDataScriptVar} = val
+            },
+            actionWidth(val){
+                console.log(val)
             },
             deleteColumnShow(val){
                 if(val){

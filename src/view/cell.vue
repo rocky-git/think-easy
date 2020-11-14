@@ -1,4 +1,4 @@
-<template><span>{$cell|raw}</span></template>
+<template><span ref="cell" style="white-space: nowrap;">{$cell|raw}</span></template>
 <script>
     export default {
         name:"cell",
@@ -12,7 +12,12 @@
             total:Number,
             size:Number,
             tableDataUpdate: Boolean,
-
+            width:Number,
+        },
+        mounted() {
+           this.$nextTick(()=>{
+               this.$emit('update:width', this.$refs.cell.offsetWidth+30)
+           })
         },
         data(){
           return {

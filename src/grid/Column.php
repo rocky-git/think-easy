@@ -514,7 +514,7 @@ class Column extends View
     public function getDisplay($key, $tableDataScriptVar)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="' . $tableDataScriptVar . '"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="' . $tableDataScriptVar . '"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();
