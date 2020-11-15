@@ -137,7 +137,6 @@
         </div>
         <!--{/if}-->
         <el-pagination class="hidden-md-and-down" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
-                       v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
                        :page-sizes="pagesize"
@@ -145,10 +144,9 @@
                        :current-page="page"
                        background
                        :total="total"
-                       layout="total, sizes, prev, pager, next, jumper">
+                       :layout="pageHide ? 'total':'total, sizes, prev, pager, next, jumper'">
         </el-pagination>
         <el-pagination class="hidden-md-and-up" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
-                       v-if="!pageHide"
                        small
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -156,7 +154,7 @@
                        :page-size="size"
                        :current-page="page"
                        :total="total"
-                       layout="total,  prev, pager, next, jumper">
+                       :layout="pageHide ? 'total':'total, sizes, prev, pager, next'">
         </el-pagination>
         {$dialog|raw|default=''}
     </div>
@@ -246,11 +244,7 @@
                         if(this.$refs.tabs){
                             this.tableHeight -=  75
                         }
-                        if(this.pageHide){
-                            this.tableHeight -= 15
-                        }else{
-                            this.tableHeight -= 65
-                        }
+                        this.tableHeight -= 65
                     }
                 },10)
             })

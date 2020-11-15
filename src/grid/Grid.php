@@ -833,13 +833,13 @@ EOF;
         }
         //总记录条数
         $count = 0;
+        $page = Request::get('page', 1);
+        if ($page == 1) {
+            $count = $this->getRowTotal();
+            $this->table->setVar('pageTotal', $count);
+        }
         //分页
         if ($this->isPage) {
-            $page = Request::get('page', 1);
-            if ($page == 1) {
-                $count = $this->getRowTotal();
-            }
-            $this->table->setVar('pageTotal', $count);
             $this->table->setVar('pageHide', 'false');
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->data = $this->db->page($page, Request::get('size', $this->pageLimit))->select();
