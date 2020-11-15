@@ -443,7 +443,11 @@ class Column extends View
 
                 $this->exportValue = $res;
             }
-            $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
+            if(empty($this->cellVue)){
+                $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
+            }else{
+                $this->cellVue .= "<span v-else-if='data.id == {$id}'>{$res}</span>";
+            }
         }
 
         if (!is_null($this->exportClosure) && $rowData) {

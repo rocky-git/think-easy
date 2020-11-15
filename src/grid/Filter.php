@@ -99,7 +99,7 @@ class Filter extends View
     {
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -113,7 +113,7 @@ class Filter extends View
     {
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -126,7 +126,7 @@ class Filter extends View
     public function jsonArrLike($field, $node,$label = ''){
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -550,6 +550,9 @@ class Filter extends View
         $data = request()->$request();
         if ($method == 'between' || $method == 'notBetween') {
             $field .= '__between_start';
+        }
+        if ($method == 'json' || $method == 'jsonLike' || $method == 'jsonArrLike') {
+            $field .= '__json_'.$this->jsonNode;
         }
         if (is_array($dbField)) {
             $dbFields = $dbField;
