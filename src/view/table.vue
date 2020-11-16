@@ -331,6 +331,11 @@
                     }
                 })
             },
+            tableOrigData(val){
+                this.tableStartIndex = 0
+                this.tableRowNum = 1
+                this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
+            },
             deleteColumnShow(val){
                 if(val){
                     this.deleteButtonText = '清空回收站'
@@ -511,10 +516,10 @@
                     onEnd: evt => {
                         var newIndex = evt.newIndex;
                         var oldIndex = evt.oldIndex;
-                        var oldItem = this.tableData[oldIndex]
+                        var oldItem = this.tableOrigData[oldIndex]
                         var startPage = (this.page-1) * this.size
-                        const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
-                        this.tableData.splice(evt.newIndex, 0, targetRow)
+                        const targetRow = this.tableOrigData.splice(evt.oldIndex, 1)[0]
+                        this.tableOrigData.splice(evt.newIndex, 0, targetRow)
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
                                 url: '{$submitUrl|default=""}/batch.rest',
@@ -534,8 +539,8 @@
                                     duration: 1500
                                 })
                             }).catch(res=>{
-                                const targetRow = this.tableData.splice(evt.newIndex, 1)[0]
-                                this.tableData.splice(evt.oldIndex, 0, targetRow)
+                                const targetRow = this.tableOrigData.splice(evt.newIndex, 1)[0]
+                                this.tableOrigData.splice(evt.oldIndex, 0, targetRow)
                             })
                         }
                     }
@@ -781,7 +786,7 @@
                         params:requestParams
                     }).then(res=>{
                         ids.forEach((id)=>{
-                            this.deleteTreeData(this.tableData,id)
+                            this.deleteTreeData(this.tableOrigData,id)
                         })
                         this.$notify({
                             title: '操作完成',
@@ -818,10 +823,10 @@
                         params:requestParams
                     }).then(res=>{
                         if(deleteIds == 'true'){
-                            this.tableData= [];
+                            this.tableOrigData= [];
                         }else{
                             deleteIds.forEach((delId)=>{
-                                this.deleteTreeData(this.tableData,delId)
+                                this.deleteTreeData(this.tableOrigData,delId)
                             })
                         }
                         this.$notify({
@@ -875,14 +880,13 @@
                 this.globalRequestParams = Object.assign(this.globalRequestParams,this.form,this.sortableParams,this.$route.query)
                 requestParams = Object.assign(requestParams,this.globalRequestParams)
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
-                this.tableData = []
                 this.$request({
                     url: url,
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
                     this.loading = false
-                    this.tableData = res.data.data
+                    this.tableOrigData = res.data.data
                     if(res.data.total != undefined){
                         this.total = res.data.total
                     }

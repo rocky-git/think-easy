@@ -120,7 +120,7 @@ class Button extends View
         $this->setAttr('open-type','update');
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
-        $this->setAttr(':tabledata.sync','tableData');
+        $this->setAttr(':tabledata.sync','tableOrigData');
         $this->setAttr('refresh',$refresh);
         $this->setAttr('prompt',$prompt);
         return $this->html();
@@ -142,7 +142,7 @@ class Button extends View
         $this->setAttr('open-type','updateBatch');
         $this->setAttr('url',$url);
         $this->setAttr('confirm',$confirm);
-        $this->setAttr(':tabledata.sync','tableData');
+        $this->setAttr(':tabledata.sync','tableOrigData');
         $this->setAttr(':selectionData','selectionData');
         $this->setAttr('refresh',$refresh);
         $this->setAttr('prompt',$prompt);
@@ -160,7 +160,7 @@ class Button extends View
         $this->setAttr('open-type','delete');
         $this->setAttr('mode',$mode);
         $this->setAttr('confirm',$confirm);
-        $this->setAttr(':tabledata.sync','tableData');
+        $this->setAttr(':tabledata.sync','tableOrigData');
         $submitUrl = app('http')->getName() . '/' . request()->controller();
         $submitUrl = str_replace('.rest', '', $submitUrl);
         $this->setAttr('url',$submitUrl);
