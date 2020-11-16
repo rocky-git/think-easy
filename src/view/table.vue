@@ -196,11 +196,15 @@
                 showDetailId:0,
                 dialogVisible:false,
                 tableDataUpdate:false,
+                lazyTreeNodeMap: new Map(),
                 isDialog :false,
                 newFormWindow :false,
                 selectButtonShow:false,
                 loading:false,
                 tableData:[],
+                tableOrigData:[],
+                tableRowNum:1,
+                tableStartIndex:0,
                 plugDialog:null,
                 inputEditField :'',
                 inputEditId :0,
@@ -247,7 +251,25 @@
                         }
                         this.tableHeight -= 65
                     }
+                    //this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
                 },10)
+                var tableDom = this.$refs.dragTable.bodyWrapper
+                tableDom.addEventListener('scroll',()=>{
+                    if(tableDom.scrollTop + tableDom.clientHeight == tableDom.scrollHeight){
+                        if((this.tableStartIndex+this.tableRowNum) < this.tableOrigData.length){
+                            this.tableStartIndex++
+                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            tableDom.scrollTop = tableDom.scrollHeight - tableDom.clientHeight - 10
+                        }
+                    }else if(tableDom.scrollTop == 0){
+                        if(this.tableStartIndex > 0){
+                            this.tableStartIndex--
+                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+
+                            tableDom.scrollTop = 10
+                        }
+                    }
+                })
             })
         },
         created(){
@@ -286,12 +308,26 @@
             this.$nextTick(() => {
                 this.setSort()
             })
-            this.tableData = this.{$tableDataScriptVar}
+            this.tableOrigData = this.{$tableDataScriptVar}
+
+            this.tableData = []
+
         },
         inject:['reload'],
         watch:{
             tableData(val){
                 this.{$tableDataScriptVar} = val
+                this.$nextTick(() => {
+                    if(this.$refs.dragTable.bodyWrapper.scrollHeight < this.tableHeight + 50){
+                        if(this.tableStartIndex < this.tableOrigData.length){
+                            if(this.tableStartIndex == 0){
+                                this.tableRowNum++
+                            }
+                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+
+                        }
+                    }
+                })
             },
             deleteColumnShow(val){
                 if(val){
