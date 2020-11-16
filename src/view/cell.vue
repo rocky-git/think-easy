@@ -1,4 +1,4 @@
-<template><span ref="cell" style="white-space: nowrap;">{$cell|raw}</span></template>
+<template><span>{$cell|raw}</span></template>
 <script>
     export default {
         name:"cell",
@@ -15,17 +15,19 @@
             width:Number,
         },
         mounted() {
-           this.$nextTick(()=>{
-               this.$emit('update:width', this.$refs.cell.offsetWidth+30)
-           })
+            this.$nextTick(()=>{
+                if(this.$refs.cellAction && this.$refs.cellAction.offsetWidth > 0){
+                    this.$emit('update:width', this.$refs.cellAction.offsetWidth+30)
+                }
+            })
         },
         data(){
-          return {
-            form:{
-                switch:'{$switchValue|default="0"}',
-            },
-            requestUrl:'{$requestUrl}',
-          }
+            return {
+                form:{
+                    switch:'{$switchValue|default="0"}',
+                },
+                requestUrl:'{$requestUrl}',
+            }
         },
         watch: {
             tableDataUpdate(val) {

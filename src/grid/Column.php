@@ -652,7 +652,18 @@ EOF;
             $this->display = sprintf($this->scopeTemplate, $this->display);
         }
         if (empty($this->display) && !empty($this->field)) {
-            $this->html = "<span v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
+            $fields = explode('.', $this->field);
+            $fieldVar = '';
+            foreach ($fields as $field){
+                if(empty($fieldVar)){
+                    $fieldVar = $field;
+                }else{
+                    $fieldVar .= '.'.$field;
+                }
+                $ifCondtion[] = "scope.row.{$fieldVar} === null";
+            }
+            $ifCondtion  = implode(' || ',$ifCondtion);
+            $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }
 

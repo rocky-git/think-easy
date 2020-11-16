@@ -197,6 +197,7 @@
                 dialogVisible:false,
                 tableDataUpdate:false,
                 isDialog :false,
+                newFormWindow :false,
                 selectButtonShow:false,
                 loading:false,
                 tableData:[],
@@ -256,6 +257,9 @@
             /*{if isset($dialogVar)}*/
             this.isDialog = true
             /*{/if}*/
+            /*{if isset($newFormWindow)}*/
+            this.newFormWindow = true
+            /*{/if}*/
             let i = 10
             if(this.size < 10){
                 i=this.size
@@ -289,9 +293,6 @@
             tableData(val){
                 this.{$tableDataScriptVar} = val
             },
-            actionWidth(val){
-                console.log(val)
-            },
             deleteColumnShow(val){
                 if(val){
                     this.deleteButtonText = '清空回收站'
@@ -313,11 +314,13 @@
             showEditId(val){
                 if(val != 0){
                     this.showDialog('编辑',2)
+                    this.showEditId = 0
                 }
             },
             showDetailId(val){
                 if(val != 0){
                     this.showDialog('详情',3)
+                    this.showDetailId = 0
                 }
             },
         },
@@ -582,6 +585,16 @@
                     url += '/'+this.showDetailId+'.rest'
                     /*{/if}*/
                 }
+                if(this.newFormWindow){
+                    params.windowUrl = url
+                    params.windowTitle = title
+                    let routeUrl = this.$router.resolve({
+                             path: "/eadmin_window",
+                             query: params
+                    });
+                    window.open(routeUrl.href, "", "fullscreen=yes")
+                    return false
+                }
                 if(this.isDialog){
                     params.build_dialog = true
                     this.$request({
@@ -595,7 +608,6 @@
                             resolve(this.$splitCode(cmponent))
                         })
                         this.dialogVisible = true
-
                     })
                 }else{
                     this.$router.push({

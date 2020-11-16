@@ -125,12 +125,12 @@ class Actions extends Column
         $this->prependArr = [];
         if ($this->mode == 'button') {
             $this->display(function () use ($html) {
-                return $html;
+                return "<span ref='cellAction' style='white-space: nowrap;'>{$html}</span>";
             });
         } elseif ($this->mode == 'dropdown') {
             $this->display(function () use ($html) {
                 return '
-<el-dropdown trigger="click">
+<span ref="cellAction" style="white-space: nowrap;"><el-dropdown trigger="click">
   <span class="el-dropdown-link">
   <el-button size="mini">
     操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -138,7 +138,7 @@ class Actions extends Column
   </span>
   <el-dropdown-menu slot="dropdown">' . $html . '
   </el-dropdown-menu>
-</el-dropdown>';
+</el-dropdown></span>';
             });
         }
         parent::setData($data);

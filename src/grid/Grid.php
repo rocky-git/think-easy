@@ -228,7 +228,9 @@ EOF;
     {
         $this->table->setFormDialog('', $fullscreen, $width);
     }
-
+    public function setFormWindow(){
+        $this->table->setVar('newFormWindow', true);
+    }
     /**
      * 快捷搜索
      */
