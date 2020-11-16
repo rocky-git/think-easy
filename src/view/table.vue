@@ -261,13 +261,12 @@
                         if((this.tableStartIndex+this.tableRowNum) < this.tableOrigData.length){
                             this.tableStartIndex++
                             this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-                            tableDom.scrollTop = tableDom.scrollHeight - tableDom.clientHeight - 20
+                            tableDom.scrollTop = tableDom.scrollHeight - tableDom.clientHeight - 50
                         }
                     }else if(tableDom.scrollTop == 0){
                         if(this.tableStartIndex > 0){
                             this.tableStartIndex--
                             this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-
                             tableDom.scrollTop = 20
                         }
                     }
@@ -320,12 +319,14 @@
             tableData(val){
                 this.{$tableDataScriptVar} = val
                 this.$nextTick(() => {
-                    if(this.$refs.dragTable.bodyWrapper.scrollHeight < this.tableHeight + 60){
+                    if(this.$refs.dragTable.bodyWrapper.scrollHeight < this.tableHeight + 140){
                         if(this.tableStartIndex < this.tableOrigData.length && val.length > 0){
                             if(this.tableStartIndex == 0){
                                 this.tableRowNum++
                             }
-                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            if((this.tableStartIndex+this.tableRowNum) <= this.tableOrigData.length){
+                                this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            }
                         }
                     }
                 })
