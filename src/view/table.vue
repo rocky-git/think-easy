@@ -251,8 +251,10 @@
                         }
                         this.tableHeight -= 65
                     }
+
                     this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
                 },10)
+
                 var tableDom = this.$refs.dragTable.bodyWrapper
                 tableDom.addEventListener('scroll',()=>{
                     if(tableDom.scrollTop + tableDom.clientHeight == tableDom.scrollHeight){
@@ -324,7 +326,6 @@
                                 this.tableRowNum++
                             }
                             this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-
                         }
                     }
                 })
