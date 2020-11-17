@@ -196,15 +196,10 @@
                 showDetailId:0,
                 dialogVisible:false,
                 tableDataUpdate:false,
-                lazyTreeNodeMap: new Map(),
                 isDialog :false,
                 newFormWindow :false,
                 selectButtonShow:false,
                 loading:false,
-                tableData:[],
-                tableOrigData:[],
-                tableRowNum:1,
-                tableStartIndex:0,
                 plugDialog:null,
                 inputEditField :'',
                 inputEditId :0,
@@ -215,14 +210,15 @@
                 activeTabsName:'data',
                 cellComponent:{$cellComponent|raw|default='[]'},
                 checkboxOptions:{$checkboxOptions|raw|default='[]'},
-            checkboxColumn:{$checkboxColumn|raw|default='[]'},
-            pageHide:{$pageHide|default='true'},
-            page:1,
+                checkboxColumn:{$checkboxColumn|raw|default='[]'},
+                pageHide:{$pageHide|default='true'},
+                page:1,
                 pagesize:[],
                 total:{$pageTotal|default=0},
-            size:{$pageSize|default=20},
-            selectionData:[],
-            {$tableScriptVar|raw}
+                size:{$pageSize|default=20},
+                selectionData:[],
+                tableData:{$tableDataScriptVar|raw},
+                {$tableScriptVar|raw}
         }
         },
         computed:{
@@ -251,26 +247,7 @@
                         }
                         this.tableHeight -= 65
                     }
-
-                    this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
                 },10)
-
-                var tableDom = this.$refs.dragTable.bodyWrapper
-                tableDom.addEventListener('scroll',()=>{
-                    if(tableDom.scrollTop + tableDom.clientHeight == tableDom.scrollHeight){
-                        if((this.tableStartIndex+this.tableRowNum) < this.tableOrigData.length){
-                            this.tableStartIndex++
-                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-                            tableDom.scrollTop = tableDom.scrollHeight - tableDom.clientHeight - 50
-                        }
-                    }else if(tableDom.scrollTop == 0){
-                        if(this.tableStartIndex > 0){
-                            this.tableStartIndex--
-                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-                            tableDom.scrollTop = 20
-                        }
-                    }
-                })
             })
         },
         created(){
@@ -309,33 +286,9 @@
             this.$nextTick(() => {
                 this.setSort()
             })
-            this.tableOrigData = this.{$tableDataScriptVar}
-
-            this.tableData = []
-
         },
         inject:['reload'],
         watch:{
-            tableData(val){
-                this.{$tableDataScriptVar} = val
-                this.$nextTick(() => {
-                    if(this.$refs.dragTable.bodyWrapper.scrollHeight < this.tableHeight + 140){
-                        if(this.tableStartIndex < this.tableOrigData.length && val.length > 0){
-                            if(this.tableStartIndex == 0){
-                                this.tableRowNum++
-                            }
-                            if((this.tableStartIndex+this.tableRowNum) <= this.tableOrigData.length){
-                                this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
-                            }
-                        }
-                    }
-                })
-            },
-            tableOrigData(val){
-                this.tableStartIndex = 0
-                this.tableRowNum = 1
-                this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
-            },
             deleteColumnShow(val){
                 if(val){
                     this.deleteButtonText = '清空回收站'
@@ -516,10 +469,10 @@
                     onEnd: evt => {
                         var newIndex = evt.newIndex;
                         var oldIndex = evt.oldIndex;
-                        var oldItem = this.tableOrigData[oldIndex]
+                        var oldItem = this.tableData[oldIndex]
                         var startPage = (this.page-1) * this.size
-                        const targetRow = this.tableOrigData.splice(evt.oldIndex, 1)[0]
-                        this.tableOrigData.splice(evt.newIndex, 0, targetRow)
+                        const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
+                        this.tableData.splice(evt.newIndex, 0, targetRow)
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
                                 url: '{$submitUrl|default=""}/batch.rest',
@@ -539,8 +492,8 @@
                                     duration: 1500
                                 })
                             }).catch(res=>{
-                                const targetRow = this.tableOrigData.splice(evt.newIndex, 1)[0]
-                                this.tableOrigData.splice(evt.oldIndex, 0, targetRow)
+                                const targetRow = this.tableData.splice(evt.newIndex, 1)[0]
+                                this.tableData.splice(evt.oldIndex, 0, targetRow)
                             })
                         }
                     }
@@ -786,7 +739,7 @@
                         params:requestParams
                     }).then(res=>{
                         ids.forEach((id)=>{
-                            this.deleteTreeData(this.tableOrigData,id)
+                            this.deleteTreeData(this.tableData,id)
                         })
                         this.$notify({
                             title: '操作完成',
@@ -823,10 +776,10 @@
                         params:requestParams
                     }).then(res=>{
                         if(deleteIds == 'true'){
-                            this.tableOrigData= [];
+                            this.tableData= [];
                         }else{
                             deleteIds.forEach((delId)=>{
-                                this.deleteTreeData(this.tableOrigData,delId)
+                                this.deleteTreeData(this.tableData,delId)
                             })
                         }
                         this.$notify({
@@ -886,7 +839,7 @@
                     params:requestParams
                 }).then(res=>{
                     this.loading = false
-                    this.tableOrigData = res.data.data
+                    this.tableData = res.data.data
                     if(res.data.total != undefined){
                         this.total = res.data.total
                     }

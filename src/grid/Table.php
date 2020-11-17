@@ -178,23 +178,30 @@ class Table extends View
                 $column->setAttr('v-if', "checkboxColumn.indexOf(\"$column->field\") !== -1");
                 $checkboxColumn[] = $column->field;
             }
-            $this->cellComponent[] = $column->getDisplay($i, 'tableData');
+            $this->cellComponent[] = $column->getDisplay($i);
             $i++;
             $columnHtml .= $column->render();
             $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
         }
-
+        ;
+        $this->setVar('tableDataScriptVar', json_encode($this->getAttr('data')));
+        $this->removeAttr('data');
+        $this->setAttr(':data','tableData');
         $columnScriptVar = implode(',', $this->scriptArr);
         list($attrStr, $tableScriptVar) = $this->parseAttr();
         if (!empty($columnScriptVar)) {
-            $tableScriptVar = $tableScriptVar . ',' . $columnScriptVar;
+            if(empty($tableScriptVar)){
+                $tableScriptVar = $columnScriptVar;
+            }else{
+                $tableScriptVar .= ',' . $columnScriptVar;
+            }
         }
         $mobileHtml = "<el-table-column type='expand' v-if=\"device === 'mobile'\"><template slot-scope=\"scope\"><el-form label-position='left'>$mobileHtml</el-form></template></el-table-column>";
         $tableHtml = '<el-table  @selection-change="handleSelect" ' . $attrStr . '>' . $mobileHtml . $columnHtml . '</el-table>';
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableHtml', $tableHtml);
-        $this->setVar('tableDataScriptVar', 'tableData' . $this->varMark);
+
         $this->setVar('checkboxOptions', json_encode($checkboxOptions, JSON_UNESCAPED_UNICODE));
         $this->setVar('tableScriptVar', $tableScriptVar);
         $this->setVar('checkboxColumn', json_encode($checkboxColumn, JSON_UNESCAPED_UNICODE));

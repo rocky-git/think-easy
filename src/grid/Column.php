@@ -515,10 +515,10 @@ class Column extends View
         return $data;
     }
 
-    public function getDisplay($key, $tableDataScriptVar)
+    public function getDisplay($key)
     {
         if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableOrigData"></component>';
+            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableData"></component>';
             $cell = new Cell();
             $cell->setVar('cell', $this->cellVue);
             list($attrStr, $scriptVar) = $cell->parseAttr();
