@@ -30,22 +30,19 @@ class Actions extends Column
 
     protected $appendArr = [];
     protected $mode = 'button';
-    protected $width = 260;
     public $row = [];
 
     public function __construct(string $field = '', string $label = '')
     {
         parent::__construct($field, $label);
         $this->setAttr(':fixed', 'actionFixed');
-        $this->width($this->width);
+        $this->setAttr(':width','actionWidth');
     }
 
     //下拉菜单模式
     public function dropdown()
     {
         $this->mode = 'dropdown';
-        $this->width = 90;
-        $this->width($this->width);
         $this->detailButton = '<el-dropdown-item icon="el-icon-info" @click.native="handleDetail(data,index)">详情</el-dropdown-item>';
         $this->editButton = '<el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(data,index)">编辑</el-dropdown-item>';
         $this->delButton = '<el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(data,index)">删除</el-dropdown-item>';
@@ -55,34 +52,22 @@ class Actions extends Column
     {
         $this->closure = $closure;
     }
-    protected function autoWidth($type = 1){
-        if($this->mode == 'button'){
-            if($type == 1){
-                $this->width -= 80;
-            }else{
-                $this->width += 80;
-            }
-            $this->width($this->width);
-        }
-    }
+
     //隐藏详情按钮
     public function hideDetail()
     {
-        $this->autoWidth(1);
         $this->hideDetailButton = true;
     }
 
     //隐藏编辑按钮
     public function hideEdit()
     {
-        $this->autoWidth(1);
         $this->hideEditButton = true;
     }
 
     //隐藏删除按钮
     public function hideDel()
     {
-        $this->autoWidth(1);
         $this->hideDelButton = true;
     }
 
@@ -92,7 +77,6 @@ class Actions extends Column
      */
     public function prepend($val)
     {
-        $this->autoWidth(2);
         $this->prependArr[] = $val;
     }
 
@@ -102,7 +86,6 @@ class Actions extends Column
      */
     public function append($val)
     {
-        $this->autoWidth(2);
         $this->appendArr[] = $val;
     }
 
@@ -142,12 +125,12 @@ class Actions extends Column
         $this->prependArr = [];
         if ($this->mode == 'button') {
             $this->display(function () use ($html) {
-                return $html;
+                return "<span ref='cellAction' style='white-space: nowrap;'>{$html}</span>";
             });
         } elseif ($this->mode == 'dropdown') {
             $this->display(function () use ($html) {
                 return '
-<el-dropdown trigger="click">
+<span ref="cellAction" style="white-space: nowrap;"><el-dropdown trigger="click">
   <span class="el-dropdown-link">
   <el-button size="mini">
     操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -155,7 +138,7 @@ class Actions extends Column
   </span>
   <el-dropdown-menu slot="dropdown">' . $html . '
   </el-dropdown-menu>
-</el-dropdown>';
+</el-dropdown></span>';
             });
         }
         parent::setData($data);
@@ -163,6 +146,5 @@ class Actions extends Column
         $this->hideDetailButton = false;
         $this->hideEditButton = false;
         $this->hideDelButton = false;
-        $this->width = 260;
     }
 }

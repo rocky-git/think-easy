@@ -137,7 +137,6 @@
         </div>
         <!--{/if}-->
         <el-pagination class="hidden-md-and-down" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
-                       v-if="!pageHide"
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
                        :page-sizes="pagesize"
@@ -145,10 +144,9 @@
                        :current-page="page"
                        background
                        :total="total"
-                       layout="total, sizes, prev, pager, next, jumper">
+                       :layout="pageHide ? 'total':'total, sizes, prev, pager, next, jumper'">
         </el-pagination>
         <el-pagination class="hidden-md-and-up" style=" background: #fff; padding: 10px 16px;border-radius: 4px;"
-                       v-if="!pageHide"
                        small
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -156,7 +154,7 @@
                        :page-size="size"
                        :current-page="page"
                        :total="total"
-                       layout="total,  prev, pager, next, jumper">
+                       :layout="pageHide ? 'total':'total, sizes, prev, pager, next'">
         </el-pagination>
         {$dialog|raw|default=''}
     </div>
@@ -198,14 +196,20 @@
                 showDetailId:0,
                 dialogVisible:false,
                 tableDataUpdate:false,
+                lazyTreeNodeMap: new Map(),
                 isDialog :false,
+                newFormWindow :false,
                 selectButtonShow:false,
                 loading:false,
                 tableData:[],
+                tableOrigData:[],
+                tableRowNum:1,
+                tableStartIndex:0,
                 plugDialog:null,
                 inputEditField :'',
                 inputEditId :0,
                 showEditId :0,
+                actionWidth:1,
                 globalRequestParams:{},
                 tableHeight: window.innerHeight ,
                 activeTabsName:'data',
@@ -245,13 +249,28 @@
                         if(this.$refs.tabs){
                             this.tableHeight -=  75
                         }
-                        if(this.pageHide){
-                            this.tableHeight -= 15
-                        }else{
-                            this.tableHeight -= 65
+                        this.tableHeight -= 65
+                    }
+
+                    this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
+                },10)
+
+                var tableDom = this.$refs.dragTable.bodyWrapper
+                tableDom.addEventListener('scroll',()=>{
+                    if(tableDom.scrollTop + tableDom.clientHeight == tableDom.scrollHeight){
+                        if((this.tableStartIndex+this.tableRowNum) < this.tableOrigData.length){
+                            this.tableStartIndex++
+                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            tableDom.scrollTop = tableDom.scrollHeight - tableDom.clientHeight - 50
+                        }
+                    }else if(tableDom.scrollTop == 0){
+                        if(this.tableStartIndex > 0){
+                            this.tableStartIndex--
+                            this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            tableDom.scrollTop = 20
                         }
                     }
-                },10)
+                })
             })
         },
         created(){
@@ -260,6 +279,9 @@
             /*{/if}*/
             /*{if isset($dialogVar)}*/
             this.isDialog = true
+            /*{/if}*/
+            /*{if isset($newFormWindow)}*/
+            this.newFormWindow = true
             /*{/if}*/
             let i = 10
             if(this.size < 10){
@@ -287,12 +309,32 @@
             this.$nextTick(() => {
                 this.setSort()
             })
-            this.tableData = this.{$tableDataScriptVar}
+            this.tableOrigData = this.{$tableDataScriptVar}
+
+            this.tableData = []
+
         },
         inject:['reload'],
         watch:{
             tableData(val){
                 this.{$tableDataScriptVar} = val
+                this.$nextTick(() => {
+                    if(this.$refs.dragTable.bodyWrapper.scrollHeight < this.tableHeight + 140){
+                        if(this.tableStartIndex < this.tableOrigData.length && val.length > 0){
+                            if(this.tableStartIndex == 0){
+                                this.tableRowNum++
+                            }
+                            if((this.tableStartIndex+this.tableRowNum) <= this.tableOrigData.length){
+                                this.tableData = this.tableOrigData.slice(this.tableStartIndex,this.tableStartIndex+this.tableRowNum)
+                            }
+                        }
+                    }
+                })
+            },
+            tableOrigData(val){
+                this.tableStartIndex = 0
+                this.tableRowNum = 1
+                this.tableData = this.tableOrigData.slice(0,this.tableRowNum)
             },
             deleteColumnShow(val){
                 if(val){
@@ -315,11 +357,13 @@
             showEditId(val){
                 if(val != 0){
                     this.showDialog('编辑',2)
+                    this.showEditId = 0
                 }
             },
             showDetailId(val){
                 if(val != 0){
                     this.showDialog('详情',3)
+                    this.showDetailId = 0
                 }
             },
         },
@@ -472,10 +516,10 @@
                     onEnd: evt => {
                         var newIndex = evt.newIndex;
                         var oldIndex = evt.oldIndex;
-                        var oldItem = this.tableData[oldIndex]
+                        var oldItem = this.tableOrigData[oldIndex]
                         var startPage = (this.page-1) * this.size
-                        const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
-                        this.tableData.splice(evt.newIndex, 0, targetRow)
+                        const targetRow = this.tableOrigData.splice(evt.oldIndex, 1)[0]
+                        this.tableOrigData.splice(evt.newIndex, 0, targetRow)
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
                                 url: '{$submitUrl|default=""}/batch.rest',
@@ -488,8 +532,8 @@
                                     }
                                 }
                             }).catch(res=>{
-                                const targetRow = this.tableData.splice(evt.newIndex, 1)[0]
-                                this.tableData.splice(evt.oldIndex, 0, targetRow)
+                                const targetRow = this.tableOrigData.splice(evt.newIndex, 1)[0]
+                                this.tableOrigData.splice(evt.oldIndex, 0, targetRow)
                             })
                         }
                     }
@@ -577,6 +621,16 @@
                     url += '/'+this.showDetailId+'.rest'
                     /*{/if}*/
                 }
+                if(this.newFormWindow){
+                    params.windowUrl = url
+                    params.windowTitle = title
+                    let routeUrl = this.$router.resolve({
+                             path: "/eadmin_window",
+                             query: params
+                    });
+                    window.open(routeUrl.href, "", "fullscreen=yes")
+                    return false
+                }
                 if(this.isDialog){
                     params.build_dialog = true
                     params.eadmin_component = true
@@ -591,7 +645,6 @@
                             resolve(this.$splitCode(cmponent))
                         })
                         this.dialogVisible = true
-
                     })
                 }else{
                     this.$router.push({
@@ -721,7 +774,7 @@
                         params:requestParams
                     }).then(res=>{
                         ids.forEach((id)=>{
-                            this.deleteTreeData(this.tableData,id)
+                            this.deleteTreeData(this.tableOrigData,id)
                         })
                         this.$notify({
                             title: '操作完成',
@@ -758,10 +811,10 @@
                         params:requestParams
                     }).then(res=>{
                         if(deleteIds == 'true'){
-                            this.tableData= [];
+                            this.tableOrigData= [];
                         }else{
                             deleteIds.forEach((delId)=>{
-                                this.deleteTreeData(this.tableData,delId)
+                                this.deleteTreeData(this.tableOrigData,delId)
                             })
                         }
                     })
@@ -815,14 +868,13 @@
                 requestParams = Object.assign(requestParams,this.globalRequestParams)
 >>>>>>> 1.0
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
-                this.tableData = []
                 this.$request({
                     url: url,
                     method: 'get',
                     params:requestParams
                 }).then(res=>{
                     this.loading = false
-                    this.tableData = res.data.data
+                    this.tableOrigData = res.data.data
                     if(res.data.total != undefined){
                         this.total = res.data.total
                     }

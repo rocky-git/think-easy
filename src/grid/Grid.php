@@ -229,7 +229,9 @@ EOF;
     {
         $this->table->setFormDialog('', $fullscreen, $width);
     }
-
+    public function setFormWindow(){
+        $this->table->setVar('newFormWindow', true);
+    }
     /**
      * 快捷搜索
      */
@@ -360,25 +362,36 @@ EOF;
      */
     public function column($field, $label)
     {
-
         $column = new Column($field, $label, $this);
         $column->align($this->headerAlign);
         $fields = explode('.', $field);
         if (count($fields) > 1) {
-            $relation = array_shift($fields);
+            array_pop($fields);
+            $relation = implode('.', $fields);
         } else {
             $relation = $field;
         }
-        if (method_exists($this->model, $relation) &&
-            ($this->model->$relation() instanceof BelongsTo ||
-                $this->model->$relation() instanceof HasOne ||
-                $this->model->$relation() instanceof HasMany ||
-                $this->model->$relation() instanceof MorphOne ||
-                $this->model->$relation() instanceof MorphMany)) {
-            $this->relations[] = $relation;
+        if (count($fields) > 1) {
+            foreach ($fields as $field) {
+                $this->setRelation($field, $relation);
+            }
+        } else {
+            $this->setRelation($relation, $relation);
         }
         array_push($this->columns, $column);
         return $column;
+    }
+
+    private function setRelation($ifRelation, $relation)
+    {
+        if (method_exists($this->model, $ifRelation) &&
+            ($this->model->$ifRelation() instanceof BelongsTo ||
+                $this->model->$ifRelation() instanceof HasOne ||
+                $this->model->$ifRelation() instanceof HasMany ||
+                $this->model->$ifRelation() instanceof MorphOne ||
+                $this->model->$ifRelation() instanceof MorphMany)) {
+            $this->relations[] = $relation;
+        }
     }
 
     /**
@@ -654,20 +667,20 @@ EOF;
                     $columnTitle[$field] = $column->label;
                 }
             }
-            if(is_callable($this->exportFileName)){
+            if (is_callable($this->exportFileName)) {
                 $excel = new Excel();
                 $excel->file(date('YmdHis'));
                 $excel->callback($this->exportFileName);
-            }else{
+            } else {
                 $excel = new Csv();
                 $excel->file($this->exportFileName);
             }
             $excel->columns($columnTitle);
             if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
-                if($excel instanceof Excel){
+                if ($excel instanceof Excel) {
                     $excel->rows($this->db->select()->toArray())->export();
-                }else{
+                } else {
                     $this->db->chunk(500, function ($datas) use ($excel) {
                         $this->data = $datas;
                         $this->parseColumn();
@@ -728,7 +741,8 @@ EOF;
                 $field = $column->getField();
                 $usings = $column->getUsings();
                 if (count($fields) > 1) {
-                    $relation = array_shift($fields);
+                    array_pop($fields);
+                    $relation = array_pop($fields);;
                     if (empty($usings)) {
                         $relationWhereFields[$relation][] = $field;
                     } else {
@@ -738,7 +752,6 @@ EOF;
                             }
                         }
                     }
-
                 } else {
                     if (in_array($column->getField(), $this->tableFields)) {
                         if (empty($usings)) {
@@ -756,41 +769,38 @@ EOF;
             //快捷搜索
             $relationWhereSqls = [];
             foreach ($this->relations as $relationName) {
-                $relation = $this->model->$relationName();
-                $relationTable = $relation->getTable();
-                $relationTableFields = $relation->getTableFields();
-                $foreignKey = $relation->getForeignKey();
-                $pk = $relation->getLocalKey();
-                $db = null;
-                if ($relation instanceof HasMany) {
-                    $db = $relation->whereRaw("{$relationTable}.{$foreignKey}={$this->db->getTable()}.{$pk}");
-                } elseif ($relation instanceof BelongsTo) {
-                    $db = $relation->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}");
-                } else if ($relation instanceof HasOne) {
-                    $db = $relation->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}");
-                } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
-                    $reflectionClass = new \ReflectionClass($relation);
-                    $propertys = ['morphKey', 'morphType', 'type'];
-                    $propertyValues = [];
-                    foreach ($propertys as $var) {
-                        $property = $reflectionClass->getProperty($var);
-                        $property->setAccessible(true);
-                        $propertyValues[] = $property->getValue($relation);
-                    }
-                    list($morphKey, $morphType, $typeValue) = $propertyValues;
-                    $db = $relation->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType, $typeValue);
+                $relations = explode('.', $relationName);
+                $Tmprelations = $relations;
+                $relation = array_pop($Tmprelations);
+                $relationFilter = implode('.', $relations);
+                $model = get_class($this->model);
+                $filter = new Filter(new $model);
+                $filter->setIfWhere(false);
+                $db = $this->model;
+                foreach ($relations as $relation) {
+                    $db = $db->getModel()->$relation();
                 }
-                if ($db && isset($relationWhereFields[$relationName])) {
+                $filter->relationLastDb($db,$relation);
+                $relationName = $relation;
+                $relationTableFields = $db->getTableFields();
+                if (isset($relationWhereFields[$relationName])) {
                     $relationWhereFields[$relationName] = array_intersect($relationWhereFields[$relationName], $relationTableFields);
                     $fields = implode('|', $relationWhereFields[$relationName]);
                     $relationWhereCondtion = $relationWhereOr[$relationName] ?? [];
-                    $sql = $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
+                    $db->where(function ($q) use ($fields, $keyword, $relationWhereCondtion) {
                         foreach ($relationWhereCondtion as $field => $value) {
                             $q->whereOr($field, $value);
                         }
                         $q->whereLike($fields, "%{$keyword}%", 'OR');
-                    })->buildSql();
-                    $relationWhereSqls[] = $sql;
+                    });
+                    $filter->paseFilter(null, $relationFilter . '.');
+                    $wheres = $filter->db()->getOptions('where');
+                    foreach ($wheres['AND'] as $where){
+                        if($where[1] == 'EXISTS'){
+                            $relationWhereSqls[]  = $where[2];
+                            break;
+                        }
+                    }
                 }
             }
             $fields = implode('|', $whereFields);
@@ -804,16 +814,18 @@ EOF;
                 }
             });
         }
-
     }
+
     //获取数据总条数
-    private function getRowTotal(){
+    private function getRowTotal()
+    {
         $sql = $this->db->buildSql();
         $sql = "SELECT COUNT(*) FROM {$sql} userCount";
         $res = Db::query($sql);
         $count = $res[0]['COUNT(*)'];
         return $count;
     }
+
     /**
      * 视图渲染
      */
@@ -829,20 +841,19 @@ EOF;
         }
         //总记录条数
         $count = 0;
+        $page = Request::get('page', 1);
+        if ($page == 1) {
+            $count = $this->getRowTotal();
+            $this->table->setVar('pageTotal', $count);
+        }
         //分页
         if ($this->isPage) {
-            $page = Request::get('page', 1);
-            if($page == 1){
-                $count = $this->getRowTotal();
-            }
-            $this->table->setVar('pageTotal', $count);
             $this->table->setVar('pageHide', 'false');
             $this->table->setVar('pageSize', $this->pageLimit);
             $this->data = $this->db->page($page, Request::get('size', $this->pageLimit))->select();
         } else {
             $this->data = $this->db->select();
         }
-
         //软删除列
         if ($this->isSotfDelete) {
             if (request()->has('is_deleted')) {
@@ -890,7 +901,7 @@ EOF;
             case 'page':
                 $this->table->view();
                 $result['data'] = $this->data;
-                if ($this->isPage && $page == 1){
+                if ($this->isPage && $page == 1) {
                     $result['total'] = $count;
                 }
                 $result['cellComponent'] = $this->table->cellComponent();
@@ -917,15 +928,18 @@ EOF;
     {
         $this->table->setVar('onTableView', true);
     }
+
     /**
      * 设置添加url
      * @param string $url
      * @param bool $rest
      */
-    public function setAddUrl(string $url,bool $rest = false){
+    public function setAddUrl(string $url, bool $rest = false)
+    {
         $this->table->setVar('addUrl', $url);
         $this->table->setVar('addRest', $rest);
     }
+
     /**
      * 设置编辑url
      * @param string $url

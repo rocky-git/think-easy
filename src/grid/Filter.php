@@ -28,11 +28,17 @@ class Filter extends View
     protected $model;
     //当前模型db
     protected $db;
+    //
+
     protected $fields = [];
     protected $mode = 'filter';
     protected $columnLabel = '';
     protected $usingData = [];
     protected $jsonNode = '';
+    protected $relationExistSql = '';
+    protected $ifWhere = true;
+    protected $relationLastDb = null;
+    protected $relationLastMethod = '';
     public function __construct($model)
     {
         if ($model instanceof Model) {
@@ -44,7 +50,6 @@ class Filter extends View
         } else {
             $this->db = Db::name($model);
         }
-
         $this->tableFields = $this->db->getTableFields();
     }
     public function label($value){
@@ -94,7 +99,7 @@ class Filter extends View
     {
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -108,7 +113,7 @@ class Filter extends View
     {
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -121,7 +126,7 @@ class Filter extends View
     public function jsonArrLike($field, $node,$label = ''){
         $this->jsonNode = $node;
         $this->paseFilter(__FUNCTION__, $field);
-        $this->formItem($field, $label);
+        $this->formItem($field.'__json_'.$node, $label);
         return $this;
     }
     /**
@@ -500,7 +505,7 @@ class Filter extends View
      * @param $field 字段
      * @return mixed
      */
-    protected function paseFilter($method, $field)
+    public function paseFilter($method, $field)
     {
         if (is_string($field)) {
             $field = str_replace('.', '__', $field);
@@ -545,6 +550,9 @@ class Filter extends View
         $data = request()->$request();
         if ($method == 'between' || $method == 'notBetween') {
             $field .= '__between_start';
+        }
+        if ($method == 'json' || $method == 'jsonLike' || $method == 'jsonArrLike') {
+            $field .= '__json_'.$this->jsonNode;
         }
         if (is_array($dbField)) {
             $dbFields = $dbField;
@@ -688,35 +696,54 @@ class Filter extends View
                 $pk = $relation->getLocalKey();
                 if ($callback instanceof \Closure) {
                     $this->relationModel = new self(new $relationModel);
+                    $this->relationModel->relationLastDb($this->relationLastDb,$this->relationLastMethod);
+                    $this->relationModel->setRelationLastDb($relation_method);
+                    $this->relationModel->setIfWhere($this->ifWhere);
                     call_user_func($callback, $this->relationModel);
                 }
                 $tmpDb = clone $this->relationModel->db();
                 $relationSql = $tmpDb->removeWhereField('delete_time')->buildSql();
                 $res = strpos($relationSql, 'WHERE');
-                if ($res !== false) {
-                    if ($relation instanceof HasMany) {
-                        $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
-                    } elseif ($relation instanceof BelongsTo) {
-                        $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
-                    } else if ($relation instanceof HasOne) {
-                        $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
-                    } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
-                        $reflectionClass = new \ReflectionClass($relation);
-                        $propertys = ['morphKey','morphType','type'];
-                        $propertyValues = [];
-                        foreach ($propertys as $var){
-                            $property = $reflectionClass->getProperty($var);
-                            $property->setAccessible(true);
-                            $propertyValues[] =  $property->getValue($relation);
-                        }
-                        list($morphKey,$morphType,$typeValue) = $propertyValues;
-                        $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
+                if ($relation instanceof HasMany) {
+                    $sql = $this->relationModel->db()->whereRaw("{$relation_table}.{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                } elseif ($relation instanceof BelongsTo) {
+                    $sql = $this->relationModel->db()->whereRaw("{$pk}={$this->db->getTable()}.{$foreignKey}")->buildSql();
+                } else if ($relation instanceof HasOne) {
+                    $sql = $this->relationModel->db()->whereRaw("{$foreignKey}={$this->db->getTable()}.{$pk}")->buildSql();
+                } else if ($relation instanceof MorphOne || $relation instanceof MorphMany) {
+                    $reflectionClass = new \ReflectionClass($relation);
+                    $propertys = ['morphKey','morphType','type'];
+                    $propertyValues = [];
+                    foreach ($propertys as $var){
+                        $property = $reflectionClass->getProperty($var);
+                        $property->setAccessible(true);
+                        $propertyValues[] =  $property->getValue($relation);
                     }
+                    list($morphKey,$morphType,$typeValue) = $propertyValues;
+                    $sql = $this->relationModel->db()->whereRaw("{$morphKey}={$this->db->getTable()}.{$this->db->getPk()}")->where($morphType,$typeValue)->buildSql();
+                }
+                $this->relationExistSql = $sql;
+                if ($res !== false || $this->ifWhere == false) {
                     $this->db->whereExists($sql);
                 }
             }
         }
         return $this;
+    }
+    public function setRelationLastDb($method){
+        if($this->relationLastMethod == $method){
+            $this->db = $this->relationLastDb;
+        }
+    }
+    public function relationLastDb($db,$method){
+        $this->relationLastDb = $db;
+        $this->relationLastMethod  = $method;
+    }
+    public function setIfWhere(bool $bool){
+        $this->ifWhere = $bool;
+    }
+    public function getRelationExistSql(){
+        return $this->relationExistSql;
     }
 
     /**

@@ -12,15 +12,22 @@
             total:Number,
             size:Number,
             tableDataUpdate: Boolean,
-
+            width:Number,
+        },
+        mounted() {
+            this.$nextTick(()=>{
+                if(this.$refs.cellAction && this.$refs.cellAction.offsetWidth > 0){
+                    this.$emit('update:width', this.$refs.cellAction.offsetWidth+30)
+                }
+            })
         },
         data(){
-          return {
-            form:{
-                switch:'{$switchValue|default="0"}',
-            },
-            requestUrl:'{$requestUrl}',
-          }
+            return {
+                form:{
+                    switch:'{$switchValue|default="0"}',
+                },
+                requestUrl:'{$requestUrl}',
+            }
         },
         watch: {
             tableDataUpdate(val) {
