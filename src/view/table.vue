@@ -588,7 +588,10 @@
                              path: "/eadmin_window",
                              query: params
                     });
-                    window.open(routeUrl.href, "", "fullscreen=yes")
+                    var winObj  = window.open(routeUrl.href, "", "fullscreen=yes")
+                    winObj.onbeforeunload = (e)=>{
+                        this.requestPageData()
+                    }
                     return false
                 }
                 if(this.isDialog){
