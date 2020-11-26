@@ -42,7 +42,7 @@ class Table extends View
     protected $scriptVarStr = '';
     protected $headers;
     protected $data;
-    protected $cellComponent;
+    protected $cellComponent = [];
     protected $scriptArr = [];
 
     public function __construct($headers, array $data)
@@ -126,7 +126,6 @@ class Table extends View
     {
         $columnHtml = '';
         $mobileHtml = '';
-        $i = 0;
         $tableGrid = TableViewService::instance()->grid();
         $checkboxOptions = [];
         $checkboxColumn = [];
@@ -178,13 +177,12 @@ class Table extends View
                 $column->setAttr('v-if', "checkboxColumn.indexOf(\"$column->field\") !== -1");
                 $checkboxColumn[] = $column->field;
             }
-            $this->cellComponent[] = $column->getDisplay($i);
-            $i++;
+            $i = count($this->cellComponent);
+            $this->cellComponent = array_merge($this->cellComponent, $column->getDisplay($i));
             $columnHtml .= $column->render();
             $mobileHtml .= "<el-form-item label='{$column->label}'>{$column->html}</el-form-item>";
             $this->scriptArr = array_merge($this->scriptArr, $column->getScriptVar());
         }
-        ;
         $this->setVar('tableDataScriptVar', json_encode($this->getAttr('data')));
         $this->removeAttr('data');
         $this->setAttr(':data','tableData');

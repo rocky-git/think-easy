@@ -70,7 +70,7 @@ class Column extends View
     protected $edit = false;
     protected $relation = '';
     protected $grid = null;
-
+    protected $childColumn = [];
     public function __construct($field = '', $label = '', $grid = null)
     {
         $this->grid = $grid;
@@ -86,6 +86,14 @@ class Column extends View
         }
     }
 
+
+    /**
+     * 设置子级column
+     * @param array $columns
+     */
+    public function setChild(array $columns){
+        $this->childColumn = $columns;
+    }
     /**
      * 隐藏
      * @return $this
@@ -418,41 +426,47 @@ class Column extends View
      */
     public function setData($data)
     {
-        $rowData = $data;
-        $val = $this->getValue($data);
-        if (count($this->usings) > 0) {
-            $this->exportValue = isset($this->usings[$val]) ? $this->usings[$val] : '';
-        } else {
-            $this->exportValue = $val;
-        }
-
-        if (isset($rowData['id'])) {
-            $id = $rowData['id'];
-        } else {
-            $id = 0;
-        }
-        if (!is_null($this->displayClosure)) {
-            if (empty($rowData)) {
-                $res = '';
+        if(count($this->childColumn) > 0){
+            foreach ($this->childColumn as $column){
+                $column->setData($data);
+            }
+        }else{
+            $rowData = $data;
+            $val = $this->getValue($data);
+            if (count($this->usings) > 0) {
+                $this->exportValue = isset($this->usings[$val]) ? $this->usings[$val] : '';
             } else {
-                $clone = clone $this;
-                $res = call_user_func_array($this->displayClosure, [$val, $rowData, $clone]);
-                if ($res instanceof self) {
-                    $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
-                }
+                $this->exportValue = $val;
+            }
 
+            if (isset($rowData['id'])) {
+                $id = $rowData['id'];
+            } else {
+                $id = 0;
+            }
+            if (!is_null($this->displayClosure)) {
+                if (empty($rowData)) {
+                    $res = '';
+                } else {
+                    $clone = clone $this;
+                    $res = call_user_func_array($this->displayClosure, [$val, $rowData, $clone]);
+                    if ($res instanceof self) {
+                        $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
+                    }
+
+                    $this->exportValue = $res;
+                }
+                if(empty($this->cellVue)){
+                    $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
+                }else{
+                    $this->cellVue .= "<span v-else-if='data.id == {$id}'>{$res}</span>";
+                }
+            }
+
+            if (!is_null($this->exportClosure) && $rowData) {
+                $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
                 $this->exportValue = $res;
             }
-            if(empty($this->cellVue)){
-                $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
-            }else{
-                $this->cellVue .= "<span v-else-if='data.id == {$id}'>{$res}</span>";
-            }
-        }
-
-        if (!is_null($this->exportClosure) && $rowData) {
-            $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
-            $this->exportValue = $res;
         }
     }
 
@@ -517,15 +531,24 @@ class Column extends View
 
     public function getDisplay($key)
     {
-        if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableData"></component>';
-            $cell = new Cell();
-            $cell->setVar('cell', $this->cellVue);
-            list($attrStr, $scriptVar) = $cell->parseAttr();
-            $cell->setVar('scriptVar', $scriptVar);
-            $this->cellVue = $cell->render();
+        if(count($this->childColumn) > 0){
+            $cellVue = [];
+            foreach ($this->childColumn as $column){
+                $cellVue = array_merge($cellVue,$column->getDisplay($key));
+                $key++;
+            }
+            return $cellVue;
+        }else{
+            if (!empty($this->cellVue)) {
+                $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableData"></component>';
+                $cell = new Cell();
+                $cell->setVar('cell', $this->cellVue);
+                list($attrStr, $scriptVar) = $cell->parseAttr();
+                $cell->setVar('scriptVar', $scriptVar);
+                $this->cellVue = $cell->render();
+            }
+            return [$this->cellVue];
         }
-        return $this->cellVue;
     }
 
     public function getDetailDisplay($key)
@@ -672,6 +695,14 @@ EOF;
             $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
             $this->display = sprintf($this->scopeTemplate, $this->html);
         }
-        return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
+        $columnHtml =  "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
+        if(count($this->childColumn) > 0){
+            $childHtml = '';
+            foreach ($this->childColumn as $column){
+                $childHtml.=$column->render();
+            }
+            $columnHtml = "<el-table-column label='{$this->label}'>{$childHtml}</el-table-column>";
+        }
+        return $columnHtml;
     }
 }
