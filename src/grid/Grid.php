@@ -10,6 +10,7 @@ namespace thinkEasy\grid;
 
 
 use think\facade\Db;
+use think\helper\Str;
 use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
@@ -363,7 +364,8 @@ EOF;
     {
         if($field instanceof \Closure){
             //多级表头处理
-            $column = new Column('', $label, $this);
+            $f = md5(count($this->columns).$label);
+            $column = new Column($f, $label, $this);
             $column->align($this->headerAlign);
             $gridColumn = $this->columns;
             $this->columns = [];

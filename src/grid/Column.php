@@ -645,64 +645,67 @@ EOF;
 
     public function render()
     {
-        if ($this->getAttr('type')) {
-            $this->setField('');
-        }
-        $this->html = '';
-        if (empty($this->display)) {
-
-            if (!empty($this->tag)) {
-                $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
-                $this->display = sprintf($this->scopeTemplate, $this->html);
-            }
-            if (count($this->usings) > 0) {
-                foreach ($this->usings as $key => $value) {
-                    if (is_string($key)) {
-                        $this->html .= "<span v-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
-                    } else {
-                        $this->html .= "<span v-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
-                    }
-                    if (isset($this->tagColor[$key])) {
-                        $this->tag($this->tagColor[$key], $this->tagTheme);
-                        $value = sprintf($this->tag, $value);
-                    }
-                    $this->html = sprintf($this->html, $value);
-                }
-                $this->display = sprintf($this->scopeTemplate, $this->html);
-            }
-        } else {
-            $this->html = $this->display;
-            $this->display = sprintf($this->scopeTemplate, $this->display);
-        }
-        if (empty($this->display) && !empty($this->field)) {
-            $fields = explode('.', $this->field);
-            $fieldVar = '';
-            foreach ($fields as $field){
-                if(empty($fieldVar)){
-                    $fieldVar = $field;
-                }else{
-                    $fieldVar .= '.'.$field;
-                }
-                $ifCondtion[] = "scope.row.{$fieldVar} === null";
-            }
-            $ifCondtion  = implode(' || ',$ifCondtion);
-            $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
-            $this->display = sprintf($this->scopeTemplate, $this->html);
-        }
-
-        list($attrStr, $dataStr) = $this->parseAttr();
-        if ($this->edit) {
-            $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
-            $this->display = sprintf($this->scopeTemplate, $this->html);
-        }
-        $columnHtml =  "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
         if(count($this->childColumn) > 0){
+            $this->removeAttr('prop');
+            list($attrStr, $dataStr) = $this->parseAttr();
             $childHtml = '';
             foreach ($this->childColumn as $column){
                 $childHtml.=$column->render();
             }
-            $columnHtml = "<el-table-column label='{$this->label}'>{$childHtml}</el-table-column>";
+            $columnHtml = "<el-table-column $attrStr label='$this->label'>{$childHtml}</el-table-column>";
+            return $columnHtml;
+        }else{
+            if ($this->getAttr('type')) {
+                $this->setField('');
+            }
+            $this->html = '';
+            if (empty($this->display)) {
+                if (!empty($this->tag)) {
+                    $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
+                    $this->display = sprintf($this->scopeTemplate, $this->html);
+                }
+                if (count($this->usings) > 0) {
+                    foreach ($this->usings as $key => $value) {
+                        if (is_string($key)) {
+                            $this->html .= "<span v-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
+                        } else {
+                            $this->html .= "<span v-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
+                        }
+                        if (isset($this->tagColor[$key])) {
+                            $this->tag($this->tagColor[$key], $this->tagTheme);
+                            $value = sprintf($this->tag, $value);
+                        }
+                        $this->html = sprintf($this->html, $value);
+                    }
+                    $this->display = sprintf($this->scopeTemplate, $this->html);
+                }
+            } else {
+                $this->html = $this->display;
+                $this->display = sprintf($this->scopeTemplate, $this->display);
+            }
+            if (empty($this->display) && !empty($this->field)) {
+                $fields = explode('.', $this->field);
+                $fieldVar = '';
+                foreach ($fields as $field){
+                    if(empty($fieldVar)){
+                        $fieldVar = $field;
+                    }else{
+                        $fieldVar .= '.'.$field;
+                    }
+                    $ifCondtion[] = "scope.row.{$fieldVar} === null";
+                }
+                $ifCondtion  = implode(' || ',$ifCondtion);
+                $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
+                $this->display = sprintf($this->scopeTemplate, $this->html);
+            }
+
+            list($attrStr, $dataStr) = $this->parseAttr();
+            if ($this->edit) {
+                $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
+                $this->display = sprintf($this->scopeTemplate, $this->html);
+            }
+            $columnHtml =  "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
+            return $columnHtml;
         }
-        return $columnHtml;
     }
 }
