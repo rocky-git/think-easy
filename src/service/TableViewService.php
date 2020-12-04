@@ -44,13 +44,19 @@ class TableViewService extends Service
     {
         $eadmingrid = $this->app->request->param('eadmingrid');
         if ($eadmingrid) {
-
             $cacheKey = md5($eadmingrid . AdminService::instance()->id());
         } else {
             $moudel = app('http')->getName();
             $pathinfo = $this->app->request->pathinfo();
             $node = $moudel . '/' . $pathinfo;
-            $params = Db::name('system_menu')->where('url', $node)->value('params');
+            $query = $this->app->request->query();
+            $params = '';
+            if($query){
+                $params = Db::name('system_menu')->where('url', $node)->where('params',$query)->value('params');
+            }
+            if(!$params){
+                $params = Db::name('system_menu')->where('url', $node)->value('params');
+            }
             if (empty($params)) {
                 $params = '';
             } else {
