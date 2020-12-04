@@ -659,17 +659,29 @@ EOF;
                 $this->setField('');
             }
             $this->html = '';
+            $fields = explode('.', $this->field);
+            $fieldVar = '';
+            foreach ($fields as $field){
+                if(empty($fieldVar)){
+                    $fieldVar = $field;
+                }else{
+                    $fieldVar .= '.'.$field;
+                }
+                $ifCondtion[] = "scope.row.{$fieldVar} === null";
+            }
+            $ifCondtion  = implode(' || ',$ifCondtion);
             if (empty($this->display)) {
                 if (!empty($this->tag)) {
                     $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
                     $this->display = sprintf($this->scopeTemplate, $this->html);
                 }
                 if (count($this->usings) > 0) {
+                    $this->html = "<span style='font-size: 14px;' v-if=\"{$ifCondtion}\">--</span>";
                     foreach ($this->usings as $key => $value) {
                         if (is_string($key)) {
-                            $this->html .= "<span v-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
+                            $this->html .= "<span v-else-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
                         } else {
-                            $this->html .= "<span v-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
+                            $this->html .= "<span v-else-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
                         }
                         if (isset($this->tagColor[$key])) {
                             $this->tag($this->tagColor[$key], $this->tagTheme);
@@ -684,21 +696,9 @@ EOF;
                 $this->display = sprintf($this->scopeTemplate, $this->display);
             }
             if (empty($this->display) && !empty($this->field)) {
-                $fields = explode('.', $this->field);
-                $fieldVar = '';
-                foreach ($fields as $field){
-                    if(empty($fieldVar)){
-                        $fieldVar = $field;
-                    }else{
-                        $fieldVar .= '.'.$field;
-                    }
-                    $ifCondtion[] = "scope.row.{$fieldVar} === null";
-                }
-                $ifCondtion  = implode(' || ',$ifCondtion);
                 $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
                 $this->display = sprintf($this->scopeTemplate, $this->html);
             }
-
             list($attrStr, $dataStr) = $this->parseAttr();
             if ($this->edit) {
                 $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
