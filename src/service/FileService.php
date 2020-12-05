@@ -267,6 +267,7 @@ class FileService extends Service
         if(file_exists($filename)){
             $quality = Filesystem::getDiskConfig('local','quality',90);
             list($width, $height, $type, $attr) = getimagesize($filename);
+
             if($type > 1 && $type < 17 && $quality){
                 $extension = image_type_to_extension($type,false);
                 $fun = "imagecreatefrom".$extension;
@@ -281,7 +282,6 @@ class FileService extends Service
                 imagedestroy($image);
                 $funcs = "image".$extension;
                 if($type == 2){
-                    imagepng($image_thump,$filename,90);
                     $funcs($image_thump,$filename,$quality);
                 }else{
                     $funcs($image_thump,$filename);

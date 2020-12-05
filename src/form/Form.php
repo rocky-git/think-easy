@@ -186,7 +186,7 @@ class Form extends View
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
         }
-        $this->setVar('prependSubmitExtend', $entend);
+        $this->setVar('prependSubmitExtend', $this->getvars('prependSubmitExtend').$entend);
 
     }
 
@@ -197,7 +197,7 @@ class Form extends View
             $entend = $field->render();
             $this->scriptArr = array_merge($this->scriptArr, $field->getScriptVar());
         }
-        $this->setVar('appendSubmitExtend', $entend);
+        $this->setVar('appendSubmitExtend',$this->getvars('prependSubmitExtend'). $entend);
     }
 
     /**

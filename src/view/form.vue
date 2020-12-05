@@ -30,6 +30,8 @@
         props:{
             dialogVisible:Boolean,
             tableDataUpdate:Boolean,
+            //表单数据是否已保存
+            dataIsSave:Boolean,
             refresh: {
                 type: String,
                 default: '0'
@@ -47,6 +49,7 @@
                 iframeField:null,
                 formItemTags:[],
                 closeVisible:true,
+                closeWindow:false,
                 validates:[],
                 watchOldValue:[],
                 form:{$formData|raw},
@@ -59,6 +62,12 @@
                 if(val){
                     this.onSubmit()
                 }
+            },
+            form:{
+              handler(val) {
+                  this.$emit('update:dataIsSave', false)
+              },
+              deep:true
             },
             //监听
             {$watchJs|raw}
@@ -154,6 +163,9 @@
                         if(this.closeVisible){
                             this.$emit('update:dialogVisible', false)
                             this.$emit('update:tableDataUpdate', true)
+                        }
+                        if(this.closeWindow){
+                            window.close()
                         }
                         if (this.refresh == 1) {
                             this.reload()

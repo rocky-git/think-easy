@@ -13,6 +13,18 @@ class Content extends View
     }
 
     /**
+     * 标题
+     * @param string $title
+     */
+    public function title(string $title){
+        $this->setVar('title',$title);
+        return $this;
+    }
+    public function body($content){
+        $this->row($content);
+        return $this;
+    }
+    /**
      * 添加一行
      * @param Closure|String  $content 内容
      * @param $span 栅格占据的列数,默认24
@@ -22,6 +34,7 @@ class Content extends View
         if($content instanceof \Closure){
             call_user_func($content,$row);
         }else{
+            
             $row->column($content,$span);
         }
         $this->html .= $row->render();

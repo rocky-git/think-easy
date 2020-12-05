@@ -10,6 +10,7 @@ namespace thinkEasy\grid;
 
 
 use think\facade\Db;
+use think\helper\Str;
 use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
@@ -356,27 +357,39 @@ EOF;
      * 设置列
      * @Author: rocky
      * 2019/7/25 16:20
-     * @param $field 字段
-     * @param $label 标签
+     * @param string|callable $field 字段
+     * @param string $label 标签
      * @return Column
      */
     public function column($field, $label)
     {
-        $column = new Column($field, $label, $this);
-        $column->align($this->headerAlign);
-        $fields = explode('.', $field);
-        if (count($fields) > 1) {
-            array_pop($fields);
-            $relation = implode('.', $fields);
-        } else {
-            $relation = $field;
-        }
-        if (count($fields) > 1) {
-            foreach ($fields as $field) {
-                $this->setRelation($field, $relation);
+        if($field instanceof \Closure){
+            //多级表头处理
+            $f = md5(count($this->columns).$label);
+            $column = new Column($f, $label, $this);
+            $column->align($this->headerAlign);
+            $gridColumn = $this->columns;
+            $this->columns = [];
+            call_user_func_array($field,[$this]);
+            $column->setChild($this->columns);
+            $this->columns = $gridColumn;
+        }else{
+            $column = new Column($field, $label, $this);
+            $column->align($this->headerAlign);
+            $fields = explode('.', $field);
+            if (count($fields) > 1) {
+                array_pop($fields);
+                $relation = implode('.', $fields);
+            } else {
+                $relation = $field;
             }
-        } else {
-            $this->setRelation($relation, $relation);
+            if (count($fields) > 1) {
+                foreach ($fields as $field) {
+                    $this->setRelation($field, $relation);
+                }
+            } else {
+                $this->setRelation($relation, $relation);
+            }
         }
         array_push($this->columns, $column);
         return $column;
@@ -399,9 +412,9 @@ EOF;
      * @param string $type 列类型：selection 多选框 ， index 索引 ， expand 可展开的
      * @return Column
      */
-    public function indexColumn($type = 'selection')
+    public function indexColumn($type = 'selection',$label='')
     {
-        $column = $this->column('eadminColumnIndex' . $type, '')->closeExport();
+        $column = $this->column('eadminColumnIndex' . $type, $label)->closeExport();
         $column->setAttr('type', $type);
         return $column;
     }

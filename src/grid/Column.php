@@ -70,7 +70,7 @@ class Column extends View
     protected $edit = false;
     protected $relation = '';
     protected $grid = null;
-
+    protected $childColumn = [];
     public function __construct($field = '', $label = '', $grid = null)
     {
         $this->grid = $grid;
@@ -86,6 +86,14 @@ class Column extends View
         }
     }
 
+
+    /**
+     * 设置子级column
+     * @param array $columns
+     */
+    public function setChild(array $columns){
+        $this->childColumn = $columns;
+    }
     /**
      * 隐藏
      * @return $this
@@ -418,41 +426,47 @@ class Column extends View
      */
     public function setData($data)
     {
-        $rowData = $data;
-        $val = $this->getValue($data);
-        if (count($this->usings) > 0) {
-            $this->exportValue = isset($this->usings[$val]) ? $this->usings[$val] : '';
-        } else {
-            $this->exportValue = $val;
-        }
-
-        if (isset($rowData['id'])) {
-            $id = $rowData['id'];
-        } else {
-            $id = 0;
-        }
-        if (!is_null($this->displayClosure)) {
-            if (empty($rowData)) {
-                $res = '';
+        if(count($this->childColumn) > 0){
+            foreach ($this->childColumn as $column){
+                $column->setData($data);
+            }
+        }else{
+            $rowData = $data;
+            $val = $this->getValue($data);
+            if (count($this->usings) > 0) {
+                $this->exportValue = isset($this->usings[$val]) ? $this->usings[$val] : '';
             } else {
-                $clone = clone $this;
-                $res = call_user_func_array($this->displayClosure, [$val, $rowData, $clone]);
-                if ($res instanceof self) {
-                    $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
-                }
+                $this->exportValue = $val;
+            }
 
+            if (isset($rowData['id'])) {
+                $id = $rowData['id'];
+            } else {
+                $id = 0;
+            }
+            if (!is_null($this->displayClosure)) {
+                if (empty($rowData)) {
+                    $res = '';
+                } else {
+                    $clone = clone $this;
+                    $res = call_user_func_array($this->displayClosure, [$val, $rowData, $clone]);
+                    if ($res instanceof self) {
+                        $res = call_user_func_array($clone->getClosure(), [$val, $rowData, $clone]);
+                    }
+
+                    $this->exportValue = $res;
+                }
+                if(empty($this->cellVue)){
+                    $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
+                }else{
+                    $this->cellVue .= "<span v-else-if='data.id == {$id}'>{$res}</span>";
+                }
+            }
+
+            if (!is_null($this->exportClosure) && $rowData) {
+                $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
                 $this->exportValue = $res;
             }
-            if(empty($this->cellVue)){
-                $this->cellVue .= "<span v-if='data.id == {$id}'>{$res}</span>";
-            }else{
-                $this->cellVue .= "<span v-else-if='data.id == {$id}'>{$res}</span>";
-            }
-        }
-
-        if (!is_null($this->exportClosure) && $rowData) {
-            $res = call_user_func_array($this->exportClosure, [$val, $rowData]);
-            $this->exportValue = $res;
         }
     }
 
@@ -515,17 +529,26 @@ class Column extends View
         return $data;
     }
 
-    public function getDisplay($key, $tableDataScriptVar)
+    public function getDisplay($key)
     {
-        if (!empty($this->cellVue)) {
-            $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableOrigData"></component>';
-            $cell = new Cell();
-            $cell->setVar('cell', $this->cellVue);
-            list($attrStr, $scriptVar) = $cell->parseAttr();
-            $cell->setVar('scriptVar', $scriptVar);
-            $this->cellVue = $cell->render();
+        if(count($this->childColumn) > 0){
+            $cellVue = [];
+            foreach ($this->childColumn as $column){
+                $cellVue = array_merge($cellVue,$column->getDisplay($key));
+                $key++;
+            }
+            return $cellVue;
+        }else{
+            if (!empty($this->cellVue)) {
+                $this->display = '<component :is="cellComponent[' . $key . ']" :data="scope.row" :width.sync="actionWidth" :table-data-update.sync="tableDataUpdate" :index="scope.$index" :showEditId.sync="showEditId" :showDetailId.sync="showDetailId" :page="page" :size="size" :total="total" :table-data.sync="tableData"></component>';
+                $cell = new Cell();
+                $cell->setVar('cell', $this->cellVue);
+                list($attrStr, $scriptVar) = $cell->parseAttr();
+                $cell->setVar('scriptVar', $scriptVar);
+                $this->cellVue = $cell->render();
+            }
+            return [$this->cellVue];
         }
-        return $this->cellVue;
     }
 
     public function getDetailDisplay($key)
@@ -622,36 +645,20 @@ EOF;
 
     public function render()
     {
-        if ($this->getAttr('type')) {
-            $this->setField('');
-        }
-        $this->html = '';
-        if (empty($this->display)) {
-
-            if (!empty($this->tag)) {
-                $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
-                $this->display = sprintf($this->scopeTemplate, $this->html);
+        if(count($this->childColumn) > 0){
+            $this->removeAttr('prop');
+            list($attrStr, $dataStr) = $this->parseAttr();
+            $childHtml = '';
+            foreach ($this->childColumn as $column){
+                $childHtml.=$column->render();
             }
-            if (count($this->usings) > 0) {
-                foreach ($this->usings as $key => $value) {
-                    if (is_string($key)) {
-                        $this->html .= "<span v-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
-                    } else {
-                        $this->html .= "<span v-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
-                    }
-                    if (isset($this->tagColor[$key])) {
-                        $this->tag($this->tagColor[$key], $this->tagTheme);
-                        $value = sprintf($this->tag, $value);
-                    }
-                    $this->html = sprintf($this->html, $value);
-                }
-                $this->display = sprintf($this->scopeTemplate, $this->html);
+            $columnHtml = "<el-table-column $attrStr label='$this->label'>{$childHtml}</el-table-column>";
+            return $columnHtml;
+        }else{
+            if ($this->getAttr('type')) {
+                $this->setField('');
             }
-        } else {
-            $this->html = $this->display;
-            $this->display = sprintf($this->scopeTemplate, $this->display);
-        }
-        if (empty($this->display) && !empty($this->field)) {
+            $this->html = '';
             $fields = explode('.', $this->field);
             $fieldVar = '';
             foreach ($fields as $field){
@@ -663,15 +670,42 @@ EOF;
                 $ifCondtion[] = "scope.row.{$fieldVar} === null";
             }
             $ifCondtion  = implode(' || ',$ifCondtion);
-            $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
-            $this->display = sprintf($this->scopeTemplate, $this->html);
+            if (empty($this->display)) {
+                if (!empty($this->tag)) {
+                    $this->html = sprintf($this->tag, "{{{$this->rowField}}}");
+                    $this->display = sprintf($this->scopeTemplate, $this->html);
+                }
+                if (count($this->usings) > 0) {
+                    $this->html = "<span style='font-size: 14px;' v-if=\"{$ifCondtion}\">--</span>";
+                    foreach ($this->usings as $key => $value) {
+                        if (is_string($key)) {
+                            $this->html .= "<span v-else-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
+                        } else {
+                            $this->html .= "<span v-else-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
+                        }
+                        if (isset($this->tagColor[$key])) {
+                            $this->tag($this->tagColor[$key], $this->tagTheme);
+                            $value = sprintf($this->tag, $value);
+                        }
+                        $this->html = sprintf($this->html, $value);
+                    }
+                    $this->display = sprintf($this->scopeTemplate, $this->html);
+                }
+            } else {
+                $this->html = $this->display;
+                $this->display = sprintf($this->scopeTemplate, $this->display);
+            }
+            if (empty($this->display) && !empty($this->field)) {
+                $this->html = "<span v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span v-else>{{{$this->rowField}}}</span>";
+                $this->display = sprintf($this->scopeTemplate, $this->html);
+            }
+            list($attrStr, $dataStr) = $this->parseAttr();
+            if ($this->edit) {
+                $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
+                $this->display = sprintf($this->scopeTemplate, $this->html);
+            }
+            $columnHtml =  "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
+            return $columnHtml;
         }
-
-        list($attrStr, $dataStr) = $this->parseAttr();
-        if ($this->edit) {
-            $this->html = "<el-input v-if=\"scope.row.eadmin_edit && inputEditField == '{$this->field}'\" :ref=\"'{$this->field}' + scope.\$index\" @change='editInput' @blur='blurInput' v-model='{$this->rowField}'  size='small' /><template v-else>{$this->html}</template>";
-            $this->display = sprintf($this->scopeTemplate, $this->html);
-        }
-        return "<el-table-column $attrStr><template slot=\"header\" slot-scope=\"scope\">{$this->label}{$this->filterLabel}</template>" . $this->display . "</el-table-column>";
     }
 }

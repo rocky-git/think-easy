@@ -264,7 +264,7 @@ class Filter extends View
      * 日期筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function date($field, $label = '')
     {
@@ -277,7 +277,7 @@ class Filter extends View
      * 时间筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function time($field, $label = '')
     {
@@ -291,7 +291,7 @@ class Filter extends View
      * 日期时间筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function datetime($field, $label = '')
     {
@@ -305,7 +305,7 @@ class Filter extends View
      * 日期时间范围筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function datetimeRange($field, $label = '')
     {
@@ -319,7 +319,7 @@ class Filter extends View
      * 级联筛选
      * @param ...$field 字段1,字段2,字段3...
      * @param $label 标签
-     * @return \thinkEasy\form\Cascader
+     * @return \thinkEasy\form\field\Cascader
      */
     public function cascader(...$field)
     {
@@ -333,7 +333,7 @@ class Filter extends View
      * 日期范围筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function dateRange($field, $label = '')
     {
@@ -347,7 +347,7 @@ class Filter extends View
      * 时间范围筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function timeRange($field, $label = '')
     {
@@ -361,7 +361,7 @@ class Filter extends View
      * 年日期筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function year($field, $label = '')
     {
@@ -375,7 +375,7 @@ class Filter extends View
      * 月日期筛选
      * @param $field 字段
      * @param $label 标签
-     * @return \thinkEasy\form\DateTime
+     * @return \thinkEasy\form\field\DateTime
      */
     public function month($field, $label = '')
     {
@@ -402,7 +402,7 @@ class Filter extends View
     /**
      * 单选框
      * @param $options 选项值
-     * @return \thinkEasy\form\Radio
+     * @return \thinkEasy\form\field\Radio
      */
     public function radio(array $options)
     {
@@ -419,7 +419,7 @@ class Filter extends View
     /**
      * 多选框
      * @param $options 选项值
-     * @return \thinkEasy\form\Checkbox
+     * @return \thinkEasy\form\field\Checkbox
      */
     public function checkbox(array $options)
     {
@@ -436,7 +436,7 @@ class Filter extends View
     /**
      * 分组下拉框
      * @param $options 选项值
-     * @return \thinkEasy\form\Select
+     * @return \thinkEasy\form\field\Select
      */
     public function selectGroup(array $options)
     {
@@ -450,7 +450,7 @@ class Filter extends View
     /**
      * 下拉框
      * @param $options 选项值
-     * @return \thinkEasy\form\Select
+     * @return \thinkEasy\form\field\Select
      */
     public function select(array $options)
     {
