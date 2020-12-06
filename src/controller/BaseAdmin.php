@@ -6,6 +6,9 @@ namespace thinkEasy\controller;
 use think\Request;
 use thinkEasy\Controller;
 use thinkEasy\facade\Component;
+use thinkEasy\form\Form;
+use thinkEasy\grid\Detail;
+use thinkEasy\grid\Grid;
 use thinkEasy\layout\Content;
 
 class BaseAdmin extends Controller
@@ -128,15 +131,13 @@ class BaseAdmin extends Controller
     public function view($build)
     {
         if (request()->method() == 'GET') {
-            if($build instanceof Content){
-                Component::view($build->view());
-            }else{
+            if($build instanceof Grid || $build instanceof Form || $build instanceof Detail){
                 $content = new Content();
                 $view = $content->title($build->title())->body($build)->view();
                 Component::view($view);
+            }else{
+                Component::view($build->view());
             }
-
-
         } else {
             return $build;
         }
