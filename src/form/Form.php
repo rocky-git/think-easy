@@ -128,7 +128,7 @@ class Form extends View
     protected $hasManyData = [];
 
     protected $hasManyIndex = 0;
-
+    protected $title = '';
     protected $pkField = 'id';
     //保存修改成功后跳转的url
     protected $redirectUrl = '';
@@ -958,9 +958,12 @@ EOF;
      */
     public function setTitle($title)
     {
+        $this->title = $title;
         $this->setVar('title', $title);
     }
-
+    public function title(){
+        return $this->title;
+    }
     /**
      * 设置提交按钮文字
      * @return string

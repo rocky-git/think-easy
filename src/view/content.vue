@@ -1,14 +1,12 @@
 <template>
-    <div>
+    <div class="eadmin-container">
         <!--{notempty name="title"}-->
         <div class="container-header">
             <span class="title">{$title}</span>
-            <eadmin-breadcrumb style="margin-left: auto"/>
+            <eadmin-breadcrumb style="margin-left: auto"></eadmin-breadcrumb>
         </div>
         <!--{/notempty}-->
-       <div>
-           {$html|raw}
-       </div>
+        {$html|raw}
     </div>
 </template>
 
@@ -25,6 +23,7 @@
             linkComponent(url,name){
                 this.$request({
                     url: url,
+                    eadmin_component:true,
                 }).then(res=>{
                     this[name] = () => new Promise(resolve => {
                         resolve(this.$splitCode(res.data))
@@ -36,15 +35,17 @@
 </script>
 
 <style scoped>
-    .container-header{
+    .eadmin-container .container-header{
         display: flex;
         align-items: center;
-        background: #fff;
+        height: 50px;
     }
-    .container-header .title{
+    .eadmin-container .container-header .title{
         font-size: 20px;
         font-weight: 400;
-        padding: 10px;
         color: #2c2c2c;
+    }
+    .eadmin-container .el-row+.el-row{
+        margin-top: 15px;
     }
 </style>

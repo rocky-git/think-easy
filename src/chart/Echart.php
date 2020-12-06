@@ -69,7 +69,9 @@ class Echart extends View
             $this->chart = new RadarChart($height, '100%');
         }
     }
-
+    public function title(){
+        return $this->title;
+    }
     /**
      * 当前图表
      * @return RadarChart

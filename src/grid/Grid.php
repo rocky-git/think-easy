@@ -30,6 +30,7 @@ use thinkEasy\View;
 
 class Grid extends View
 {
+    protected $title = '';
     //当前模型
     protected $model;
 
@@ -305,7 +306,9 @@ EOF;
         $this->title = $title;
         $this->table->setVar('title', $title);
     }
-
+    public function title(){
+        return $this->title;
+    }
     /**
      * 操作列定义
      * @param \Closure $closure

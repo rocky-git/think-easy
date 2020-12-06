@@ -4,9 +4,6 @@
         <!--{notempty name="title"}-->
             <el-col :span="24">
             <el-card class="box-card" :body-style="{padding: '0px 15px' }">
-                <div slot="header" class="clearfix" >
-                    <span>{$title}</span>
-                </div>
                 {$html|raw}
             </el-card>
             </el-col>

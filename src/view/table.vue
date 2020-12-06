@@ -1,5 +1,5 @@
 <template>
-    <div ref="gridContainer">
+    <div>
 
         <!--{notempty name="$filter"}-->
 
@@ -29,14 +29,6 @@
             {$header|raw}
             <!--{/notempty}-->
             <div class="headContainer">
-
-                <!--{notempty name="title"}-->
-                <div class="container-header">
-                    <span class="title">{$title}</span>
-                    <eadmin-breadcrumb style="margin-left: auto"/>
-                </div>
-                <!--{/notempty}-->
-
                 <!--{if !isset($hideTools)}-->
                 <el-row style="padding-top: 10px">
                     <el-col :span="24">
@@ -235,19 +227,22 @@
         },
         mounted() {
             this.$nextTick(()=>{
-                setTimeout(()=>{
-                    if(this.tableMaxHeight > 0){
-                        this.tableHeight = this.tableMaxHeight
-                    }else if(this.iframeMode){
-                        this.tableHeight = window.innerHeight / 2
-                    }else{
-                        this.tableHeight = window.innerHeight - this.$refs.gridHeader.clientHeight -  this.$refs.gridContainer.offsetTop
-                        if(this.$refs.tabs){
-                            this.tableHeight -=  75
-                        }
-                        this.tableHeight -= 65
+                if(this.tableMaxHeight > 0){
+                    this.tableHeight = this.tableMaxHeight
+                }else if(this.iframeMode){
+                    this.tableHeight = window.innerHeight / 2
+                }else{
+                    let offsetTop = this.$el.parentElement.parentElement.parentElement.offsetTop + this.$el.parentElement.parentElement.offsetTop
+
+                    if(this.$refs.gridHeader){
+                        offsetTop += this.$refs.gridHeader.clientHeight
                     }
-                })
+                    this.tableHeight = window.innerHeight -  offsetTop
+                    if(this.$refs.tabs){
+                        this.tableHeight -=  75
+                    }
+                    this.tableHeight -= 65
+                }
             })
         },
         created(){
@@ -893,16 +888,5 @@
     }
     .eadmin_form_box .el-date-editor--daterange.el-input__inner{
         width: 100%;
-    }
-    .container-header{
-        display: flex;
-        align-items: center;
-        background: #fff;
-    }
-    .container-header .title{
-        font-size: 20px;
-        font-weight: 400;
-        padding: 10px;
-        color: #2c2c2c;
     }
 </style>

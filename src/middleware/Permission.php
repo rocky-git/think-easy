@@ -33,7 +33,7 @@ class Permission
         //验证权限
         $authNodules = array_keys(config('admin.authModule'));
         if (in_array($moudel,$authNodules) && !AdminService::instance()->check($node, $request->method())) {
-            return json(['code'=>4400,'message'=>'没有访问该操作的权限']);
+            return json(['code'=>44000,'message'=>'没有访问该操作的权限']);
         }
         return $next($request);
     }

@@ -1,9 +1,5 @@
 <template>
         <el-main ref="ruleForm" style="background: #fff;border-radius: 4px;">
-            <!--{notempty name="title"}-->
-            <div >{$title}</div>
-            <hr style="border: none;height: 1px;background-color: #e5e5e5;">
-            <!--{/notempty}-->
             <el-form ref="form" @submit.native.prevent :model="form" {$attrStr|raw}>
                 {$formItem|raw}
                 <el-form-item :style="{textAlign:'{$sumbitAlign|default=\'left\'}' }">

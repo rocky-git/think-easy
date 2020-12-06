@@ -33,6 +33,7 @@ class Detail extends View
     protected $scriptArr = [];
     protected $manyColumnHtml = '';
     protected $columnHtml = '';
+    protected $title = '';
     public function __construct(Model $model)
     {
         $this->template = 'detail';
@@ -72,7 +73,9 @@ class Detail extends View
         $this->title = $title;
         $this->setVar('title', $title);
     }
-
+    public function title(){
+        return $this->title;
+    }
     /**
      * 布局
      * @param $title 标题

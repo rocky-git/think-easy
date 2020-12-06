@@ -172,14 +172,15 @@ class TokenService extends Service
             $token = self::$token ? self::$token : Request::header('Authorization') ?? Request::param('Authorization');
         }
         if (empty($token)) {
-            $this->errorCode(4000, '请先登陆再访问');
+            $this->errorCode(40000, '请先登陆再访问');
         }
         $data = $this->decode($token);
-        if ($data === false || Cache::has(md5($token))) {
-            $this->errorCode(4001, '授权认证失败');
-        }
-        if ($data['expire'] < time()) {
-            $this->errorCode(4002, '授权失效,身份过期');
+        if ($data === false) {
+            $this->errorCode(40001, '授权认证失败');
+        } elseif (Cache::has(md5($token))) {
+            $this->errorCode(40003, '账号已在其他地方登陆');
+        } elseif ($data['expire'] < time()) {
+            $this->errorCode(40002, '认证身份过期，请重新登陆');
         }
         return true;
     }

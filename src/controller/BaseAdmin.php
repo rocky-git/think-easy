@@ -6,6 +6,7 @@ namespace thinkEasy\controller;
 use think\Request;
 use thinkEasy\Controller;
 use thinkEasy\facade\Component;
+use thinkEasy\layout\Content;
 
 class BaseAdmin extends Controller
 {
@@ -16,7 +17,9 @@ class BaseAdmin extends Controller
      */
     public function index()
     {
-        Component::view($this->grid()->view());
+        $content = new Content();
+        $view = $content->title($this->grid()->title())->body($this->grid())->view();
+        Component::view($view);
     }
 
     /**
@@ -26,7 +29,9 @@ class BaseAdmin extends Controller
      */
     public function create()
     {
-        Component::view($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
+        $content = new Content();
+        $view = $content->title($this->form()->title())->body($this->form()->addExtraData(['submitFromMethod' => 'form']))->view();
+        Component::view($view);
     }
 
     /**
@@ -57,7 +62,9 @@ class BaseAdmin extends Controller
      */
     public function read($id)
     {
-        Component::view($this->detail()->detailData($id)->view());
+        $content = new Content();
+        $view = $content->title($this->detail()->title())->body($this->detail()->detailData($id))->view();
+        Component::view($view);
 
     }
 
@@ -69,7 +76,9 @@ class BaseAdmin extends Controller
      */
     public function edit($id)
     {
-        Component::view($this->form()->addExtraData(['submitFromMethod' => 'form'])->view());
+        $content = new Content();
+        $view = $content->title($this->form()->title())->body($this->form()->addExtraData(['submitFromMethod' => 'form']))->view();
+        Component::view($view);
     }
 
     /**
@@ -119,7 +128,15 @@ class BaseAdmin extends Controller
     public function view($build)
     {
         if (request()->method() == 'GET') {
-            Component::view($build->view());
+            if($build instanceof Content){
+                Component::view($build->view());
+            }else{
+                $content = new Content();
+                $view = $content->title($build->title())->body($build)->view();
+                Component::view($view);
+            }
+
+
         } else {
             return $build;
         }

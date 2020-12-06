@@ -46,7 +46,7 @@ class Row extends View
         }
 
         $this->component[$componentKey] = "() => new Promise(resolve => {
-                            resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
+                            resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."'),this.\$route.name))
                         })";
         $column->content('<component :is="'.$componentKey.'" />');
         $this->column[] = $column;
@@ -68,7 +68,7 @@ class Row extends View
         }
         $component = "<template><div></div></template>";
         $this->component[$componentKey] = "() => new Promise(resolve => {
-                            resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."')))
+                            resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($component)."'),this.\$route.name))
                             this.\$request({
                                 url: '{$url}',
                                 params:{
@@ -122,6 +122,6 @@ class Row extends View
             list($url,$name) = $this->clickLink;
             $this->html = "<span @click='linkComponent(\"{$url}\",\"{$name}\")'>{$this->html}</span>";
         }
-        return "<el-row style=\"margin-bottom: 15px;\" $attrStr>{$this->html}</el-row>";
+        return "<el-row $attrStr>{$this->html}</el-row>";
     }
 }

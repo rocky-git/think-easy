@@ -74,6 +74,7 @@ class AdminService extends Service
      */
     public function check($node,$method='')
     {
+        
         if ($this->id() == config('admin.admin_auth_id')) {
             return TokenService::instance()->auth();
         }
@@ -90,6 +91,7 @@ class AdminService extends Service
         }
         $permissions = $this->permissions();
         if(empty($method)){
+
             $rules = array_column($permissions, 'rule');
             if (in_array($node, $rules)) {
                 return true;
@@ -97,8 +99,11 @@ class AdminService extends Service
                 return false;
             }
         }else{
+
             foreach ($permissions as $permission){
+
                 if($permission['rule'] == $node && ($permission['method'] == $method || $permission['method'] == 'any')){
+
                     if($permission['is_login']){
                         TokenService::instance()->auth();
                     }
@@ -132,6 +137,7 @@ class AdminService extends Service
         $nodes = NodeService::instance()->all();
         if($this->id()){
             $permissions = $this->user()->permissions();
+
         }else{
             $permissions = [];
         }
