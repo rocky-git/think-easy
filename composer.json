@@ -29,6 +29,11 @@
       "": "src/extend"
     }
   },
+  "scripts": {
+    "post-autoload-dump": [
+      "@php think eadmin:publish"
+    ]
+  },
   "extra": {
     "think": {
       "services": [

@@ -29,6 +29,7 @@ class ServiceProvider extends Service
     {
         $this->commands([
             'thinkEasy\command\BuildView',
+            'thinkEasy\command\Publish',
         ]);
     }
 }
