@@ -1,1 +1,0 @@
-(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0f1194"],{"9ed6":function(n,e,t){"use strict";t.r(e);var a=function(){var n=this,e=n.$createElement,t=n._self._c||e;return t("eadmin-component",{attrs:{url:"/admin/login/index"}})},i=[],o={name:"Login"},c=o,r=t("2877"),u=Object(r["a"])(c,a,i,!1,null,"2879ee3a",null);e["default"]=u.exports}}]);
