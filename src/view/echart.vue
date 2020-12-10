@@ -1,13 +1,13 @@
 <template>
     <el-card shadow="hover">
-        <div slot="header">
-            <el-row>
+        <div slot="header" >
+            <el-row style="display: flex;align-items: center">
                 <!--{notempty name="title"}-->
-                    <el-col :xs="24" :sm="24" :md="6" :span="6" >
+                    <el-col :xs="24" :sm="24" :md="4" :span="4" >
                         <div>{$title}</div>
                     </el-col>
                 <!--{/notempty}-->
-                <el-col :xs="24" :sm="24" :md="18" :span="18">
+                <el-col :xs="24" :sm="24" :md="20" :span="20" style="margin-left: auto">
                     <el-button-group >
 
                         <el-button v-if="params.date_type == 'yesterday'" size="small" type="primary" @click="requestData('yesterday')">昨天</el-button>
