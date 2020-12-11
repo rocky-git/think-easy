@@ -179,6 +179,12 @@
                             field = field.replace('.','_')
                             this.validates[field+index+'ErrorMsg'] = val
                         }
+                        if(this.$refs[field]){
+                            this.$refs[field].$el.scrollIntoView({　　//滚动到指定节点
+                                block: 'center',　　　　　//值有start,center,end，nearest，当前显示在视图区域中间
+                                behavior: 'smooth'　　　　//值有auto、instant,smooth，缓动动画（当前是慢速的）
+                            })
+                        }
                     }
                 }).catch(res=>{
                     this.loading = false

@@ -130,7 +130,7 @@ class Field extends View
         if($bool){
             $this->rule(['gt:0'=>$this->label.'不能为空']);
         }
-        $this->rule = json_encode([['required' => true, 'message' => $this->label.'不能为空', 'trigger' => 'blur']], JSON_UNESCAPED_UNICODE);
+        $this->rule = json_encode([['required' => true, 'message' => $this->label.'不能为空', 'trigger' => 'change']], JSON_UNESCAPED_UNICODE);
         return $this;
     }
 
