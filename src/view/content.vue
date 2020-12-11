@@ -2,7 +2,7 @@
     <div class="eadmin-container">
         <!--{notempty name="title"}-->
         <div class="container-header">
-            <span class="title">{$title}</span>
+            <span class="title">{$title|raw}</span>
             <eadmin-breadcrumb style="margin-left: auto"></eadmin-breadcrumb>
         </div>
         <!--{/notempty}-->
@@ -44,6 +44,8 @@
         font-size: 20px;
         font-weight: 400;
         color: #2c2c2c;
+        display: flex;
+        align-items: center;
     }
     .eadmin-container .el-row+.el-row{
         margin-top: 15px;

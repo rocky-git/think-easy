@@ -8,6 +8,7 @@ use thinkEasy\facade\Component;
 use thinkEasy\form\Form;
 use thinkEasy\grid\Detail;
 use thinkEasy\grid\Grid;
+use thinkEasy\grid\Table;
 use thinkEasy\View;
 
 class Column extends View
@@ -62,7 +63,7 @@ class Column extends View
      * @param $html
      */
     public function content($html){
-        if($html instanceof Grid || $html instanceof Form || $html instanceof Detail){
+        if($html instanceof Grid || $html instanceof Form || $html instanceof Detail || $html instanceof Table){
             $view = $html->view();
             $html = "<component :is=\"resolve => {
           resolve(this.\$splitCode(decodeURIComponent('".rawurlencode($view)."'),this.\$route.name))

@@ -28,7 +28,7 @@ class ServiceProvider extends Service
 
         //注册插件
         PlugService::instance()->register();
-       // $this->app->middleware->route( \thinkEasy\middleware\Permission::class);
+        $this->app->middleware->route( \thinkEasy\middleware\Permission::class);
     }
     public function boot()
     {
