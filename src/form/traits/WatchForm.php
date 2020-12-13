@@ -37,8 +37,7 @@ trait WatchForm
         return $js;
     }
     protected function watchRequstJs($field,$newVal='newVal',$oldValue='oldValue'){
-        $submitUrl = app('http')->getName() . '/' . request()->controller();
-        $submitUrl = str_replace('.rest', '', $submitUrl);
+        $submitUrl = $this->getRequestUrl();
         $js = <<<EOF
             var method,url = '{$submitUrl}'
             if(this.form.id == undefined){

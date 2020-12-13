@@ -91,6 +91,14 @@ class File extends Field
     }
 
     /**
+     * 图片建议提示
+     * @param $width 宽度
+     * @param $height 高度
+     */
+    public function helpSize($width,$height){
+        $this->help("建议上传图片尺寸 $width * $height");
+    }
+    /**
      * 裁剪尺寸,暂仅支持单文件
      * @param $width 宽度
      * @param $height 高度
