@@ -1021,9 +1021,7 @@ EOF;
         $this->setVar('radioJs', $this->radioJs);
         $this->setVar('watchJs', $this->createWatchJs());
         $this->setVar('formItem', $formItem);
-        $submitUrl = app('http')->getName() . '/' . request()->controller();
-        $submitUrl = str_replace('.rest', '', $submitUrl);
-        $this->setVar('submitUrl', $submitUrl);
+        $this->setVar('submitUrl',$this->getRequestUrl());
         $this->setVar('formScriptVar', $formScriptVar);
         if (Request::has('build_dialog')) {
             $this->setVar('title', '');

@@ -221,11 +221,11 @@ abstract class View
         return $this->script;
     }
     protected function getRequestUrl(){
-        $requestUrl = app('http')->getName() . '/' . request()->controller();
-        $requestUrl = str_replace('.rest', '', $requestUrl);
-        $action = request()->action();
-        if($action != 'index'){
-            $requestUrl .= '/' . $action;
+        $requestUrl = substr(request()->baseUrl(),1);
+        $requestUrl = preg_replace("/(\/[\d]\/edit\.rest)$/U",'',$requestUrl);
+        $requestUrl = str_replace(['/create.rest','.rest',],['','',''],$requestUrl);
+        if(!empty(request()->action())){
+            $requestUrl = str_replace('/'.request()->action(),'',$requestUrl);
         }
         return $requestUrl;
     }

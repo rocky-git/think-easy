@@ -921,7 +921,7 @@ EOF;
                     $result['total'] = $count;
                 }
                 $result['cellComponent'] = $this->table->cellComponent();
-                return $result;
+                Component::view($result);
                 break;
             default:
                 return $this->table->view();

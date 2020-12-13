@@ -123,7 +123,11 @@ class PlugService extends Service
      * @return mixed
      */
     public function status($name){
-        return Db::name('system_plugs')->where('name',$name)->value('status');
+        try{
+            return Db::name('system_plugs')->where('name',$name)->value('status');
+        }catch (\Exception $exception){
+            return false;
+        }
     }
     /**
      * 启用禁用
