@@ -27,6 +27,9 @@ class WechatService
             'cert_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_cert')),
             'key_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_key')),
             'response_type' => 'array',
+            'http' => [
+                'verify' => false,
+            ]
         ];
         $config = array_merge($config, $options);
         return Factory::officialAccount($config);
@@ -46,6 +49,9 @@ class WechatService
             'cert_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_cert')),
             'key_path' => Filesystem::disk('safe')->path(Data::sysconf('wechat_mch_ssl_key')),
             'response_type' => 'array',
+            'http' => [
+                'verify' => false,
+            ]
         ];
         $config = array_merge($config, $options);
         return Factory::payment($config);
@@ -62,6 +68,9 @@ class WechatService
             'app_id' => Data::sysconf('wechat_mini_appid'),
             'secret' => Data::sysconf('wechat_mini_secret'),
             'response_type' => 'array',
+            'http' => [
+                'verify' => false,
+            ]
         ];
         $config = array_merge($config, $options);
         return Factory::miniProgram($config);
