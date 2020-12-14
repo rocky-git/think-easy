@@ -222,7 +222,7 @@ abstract class View
     }
     protected function getRequestUrl(){
         $requestUrl = substr(request()->baseUrl(),1);
-        $requestUrl = preg_replace("/(\/[\d]\/edit\.rest)$/U",'',$requestUrl);
+        $requestUrl = preg_replace("/(\/[\d]*\/edit\.rest)$/U",'',$requestUrl);
         $requestUrl = str_replace(['/create.rest','.rest',],['','',''],$requestUrl);
         if(!empty(request()->action())){
             $requestUrl = str_replace('/'.request()->action(),'',$requestUrl);
