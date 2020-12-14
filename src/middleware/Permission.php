@@ -18,6 +18,7 @@ class Permission
 {
     public function handle(Request $request, \Closure $next)
     {
+        
         $pathinfo = $request->pathinfo();
         if($request->has('submitFromMethod')) {
             $method = $request->param('submitFromMethod');

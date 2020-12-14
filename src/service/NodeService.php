@@ -8,7 +8,9 @@
 
 namespace thinkEasy\service;
 
+use think\route\Resource;
 use thinkEasy\Service;
+use function GuzzleHttp\Psr7\str;
 
 /**
  * 系统节点服务
@@ -87,17 +89,15 @@ class NodeService extends Service
      * @throws \ReflectionException
      */
     protected function parse($files){
-
         $data = [];
-
-        foreach ($files as $key=>$file){
+        foreach ($files as $key=>$item){
+            $file = $item['file'];
             $controller = str_replace('.php','',basename($file));
-            $path = dirname(dirname($file));
-            $moduleName = basename($path);
-            $appName = basename(dirname($path));
-            $namespace = "$appName\\$moduleName\\controller\\$controller";
+            if(!empty($item['module'])){
+                $moduleName = $item['module'];
+            }
+            $namespace =  $item['namespace'];
             $class = new \ReflectionClass($namespace);
-
             $res = $this->parseDocComment($class->getDocComment());
             if($res === false){
                 $title = $controller;
@@ -245,11 +245,9 @@ class NodeService extends Service
                     }
 
                 }
-
             }
             if(count($this->treeArr[$moduleName]['children'][$key]['children']) == 0){
                 unset($this->treeArr[$moduleName]['children'][$key]);
-
             }
             $this->treeArr[$moduleName]['children']= array_values($this->treeArr[$moduleName]['children']);
         }
@@ -281,7 +279,36 @@ class NodeService extends Service
                 ];
                 foreach (glob($module.'/controller/'.'*.php') as $file){
                     if(is_file($file)){
-                        $controllerFiles[] =  $file;
+                        $controller = str_replace('.php','',basename($file));
+                        $namespace ="app\\$moduleName\\controller\\$controller";
+                        $controllerFiles[] =  [
+                            'namespace'=>$namespace,
+                            'module'=>$moduleName,
+                            'file'=>$file,
+                        ];
+                    }
+                }
+            }
+        }
+        $rules = $this->app->route->getGroup()->getRules();
+        $loader = PlugService::instance()->loader();
+        $psr = $loader->getPrefixesPsr4();
+        foreach ($rules as $key=>$rule){
+            if(isset($rule[1]) && $rule[1] instanceof Resource){
+                $resource[] = $rule[1];
+                $route = $rule[1]->getRoute();
+                $arr = explode('\\',$route);
+                $namespace = array_shift($arr).'\\';
+                if(isset($psr[$namespace])){
+                    $file = array_shift($psr[$namespace]);
+                    $filePath = str_replace([$namespace,'\\'],['','/'],$route);
+                    $file .= $filePath.'.php';
+                    if(is_file($file)){
+                        $controllerFiles[] = [
+                            'namespace'=>$route,
+                            'module'=>'',
+                            'file'=>$file,
+                        ];
                     }
                 }
             }

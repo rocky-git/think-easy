@@ -39,6 +39,13 @@ class PlugService extends Service
     }
 
     /**
+     * 获取插件目录
+     * @return string
+     */
+    public function getPath(){
+        return $this->plugPathBase;
+    }
+    /**
      * 获取 composer 类加载器.
      *
      * @return ClassLoader

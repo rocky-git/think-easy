@@ -10,6 +10,7 @@ namespace thinkEasy;
 
 
 use think\facade\Db;
+use think\route\Resource;
 use think\Service;
 use thinkEasy\middleware\Permission;
 use thinkEasy\service\FileService;
