@@ -28,6 +28,7 @@ use thinkEasy\form\field\Input;
 use thinkEasy\form\field\Radio;
 use thinkEasy\form\field\Select;
 use thinkEasy\form\field\Tree;
+use thinkEasy\form\traits\RequestForm;
 use thinkEasy\form\traits\ValidatorForm;
 use thinkEasy\form\traits\WatchForm;
 use thinkEasy\model\SystemConfig;
@@ -70,7 +71,7 @@ use thinkEasy\View;
  */
 class Form extends View
 {
-    use WatchForm, ValidatorForm;
+    use WatchForm, ValidatorForm,RequestForm;
 
     protected $attrs = [
         'model',
@@ -146,7 +147,7 @@ class Form extends View
         $this->labelPosition('right');
         $this->setAttr(':label-position', "labelPosition");
         $this->addExtraData([
-            'submitFromMethod' => request()->action(),
+            'submitFromMethod' => $this->action(),
         ]);
         if (request()->has($this->pkField)) {
             $this->edit(request()->param($this->pkField));
@@ -1022,7 +1023,7 @@ EOF;
         $this->setVar('radioJs', $this->radioJs);
         $this->setVar('watchJs', $this->createWatchJs());
         $this->setVar('formItem', $formItem);
-        $this->setVar('submitUrl',$this->getRequestUrl());
+        $this->setVar('submitUrl',$this->requestUrl());
         $this->setVar('formScriptVar', $formScriptVar);
         if (Request::has('build_dialog')) {
             $this->setVar('title', '');

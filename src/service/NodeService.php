@@ -90,6 +90,7 @@ class NodeService extends Service
      */
     protected function parse($files){
         $data = [];
+        $rules = $this->app->route->getRuleList();
         foreach ($files as $key=>$item){
             $file = $item['file'];
             $controller = str_replace('.php','',basename($file));
@@ -107,7 +108,6 @@ class NodeService extends Service
             $this->treeArr[$moduleName]['children'][$key] = [
                     'label'=>$title,
                     'children'=>[]
-
             ];
             foreach ($class->getMethods() as $method){
                 $doc = $method->getDocComment();
@@ -217,7 +217,19 @@ class NodeService extends Service
                     }
                 }
                 if($method->class == $namespace && $method->isPublic()){
-                    $node  = $moduleName.'/'.$controller.'/'.$method->getName();
+                    $node = '';
+                    foreach ($rules as $rule){
+                        if(is_string($rule['route']) && strpos($rule['route'],'@')){
+                           list($path,$action) =  explode('@',$rule['route']);
+                           if($path == $namespace && $action == $method->getName()){
+                               $node = $rule['rule'];
+                               break;
+                           }
+                        }
+                    }
+                    if(empty($node)){
+                        $node  = $moduleName.'/'.$controller.'/'.$method->getName();
+                    }
                     $node = strtolower($node);
                     if($res === false){
                         $nodeData = [
@@ -243,7 +255,6 @@ class NodeService extends Service
                     if($auth){
                         $this->treeArr[$moduleName]['children'][$key]['children'][] = $nodeData;
                     }
-
                 }
             }
             if(count($this->treeArr[$moduleName]['children'][$key]['children']) == 0){
@@ -291,11 +302,13 @@ class NodeService extends Service
             }
         }
         $rules = $this->app->route->getGroup()->getRules();
+
         $loader = PlugService::instance()->loader();
         $psr = $loader->getPrefixesPsr4();
         foreach ($rules as $key=>$rule){
             if(isset($rule[1]) && $rule[1] instanceof Resource){
                 $resource[] = $rule[1];
+
                 $route = $rule[1]->getRoute();
                 $arr = explode('\\',$route);
                 $namespace = array_shift($arr).'\\';

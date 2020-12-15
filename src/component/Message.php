@@ -25,7 +25,7 @@ class Message
      * @param string $url 跳转url
      * @return $this
      */
-    public function success($message, $url = '')
+    public function success($message='操作成功', $url = '')
     {
         $this->response($message, 'success', $url);
         return $this;
@@ -58,10 +58,19 @@ class Message
      * @param string $url 跳转url
      * @return $this
      */
-    public function error($message, $url = '')
+    public function error($message='数据保存失败', $url = '')
     {
         $this->response($message, 'error', $url);
         return $this;
+    }
+    /**
+     * 跳转url
+     * @param $url
+     * @return $this
+     */
+    public function redirect($url)
+    {
+        $this->data = array_merge($this->data, ['url' => $url]);
     }
     /**
      * 刷新当前页面
