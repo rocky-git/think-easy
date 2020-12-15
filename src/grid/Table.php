@@ -154,7 +154,7 @@ class Table extends View
                 ];
             }
         }
-       
+
         //选择当前自定义视图表格字段方案
         if (!empty($tableGrid)) {
             $fields = array_flip($tableGrid['fields']);

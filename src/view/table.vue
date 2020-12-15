@@ -633,7 +633,9 @@
             cellClick(row, column, cell, event){
                 this.inputEditRow = row
                 this.inputEditField = column.property
-                this.$set( this.tableData[row.eadminIndex],'eadmin_edit',true)
+                if(this.tableData[row.eadminIndex]){
+                    this.$set( this.tableData[row.eadminIndex],'eadmin_edit',true)
+                }
                 this.$nextTick(()=>{
                     if(this.$refs[column.property+row.eadminIndex]){
                         this.$refs[column.property+row.eadminIndex].focus()

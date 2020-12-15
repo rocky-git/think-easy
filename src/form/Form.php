@@ -22,6 +22,7 @@ use think\model\relation\HasMany;
 use think\model\relation\HasOne;
 use think\model\relation\MorphMany;
 use think\model\relation\MorphOne;
+use thinkEasy\facade\Component;
 use thinkEasy\form\field\Cascader;
 use thinkEasy\form\field\Input;
 use thinkEasy\form\field\Radio;
@@ -1025,6 +1026,7 @@ EOF;
         $this->setVar('formScriptVar', $formScriptVar);
         if (Request::has('build_dialog')) {
             $this->setVar('title', '');
+            Component::view($this->render());
         }
         return $this->render();
     }

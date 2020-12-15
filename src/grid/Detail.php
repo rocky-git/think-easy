@@ -9,6 +9,7 @@ use think\facade\Request;
 use think\Model;
 use think\model\Collection;
 use think\model\relation\HasMany;
+use thinkEasy\facade\Component;
 use thinkEasy\layout\Card;
 use thinkEasy\View;
 
@@ -194,9 +195,6 @@ class Detail extends View
         if (!empty($columnScriptVar)) {
             $scriptVar = $scriptVar . ',' . $columnScriptVar;
         }
-        if (Request::has('build_dialog')) {
-            $this->setVar('title', '');
-        }
         $this->setVar('data',json_encode($this->data,JSON_UNESCAPED_UNICODE));
         $this->setVar('cellComponent', json_encode($this->cellComponent, JSON_UNESCAPED_UNICODE));
         foreach ($this->component as $key=>$value){
@@ -205,6 +203,10 @@ class Detail extends View
         $this->setVar('html', $this->columnHtml);
         $this->setVar('manyColumnHtml', $this->manyColumnHtml);
         $this->setVar('scriptVar', $scriptVar);
+        if (Request::has('build_dialog')) {
+            $this->setVar('title', '');
+            Component::view($this->render());
+        }
         return $this->render();
     }
     //头像昵称列
