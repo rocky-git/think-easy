@@ -476,7 +476,7 @@ EOF;
         if ($action == 'buldview_drag_sort') {
             $sortable_data = $data['sortable_data'];
             $field = "id,(@rownum := @rownum+1),case when @rownum = {$sortable_data['sort']} then @rownum := @rownum+1 else @rownum := @rownum end AS rownum";
-            $sortSql = $this->model->table("(SELECT @rownum := -1) r," . $this->model->getTable())
+            $sortSql = $this->db->table("(SELECT @rownum := -1) r," . $this->model->getTable())
                 ->fieldRaw($field)
                 ->removeOption('order')
                 ->order($this->sortField)

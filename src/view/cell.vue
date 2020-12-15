@@ -13,6 +13,7 @@
             size:Number,
             tableDataUpdate: Boolean,
             width:Number,
+            globalRequestParams:[Object,Array]
         },
         mounted() {
             this.$nextTick(()=>{
@@ -50,6 +51,7 @@
             sortTop(index,data){
                 this.$request({
                     url: this.requestUrl +'/batch.rest',
+                    params:this.globalRequestParams,
                     method: 'put',
                     data:{
                         action:'buldview_drag_sort',
@@ -76,6 +78,7 @@
             sortBottom(index,data){
                 this.$request({
                     url: this.requestUrl +'/batch.rest',
+                    params:this.globalRequestParams,
                     method: 'put',
                     data:{
                         action:'buldview_drag_sort',

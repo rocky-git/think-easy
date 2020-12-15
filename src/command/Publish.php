@@ -36,7 +36,7 @@ class Publish extends Command
      */
     protected function copyDir($dir, $src)
     {
-
+        $cover = false;
         if (is_dir($src)) {
             if ($this->output->confirm($this->input, "确认覆盖资源文件目录[$src]? [y]/n")) {
                 $cover = true;

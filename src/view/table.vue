@@ -273,6 +273,7 @@
                     resolve(this.$splitCode(cmponent))
                 })
             })
+            this.requestParams()
             if(sessionStorage.getItem('deleteColumnShow')){
                 this.deleteColumnShow = true
                 this.activeTabsName = 'trashed'
@@ -468,9 +469,12 @@
                         var startPage = (this.page-1) * this.size
                         const targetRow = this.tableData.splice(evt.oldIndex, 1)[0]
                         this.tableData.splice(evt.newIndex, 0, targetRow)
+
+
                         if(evt.newIndex != evt.oldIndex){
                             this.$request({
                                 url: '{$submitUrl|default=""}/batch.rest',
+                                params:this.globalRequestParams,
                                 method: 'put',
                                 data:{
                                     action:'buldview_drag_sort',
@@ -487,7 +491,16 @@
                     }
                 })
             },
-
+            requestParams(){
+                this.globalRequestParams = {}
+                /*{if isset($submitParams)}*/
+                /*{foreach $submitParams as $key=>$value}*/
+                /*{php}if(is_array($value))continue;{/php}*/
+                this.globalRequestParams['{$key}'] = '{$value}'
+                /*{/foreach}*/
+                /*{/if}*/
+                this.globalRequestParams = Object.assign(this.globalRequestParams,this.$route.query)
+            },
             //重置筛选表单
             filterReset(){
                 this.$refs['form'].resetFields();
@@ -801,18 +814,11 @@
                     page:this.page,
                     size:this.size,
                 }
-                this.globalRequestParams = {}
-                /*{if isset($submitParams)}*/
-                /*{foreach $submitParams as $key=>$value}*/
-                /*{php}if(is_array($value))continue;{/php}*/
-                this.globalRequestParams['{$key}'] = '{$value}'
-                /*{/foreach}*/
-                /*{/if}*/
+
                 if(this.deleteColumnShow){
-                    this.globalRequestParams = Object.assign(this.globalRequestParams,{'is_deleted':true})
+                    requestParams = Object.assign(this.globalRequestParams,{'is_deleted':true})
                 }
-                this.globalRequestParams = Object.assign(this.globalRequestParams,this.form,this.sortableParams,this.$route.query)
-                requestParams = Object.assign(requestParams,this.globalRequestParams)
+                requestParams = Object.assign(requestParams,this.form,this.sortableParams)
                 requestParams.eadmin_component = true
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.$request({
