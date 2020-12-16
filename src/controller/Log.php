@@ -1,54 +1,18 @@
 <?php
 
-namespace app\admin\controller;
-
+namespace thinkEasy\controller;
 
 use think\facade\Request;
 use think\facade\View;
-use thinkEasy\controller\BaseAdmin;
-use thinkEasy\form\Form;
-use thinkEasy\grid\Actions;
-use thinkEasy\grid\Filter;
-use thinkEasy\grid\Grid;
-use thinkEasy\model\SystemLog;
 use thinkEasy\service\LogService;
 
 /**
  * 系统日志
  * Class Log
- * @package app\admin\controller
+ * @package
  */
 class Log extends BaseAdmin
 {
-    /**
-     * 系统日志
-     * @auth true
-     * @login true
-     * @return string
-     */
-    protected function grid()
-    {
-        $grid = new Grid(new SystemLog());
-        $grid->setTitle('系统日志');
-        $grid->indexColumn();
-        $grid->column('action', '操作行为')->tag('','light');
-        $grid->column('content', '操作内容');
-        $grid->column('node', '操作节点');
-        $grid->column('geoip', 'IP');
-        $grid->column('username', '操作账号');
-        $grid->column('create_time', '操作时间');
-        $grid->filter(function (Filter $filter) {
-            $filter->like('username', '操作账号');
-            $filter->like('action', '操作行为');
-            $filter->like('content', '操作内容');
-            $filter->like('node', '操作节点');
-            $filter->like('geoip', 'IP');
-            $filter->dateRange('create_time', '操作时间');
-        });
-        $grid->hideAddButton();
-        $grid->hideAction();
-        return $grid;
-    }
     /**
      * 日志数据
      * @return string
@@ -84,12 +48,12 @@ class Log extends BaseAdmin
         ]);
     }
     /**
-     * 日志查看
+     * 调试日志查看
      * @return string
      */
     public function debug(){
-        $view = View::fetch('/log');
-        $this->successCode($view);
+        $content = file_get_contents(__DIR__.'/../view/log.vue');
+        $this->successCode($content);
     }
     /**
      * 删除日志

@@ -6,7 +6,7 @@
  * Time: 20:28
  */
 
-namespace app\admin\controller;
+namespace thinkEasy\controller;
 
 
 use thinkEasy\grid\Actions;

@@ -81,7 +81,7 @@ class Index extends BaseAdmin
             $echart->sum('系统用户id总和', 'id', 50);
         });
         $echart->group('日志', function ($echart) {
-            $echart->table('system_log', 'create_time', 50);
+            $echart->table('system_user', 'create_time', 50);
             $echart->count('日志总数量', 50);
             $echart->sum('日志id总和', 'id', 1000);
         });
@@ -95,7 +95,7 @@ class Index extends BaseAdmin
     public function funnelchart()
     {
         $echart = new Echart('漏斗图', 'funnel', '400px');
-        $echart->table('system_log', 'create_time');
+        $echart->table('system_user', 'create_time');
         $echart->count('日志总数量');
         $echart->sum('日志id总和', 'id');
         $echart->avg('日志id平均', 'id');
@@ -119,7 +119,7 @@ class Index extends BaseAdmin
             $echart->sum('系统用户id总和', 'id');
         });
         $echart->group('日志', function ($echart) {
-            $echart->table('system_log', 'create_time');
+            $echart->table('system_user', 'create_time');
             $echart->count('日志总数量');
             $echart->sum('日志id总和', 'id');
             $echart->avg('日志id平均', 'id');

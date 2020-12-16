@@ -74,7 +74,7 @@
         methods:{
             request(){
                 this.$request({
-                    url:'/admin/log/logData',
+                    url:'log/logData',
                     method:'post',
                     data:{
                         file:this.logData.file,
@@ -102,7 +102,7 @@
             },
             del(path){
                 this.$request({
-                    url:'/admin/log/remove',
+                    url:'log/remove',
                     method:'post',
                     data:{
                         path : path

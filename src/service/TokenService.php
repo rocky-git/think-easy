@@ -113,6 +113,7 @@ class TokenService extends Service
             //保存最新token
             Cache::set($cacheKey, $token, $this->expire);
         }
+        $this->set($token);
         return [
             'token' => $token,
             'expire' => (int)$this->expire
@@ -128,12 +129,6 @@ class TokenService extends Service
      */
     public function decode($token = '')
     {
-        if (empty($token)) {
-            $token = Request::header('Authorization');
-            if (Request::has('Authorization')) {
-                $token = rawurldecode(Request::get('Authorization'));
-            }
-        }
         $str = openssl_decrypt($token, 'aes-256-cbc', $this->key, 0, self::IV);
         if ($str === false) {
             return false;
@@ -194,7 +189,8 @@ class TokenService extends Service
      */
     public function getVar($name)
     {
-        $data = $this->decode();
+        $token = self::$token ? self::$token : rawurldecode(Request::header('Authorization'));
+        $data = $this->decode($token);
         if (isset($data[$name])) {
             return $data[$name];
         } else {

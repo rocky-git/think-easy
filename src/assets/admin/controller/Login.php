@@ -78,8 +78,8 @@ class Login extends BaseAdmin
                     $user->openid = $data['openid'];
                     $user->save();
                 }
-                event('UserLogin', $user);
                 $tokens = TokenService::instance()->encode($user);
+                event('UserLogin', $user);
                 $this->successCode($tokens);
             } else {
                 $this->errorCode(999, $validate->getError());

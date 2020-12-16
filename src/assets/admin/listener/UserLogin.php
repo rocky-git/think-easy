@@ -2,8 +2,6 @@
 declare (strict_types = 1);
 
 namespace app\admin\listener;
-use thinkEasy\model\SystemLog;
-
 class UserLogin
 {
     /**
@@ -28,14 +26,6 @@ class UserLogin
     }
     //记录日志
     public function loginLog(){
-        $node = app('http')->getName() . '/' . app()->request->pathinfo();
-        $ip = app()->request->ip();
-        SystemLog::create([
-            'username'=>$this->user->username,
-            'geoip'=>$ip,
-            'action'=>'登陆',
-            'node'=>$node,
-            'content'=>'登陆系统成功',
-        ]);
+        //eadmin_log('登录','登录成功');
     }
 }

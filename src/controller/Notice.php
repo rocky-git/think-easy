@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\admin\controller;
+namespace thinkEasy\controller;
 
 use thinkEasy\controller\BaseAdmin;
 use thinkEasy\model\SystemNotice;
@@ -19,7 +19,6 @@ class Notice extends BaseAdmin
      * 系统通知
      */
     public function notification(){
-       // NoticeService::instance()->pushIcon(1,'通知','欢迎提bug，加需求','el-icon-message-solid','red');
         $data = NoticeService::instance()->receive();
         $this->successCode($data);
     }

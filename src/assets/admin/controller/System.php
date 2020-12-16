@@ -46,14 +46,6 @@ class System extends BaseAdmin
         $this->successCode($data);
     }
     /**
-     * 设置主题色
-     * @return string
-     */
-    public function theme(){
-        Data::sysconf('web_theme',$this->request->post('color'));
-        $this->successCode();
-    }
-    /**
      * 获取验证码
      */
     public function verify(){

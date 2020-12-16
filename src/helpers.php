@@ -1,5 +1,20 @@
 <?php
 
+use rockySysLog\model\SystemLog;
+use thinkEasy\service\TokenService;
+
+if (!function_exists('eadmin_log')) {
+    function eadmin_log($action, $content)
+    {
+        SystemLog::create([
+            'username' => TokenService::instance()->user()->nickname ?? 'cli',
+            'geoip' => request()->ip(),
+            'action' => $action,
+            'node' => request()->url(),
+            'content' => $content,
+        ]);
+    }
+}
 if (!function_exists('eadmin_success')) {
     function eadmin_success($title, $message)
     {

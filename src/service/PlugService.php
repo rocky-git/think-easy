@@ -199,6 +199,7 @@ class PlugService extends Service
     public function uninstall($path)
     {
         Db::name('system_plugs')->where('name',$this->getName($path))->delete();
+        Db::name('system_menu')->where('mark',$this->getName($path))->delete();
         return $this->dataMigrate('rollback',$path);;
     }
 

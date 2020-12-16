@@ -6,12 +6,13 @@
  * Time: 22:59
  */
 
-namespace app\admin\controller;
+namespace thinkEasy\controller;
 
 
-use app\common\service\BackupData;
+use thinkEasy\service\BackupData;
 use thinkEasy\controller\BaseAdmin;
 use thinkEasy\facade\Button;
+use thinkEasy\facade\Component;
 use thinkEasy\form\Form;
 use thinkEasy\grid\Column;
 use thinkEasy\grid\Table;
@@ -22,7 +23,7 @@ use thinkEasy\layout\Row;
 /**
  * 数据库备份
  * Class Backup
- * @package app\admin\controller
+ * @package
  */
 class Backup extends BaseAdmin
 {
@@ -39,8 +40,8 @@ class Backup extends BaseAdmin
         }
         $content = new Content();
         $content->row(function (Row $row) {
-            $row->columnComponentUrl(url('config'), 20);
-            $button = Button::create('备份数据库', 'primary', 'mini', '', true)->save('', [], url('backup'), '', true);
+            $row->columnComponentUrl('backup/config', 20);
+            $button = Button::create('备份数据库', 'primary', 'mini', '', true)->save('', [], 'backup/add', '', true);
             $row->column("<el-card shadow=\"never\" style='height: 88px;text-align: center'>{$button}</el-card>", 4);
         });
         $content->rowComponent($this->table());
@@ -66,6 +67,7 @@ class Backup extends BaseAdmin
      */
     public function config()
     {
+
         $form = new Form();
         $form->setAttr('inline', true);
         $form->setAttr('size', 'mini');
@@ -87,9 +89,9 @@ class Backup extends BaseAdmin
     public function reduction()
     {
         if ( BackupData::instance()->reduction()) {
-            $this->successCode([], 200, '数据库还原完成');
+            Component::message()->success('数据库还原完成')->refresh();
         } else {
-            $this->errorCode(999, '数据库还原失败');
+            Component::message()->error('数据库还原失败');
         }
     }
 
@@ -98,13 +100,13 @@ class Backup extends BaseAdmin
      * @auth true
      * @login true
      */
-    public function backup()
+    public function add()
     {
         $res = BackupData::instance()->backup();
         if($res === true){
-            $this->successCode([], 200, '数据库备份成功');
+            Component::message()->success('数据库备份成功')->refresh();
         }else{
-            $this->errorCode(999, $res);
+            Component::message()->error($res);
         }
 
     }
@@ -121,7 +123,7 @@ class Backup extends BaseAdmin
                 $field = $column->getField();
                 if ($field == 'action') {
                     $column->display(function () use ($rows) {
-                        $button = Button::create('还原', 'primary')->save($rows['id'], ['name' => $rows['id']], url('reduction'), '确认还原备份？');
+                        $button = Button::create('还原', 'primary')->save($rows['id'], ['name' => $rows['id']], 'backup/reduction', '确认还原备份？');
                         $button .= Button::create('删除', 'danger')->delete($rows['id'], '确认删除？');
                         return $button;
                     });

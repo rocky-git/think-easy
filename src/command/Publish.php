@@ -60,7 +60,7 @@ class Publish extends Command
             }
         }
         if ($cover) {
-            $this->output->writeln("<info>[{$src}] 资源文件覆盖成功 successfully!</info>");
+            $this->output->writeln("<info>[{$dir}] to [{$src}] 资源文件写入成功 successfully!</info>");
         }
     }
 }

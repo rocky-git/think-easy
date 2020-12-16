@@ -217,6 +217,7 @@ class NodeService extends Service
                     }
                 }
                 if($method->class == $namespace && $method->isPublic()){
+
                     $node = '';
                     foreach ($rules as $rule){
                         if(is_string($rule['route']) && strpos($rule['route'],'@')){
@@ -227,6 +228,7 @@ class NodeService extends Service
                            }
                         }
                     }
+
                     if(empty($node)){
                         $node  = $moduleName.'/'.$controller.'/'.$method->getName();
                     }
@@ -262,6 +264,7 @@ class NodeService extends Service
             }
             $this->treeArr[$moduleName]['children']= array_values($this->treeArr[$moduleName]['children']);
         }
+
         return $data;
     }
     /**
@@ -270,6 +273,7 @@ class NodeService extends Service
      */
     protected function getControllerFiles(){
         $appPath = $this->app->getBasePath();
+        $controllerFiles = [];
         //扫描所有模块
         $modules = [];
         foreach (glob($appPath.'*') as $file){
@@ -277,16 +281,27 @@ class NodeService extends Service
                 $modules[] = $file;
             }
         }
+        foreach (glob(dirname(__DIR__).'/controller/'.'*.php') as $file){
+            if(is_file($file)){
+                $controller = str_replace('.php','',basename($file));
+                $namespace ="thinkEasy\\controller\\$controller";
+                $controllerFiles[] =  [
+                    'namespace'=>$namespace,
+                    'module'=>'admin',
+                    'file'=>$file,
+                ];
+            }
+        }
+
         //扫描存在配置权限模块控制器下所有文件
         foreach ($modules as $module){
             $moduleName = basename($module);
             //权限模块
-            $authNoduleName = config('admin.authModule');
-
-            if(isset($authNoduleName[$moduleName])){
-                $authNoduleTitle= $authNoduleName[$moduleName];
+            $authModuleName = config('admin.authModule');
+            if(isset($authModuleName[$moduleName])){
+                $authModuleTitle= $authModuleName[$moduleName];
                 $this->treeArr[$moduleName] = [
-                    'label'=>$authNoduleTitle,
+                    'label'=>$authModuleTitle,
                 ];
                 foreach (glob($module.'/controller/'.'*.php') as $file){
                     if(is_file($file)){
@@ -301,14 +316,13 @@ class NodeService extends Service
                 }
             }
         }
-        $rules = $this->app->route->getGroup()->getRules();
 
+        $rules = $this->app->route->getGroup()->getRules();
         $loader = PlugService::instance()->loader();
         $psr = $loader->getPrefixesPsr4();
         foreach ($rules as $key=>$rule){
             if(isset($rule[1]) && $rule[1] instanceof Resource){
                 $resource[] = $rule[1];
-
                 $route = $rule[1]->getRoute();
                 $arr = explode('\\',$route);
                 $namespace = array_shift($arr).'\\';
@@ -326,6 +340,7 @@ class NodeService extends Service
                 }
             }
         }
+
         return $controllerFiles;
     }
 }
