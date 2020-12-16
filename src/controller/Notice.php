@@ -17,6 +17,8 @@ class Notice extends BaseAdmin
 {
     /**
      * 系统通知
+     * @auth false
+     * @login false
      */
     public function notification(){
         $data = NoticeService::instance()->receive();
@@ -24,8 +26,8 @@ class Notice extends BaseAdmin
     }
     /**
      * 获取系统通知
-     * @auth true
-     * @login true
+     * @auth false
+     * @login false
      */
     public function system(){
         $data = SystemNotice::where('user_id',AdminService::instance()->id())
@@ -34,6 +36,8 @@ class Notice extends BaseAdmin
     }
     /**
      * 读取系统通知
+     * @auth false
+     * @login false
      */
     public function reads(){
         SystemNotice::where('id',$this->request->post('id'))->update(['is_read'=>1]);
@@ -43,8 +47,8 @@ class Notice extends BaseAdmin
     }
     /**
      * 清空通知
-     * @auth true
-     * @login true
+     * @auth false
+     * @login false
      */
     public function clear(){
         SystemNotice::where('user_id',AdminService::instance()->id())->delete();

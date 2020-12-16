@@ -18,19 +18,25 @@ class Permission
 {
     public function handle(Request $request, \Closure $next)
     {
-        
-        $pathinfo = $request->pathinfo();
+
+        $pathinfo = '';
+        $url = request()->url();
+        $url = parse_url($url);
+        $node = substr($url['path'],1);
         if($request->has('submitFromMethod')) {
             $method = $request->param('submitFromMethod');
             if($method != 'form'){
-                $pathinfo = $request->controller().'/'.$method;
+                $node = preg_replace("/(\/(\d+)\.rest)$/U",'',$node);
+                $pathinfo = '/' . $method;
             }
         }
-        $moudel = app('http')->getName() ;
-        $node = $moudel. '/' . $pathinfo;
-        if (empty($pathinfo) || $pathinfo == 'apiBaseUrl' || $node == 'admin/eadmin/upload') {
+
+        $node = $node.$pathinfo;
+        if ($request->method() == 'options' ||$node == 'eadmin/upload') {
             return $next($request);
         }
+        $moudel = app('http')->getName();
+
         //验证权限
         $authNodules = array_keys(config('admin.authModule'));
         if (in_array($moudel,$authNodules) && !AdminService::instance()->check($node, $request->method())) {

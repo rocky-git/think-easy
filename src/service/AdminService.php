@@ -74,7 +74,7 @@ class AdminService extends Service
      */
     public function check($node,$method='')
     {
-        
+
         if ($this->id() == config('admin.admin_auth_id')) {
             return TokenService::instance()->auth();
         }
@@ -82,16 +82,14 @@ class AdminService extends Service
         $node = strtolower($node);
         $ext = pathinfo($node, PATHINFO_EXTENSION);
         if(strpos($node,'edit.rest')){
-            $node = preg_replace("/(.+)\/(.+)\/(.+)\/edit\.rest$/U","\\1/\\2/:id/edit.rest",$node);
+            $node = preg_replace("/(.+)\/(\d+)\/edit\.rest$/U","\\1/:id/edit.rest",$node);
         }elseif(strpos($node,'create.rest')){
-            $node = preg_replace("/(.+)\/(.+)\/(.+)\/create\.rest$/U","\\1/\\2/create.rest",$node);
+            $node = preg_replace("/(.+)\/create\.rest$/U","\\1/create.rest",$node);
         }elseif($ext == 'rest'){
-
-            $node = preg_replace("/(.+)\/(.+)\/(.+)\.rest$/U","\\1/\\2/:id.rest",$node);
+            $node = preg_replace("/(.+)\/(\d+)\.rest$/U","\\1/:id.rest",$node);
         }
         $permissions = $this->permissions();
         if(empty($method)){
-
             $rules = array_column($permissions, 'rule');
             if (in_array($node, $rules)) {
                 return true;

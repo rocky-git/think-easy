@@ -41,7 +41,8 @@ class Component
         }
         throw new HttpResponseException(json([
             'code' => 50000,
-            'data' => $content
+            'data' => $content,
+            'eadmin_component'=>request()->has('eadmin_component')
         ]));
     }
     /**
@@ -53,7 +54,11 @@ class Component
      * @throws \Exception
      */
     public function fetch($template,$props = [],$vars = []){
-        $view = View::fetch($template,$vars);
+        if(is_file($template)){
+            $view = View::display(file_get_contents($template),$vars);
+        }else{
+            $view = View::fetch($template,$vars);
+        }
         $componentProps = [];
         foreach ($props as $prop=>$value){
             if(is_string($value)){

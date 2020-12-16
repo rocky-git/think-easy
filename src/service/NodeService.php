@@ -113,7 +113,16 @@ class NodeService extends Service
                 $doc = $method->getDocComment();
                 $res = $this->parseDocComment($doc);
                 if($method->isProtected()){
-                    $node = $moduleName.'/'.$controller;
+                    $node = '';
+                    $rulesResource = $this->app->route->getGroup()->getRules();
+                    foreach ($rulesResource as $rule){
+                        if(isset($rule[1]) && $rule[1] instanceof Resource && $namespace == $rule[1]->getRoute()){
+                            $node =  $rule[1]->getName();
+                        }
+                    }
+                    if(empty($node)){
+                        $node = $moduleName.'/'.$controller;
+                    }
                     $node = strtolower($node);
                     if($method->name == 'grid'){
                         if($res === false){

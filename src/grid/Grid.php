@@ -561,7 +561,7 @@ EOF;
     public function destroy($id)
     {
         $trueDelete = Request::delete('trueDelete');
-        if ($id == 'delete') {
+        if ($id == '00') {
             $ids = Request::delete('ids');
         } else {
             $ids = explode(',', $id);
@@ -716,9 +716,7 @@ EOF;
 
     private function permissionCheck()
     {
-        $pathinfo = Request::pathinfo();
-        $moudel = app('http')->getName();
-        $node = $moudel . '/' . $pathinfo;
+        $node = $this->getRequestUrl();
         //添加权限判断
         if (!AdminService::instance()->check($node . '.rest', 'post')) {
             $this->hideAddButton();

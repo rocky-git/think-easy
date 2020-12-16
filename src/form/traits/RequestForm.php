@@ -25,7 +25,7 @@ trait RequestForm
      * @return string
      */
     public function requestUrl(){
-        $requestUrl = '';
+        $requestUrl = $this->getRequestUrl();
         $controller = $this->dispatch()[0];
         $rules = app()->route->getGroup()->getRules();
         foreach ($rules as $key=>$rule){

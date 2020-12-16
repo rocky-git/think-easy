@@ -154,7 +154,7 @@ class Admin extends BaseAdmin
         $form->text('nickname', '用户昵称')->rule([
             'chsAlphaNum' => '用户昵称只能是汉字、字母和数字',
         ])->required();
-        $form->image('avatar', '用户头像')->default($this->request->domain() . '/static/img/headimg.png');
+        $form->image('avatar', '用户头像');
         if (!$form->isEdit()) {
             $form->password('password', '密码')->rule(['min:5' => '密码最少5位数'])->default(123456)->help('初始化密码123456,建议密码包含大小写字母、数字、符号')->required();
         }

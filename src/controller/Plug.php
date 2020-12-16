@@ -31,7 +31,17 @@ class Plug extends BaseAdmin
         $datas = PlugService::instance()->all();
         $columns[] = new Column('name', '插件信息');
         $columns[] = new Column('authors', '作者');
-        $columns[] = new Column('action', '操作');
+        $search = $this->request->get('search');
+        $searchInput = Component::fetch(__DIR__.'/../view/search.vue');
+        $columns[] = new Column('action', $searchInput);
+        if($search){
+            foreach ($datas as $key => $rows) {
+                if(strpos($rows['description'],$search) === false && strpos($rows['name'],$search) === false){
+                    unset($datas[$key]);
+                }
+            }
+            $datas =  array_values($datas);
+        }
         foreach ($datas as $key => &$rows) {
             $rows['id'] = $key;
             foreach ($columns as $column) {
@@ -42,7 +52,7 @@ class Plug extends BaseAdmin
 <div style='display: flex;justify-content: space-between;align-items: center'>
    
     <div style="flex: 1">
-        名称 : <b>{$rows['name']} &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
+        名称 : <b><el-link target="_blank" href="https://github.com/{$rows['name']}">{$rows['name']}</el-link> &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
     </div>
 </div> 
 EOF;

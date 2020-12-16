@@ -102,9 +102,8 @@ class Actions extends Column
             }
         }
         $html = '';
-        $pathinfo = request()->pathinfo();
-        $moudel = app('http')->getName();
-        $node = $moudel . '/' . $pathinfo;
+
+        $node = $this->getRequestUrl();
         if (!$this->hideDetailButton && AdminService::instance()->check($node . '/:id.rest', 'get')) {
             $html .= $this->detailButton;
         }

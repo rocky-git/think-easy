@@ -772,7 +772,7 @@
                     /*{/foreach}*/
                     /*{/if}*/
                     this.$request({
-                        url: url+'/delete.rest',
+                        url: url+'/00.rest',
                         method: 'delete',
                         data:{
                             ids:deleteIds,

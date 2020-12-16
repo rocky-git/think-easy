@@ -15,6 +15,7 @@
         name: "eadminContent",
         data(){
             return {
+                tableDataUpdate:false,
                 tableData:[],
                 {$scriptVar|raw|default=''}
             }

@@ -94,7 +94,7 @@ class BaseAdmin extends Controller
     public function update(Request $request, $id)
     {
         $url = '';
-        if ($id == 'batch') {
+        if ($id == '00') {
             $ids = $request->put('ids');
             $res = $this->grid()->update($ids, $request->put());
         } else {
