@@ -28,20 +28,13 @@ class Plug extends BaseAdmin
      */
     public function index()
     {
-        $datas = PlugService::instance()->all();
+        $search = $this->request->get('search');
+        $datas = PlugService::instance()->all($search);
         $columns[] = new Column('name', '插件信息');
         $columns[] = new Column('authors', '作者');
-        $search = $this->request->get('search');
+
         $searchInput = Component::fetch(__DIR__.'/../view/search.vue');
         $columns[] = new Column('action', $searchInput);
-        if($search){
-            foreach ($datas as $key => $rows) {
-                if(strpos($rows['description'],$search) === false && strpos($rows['name'],$search) === false){
-                    unset($datas[$key]);
-                }
-            }
-            $datas =  array_values($datas);
-        }
         foreach ($datas as $key => &$rows) {
             $rows['id'] = $key;
             foreach ($columns as $column) {
@@ -52,7 +45,7 @@ class Plug extends BaseAdmin
 <div style='display: flex;justify-content: space-between;align-items: center'>
    
     <div style="flex: 1">
-        名称 : <b><el-link target="_blank" href="https://github.com/{$rows['name']}">{$rows['name']}</el-link> &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
+        名称 : <b><el-link target="_blank" href="https://github.com/{$rows['name']}">{$rows['title']}</el-link> &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
     </div>
 </div> 
 EOF;
@@ -76,9 +69,9 @@ EOF;
                             }else{
                                 $button = Button::create('启用', 'success')->save($rows['name'], ['status' => 1],'plug/enable', '确认卸载？');
                             }
-                            $button .= Button::create('卸载', 'danger')->save($rows['name'], ['path' => $rows['path'], 'type' => 2], 'plug/install', '确认卸载？');
+                            $button .= Button::create('卸载', 'danger')->save($rows['name'], ['name'=>$rows['name'],'path' => $rows['path'], 'type' => 2], 'plug/install', '确认卸载？');
                         } else {
-                            $button = Button::create('安装', 'primary')->save($rows['name'], ['path' => $rows['path'], 'type' => 1], 'plug/install', '确认安装？');
+                            $button = Button::create('安装', 'primary')->save($rows['name'], ['name'=>$rows['name'],'path' => $rows['download'], 'type' => 1], 'plug/install', '确认安装？');
                         }
                         return $button;
                     });
@@ -140,10 +133,11 @@ EOF;
     {
         $type = $this->request->put('type');
         $path = $this->request->put('path');
+        $name = $this->request->put('name');
         if ($type == 1) {
-            PlugService::instance()->install($path);
+            PlugService::instance()->install($name,$path);
         } else {
-            PlugService::instance()->uninstall($path);
+            PlugService::instance()->uninstall($name,$path);
         }
         Component::message()->success('操作完成')->refresh();
     }

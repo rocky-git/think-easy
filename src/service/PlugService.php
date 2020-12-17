@@ -9,6 +9,8 @@
 namespace thinkEasy\service;
 
 use Composer\Autoload\ClassLoader;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use think\App;
 use think\facade\Console;
 use think\facade\Db;
@@ -87,25 +89,30 @@ class PlugService extends Service
     /**
      * 获取所有插件
      */
-    public function all()
+    public function all($search='')
     {
-        $names = [];
-        foreach ($this->plugPaths as $plugPath) {
-            if($this->checkFiles($plugPath)){
-                $info = $this->getInfo($plugPath);
-                $names[] = $info['name'];
+        $plugs = GitlabService::instance()->getGroupProject(57,$search);
+        $delNames = [];
+        foreach ($plugs as $plug){
+            $content = GitlabService::instance()->getFile($plug['id'],'composer.json');
+            if($content){
+                $info = $this->getInfo($content);
+                $info['title'] = $info['name']. " ({$plug['name']})";
+                $info['download'] = "https://gitlab.my8m.com/api/v4/projects/{$plug['id']}/repository/archive.zip";
                 $this->plugs[] = $info;
+                if(!is_dir($info['path'])){
+                    $info['status'] = false;
+                    $delNames[] = trim($info['name']);
+                };
             }
         }
-        Db::name('system_plugs')->whereNotIn('name',$names)->delete();
+        Db::name('system_plugs')->whereIn('name',$delNames)->delete();
         return $this->plugs;
     }
-    protected function getInfo($dir)
+    protected function getInfo($content)
     {
-        $arr = json_decode(file_get_contents($dir. '/composer.json'), true);
-        $version = include $dir.'/version.php';
-        $version = array_column($version,'version');
-        $version = array_shift($version);
+        $arr = json_decode($content,true);
+        $version = '1.0.0';
         $authors = array_column(Arr::get($arr,'authors'),'name');
         $authors = implode(',',$authors);
         $emails = array_column(Arr::get($arr,'authors'),'email');
@@ -120,7 +127,7 @@ class PlugService extends Service
             'status'=> $status ?? false,
             'install'=> is_null($status) ? false : true,
             'version' => $version,
-            'path'=>$dir,
+            'path'=>$this->plugPathBase.'/'.$name,
         ];
     }
 
@@ -171,36 +178,90 @@ class PlugService extends Service
         }
         return true;
     }
-    protected function getName($path){
-        $info = $this->getInfo($path);
-        return $info['name'];
-    }
     /**
      * 安装
      * @param $path 插件目录
      * @return mixed
      */
-    public function install($path)
+    public function install($name,$path)
     {
-        $this->dataMigrate('run',$path);
-        $seed = $path.'/src/database'. DIRECTORY_SEPARATOR . 'seeds';
-        if(is_dir($seed)){
-            Console::call('seed:eadmin',['path'=> $seed]);
+        try{
+            $client = new Client(['verify'=>false]);
+            $plugZip = app()->getRootPath().'plug'.time().'.zip';
+            $plugZip = app()->getRootPath().'plug1608222804.zip';
+            $client->get($path,['save_to'=>$plugZip]);
+            $zip = new \ZipArchive();
+            if ($zip->open($plugZip) === true) {
+                $path = $this->plugPathBase.'/'.$name;
+                if(!is_dir($path)){
+                    mkdir($path,0777,true);
+                }
+                for ($i=0;$i<$zip->numFiles;$i++){
+                    if($i > 0){
+                        $filename = $zip->getNameIndex($i);
+                        $pathArr = explode('/',$filename);
+                        array_shift($pathArr);
+                        $pathName = implode('/',$pathArr);
+                        $fileinfo = pathinfo($filename);
+                        $toFile = $path.'/'.$pathName;
+                        if(isset($fileinfo['extension'])){
+                            copy("zip://".$plugZip."#".$filename, $toFile);
+                        }else{
+                            if(!is_dir($toFile))mkdir($toFile,0777,true);
+                        }
+                    }
+                }
+                //关闭
+                $zip->close();
+                unlink($plugZip);
+                $this->dataMigrate('run',$path);
+                $seed = $path.'/src/database'. DIRECTORY_SEPARATOR . 'seeds';
+                if(is_dir($seed)){
+                    Console::call('seed:eadmin',['path'=> $seed]);
+                }
+                Db::name('system_plugs')->insert([
+                    'name'=> trim($name),
+                ]);
+                return true;
+            }else{
+                return false;
+            }
+        }catch (RequestException $exception){
+            return false;
         }
-        Db::name('system_plugs')->insert([
-           'name'=> $this->getName($path),
-        ]);
-        return true;
     }
     /**
      * 卸载
      * @param $path
      */
-    public function uninstall($path)
+    public function uninstall($name,$path)
     {
-        Db::name('system_plugs')->where('name',$this->getName($path))->delete();
-        Db::name('system_menu')->where('mark',$this->getName($path))->delete();
+        $this->deldir($path.'/');
+        Db::name('system_plugs')->where('name',$name)->delete();
+        Db::name('system_menu')->where('mark',$name)->delete();
         return $this->dataMigrate('rollback',$path);;
     }
-
+    protected function deldir($path){
+        //如果是目录则继续
+        if(is_dir($path)){
+            //扫描一个文件夹内的所有文件夹和文件并返回数组
+            $p = scandir($path);
+            foreach($p as $val){
+                //排除目录中的.和..
+                if($val !="." && $val !=".."){
+                    //如果是目录则递归子目录，继续操作
+                    if(is_dir($path.$val)){
+                        //子目录中操作删除文件夹和文件
+                        $this->deldir($path.$val.'/');
+                        //目录清空后删除空文件夹
+                        @rmdir($path.$val.'/');
+                    }else{
+                        //如果是文件直接删除
+                        unlink($path.$val);
+                    }
+                }
+            }
+            @rmdir($path);
+        }
+    }
 }
