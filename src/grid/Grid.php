@@ -561,7 +561,7 @@ EOF;
     public function destroy($id)
     {
         $trueDelete = Request::delete('trueDelete');
-        if ($id == '00') {
+        if ($id == 'delete') {
             $ids = Request::delete('ids');
         } else {
             $ids = explode(',', $id);

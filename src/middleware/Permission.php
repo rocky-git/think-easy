@@ -32,11 +32,10 @@ class Permission
         }
 
         $node = $node.$pathinfo;
-        if ($request->method() == 'options' ||$node == 'eadmin/upload') {
+        if (empty($node) || $request->method() == 'options' ||$node == 'eadmin/upload') {
             return $next($request);
         }
         $moudel = app('http')->getName();
-
         //验证权限
         $authNodules = array_keys(config('admin.authModule'));
         if (in_array($moudel,$authNodules) && !AdminService::instance()->check($node, $request->method())) {

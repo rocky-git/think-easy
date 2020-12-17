@@ -40,20 +40,17 @@ class Backup extends BaseAdmin
         }
         $content = new Content();
         $content->row(function (Row $row) {
-            $row->columnComponentUrl('backup/config', 20);
-            $button = Button::create('备份数据库', 'primary', 'mini', '', true)->save('', [], 'backup/add', '', true);
-            $row->column("<el-card shadow=\"never\" style='height: 88px;text-align: center'>{$button}</el-card>", 4);
+            $row->columnComponentUrl('backup/config');
         });
         $content->rowComponent($this->table());
         $this->view($content);
     }
 
 
-
     //删除备份文件
     protected function destroy($id)
     {
-        if ( BackupData::instance()->delete($id)) {
+        if (BackupData::instance()->delete($id)) {
             return true;
         } else {
             return false;
@@ -78,6 +75,9 @@ class Backup extends BaseAdmin
         ])->default(0)->themeButton();
         $form->number('database_number', '最多保留')->setAttr('style', 'width:150px')->min(1)->append('份')->required();
         $form->number('database_day', '	数据库每')->min(1)->setAttr('style', 'width:180px')->append('天自动备份')->required();
+        $button = Button::create('备份数据库', 'primary', 'mini', '', true)->save('', [], 'backup/add', '', true);
+
+        $form->appendSubmitExtend($button);
         return $this->view($form);
     }
 
@@ -88,7 +88,7 @@ class Backup extends BaseAdmin
      */
     public function reduction()
     {
-        if ( BackupData::instance()->reduction()) {
+        if (BackupData::instance()->reduction()) {
             Component::message()->success('数据库还原完成')->refresh();
         } else {
             Component::message()->error('数据库还原失败');
@@ -103,9 +103,9 @@ class Backup extends BaseAdmin
     public function add()
     {
         $res = BackupData::instance()->backup();
-        if($res === true){
+        if ($res === true) {
             Component::message()->success('数据库备份成功')->refresh();
-        }else{
+        } else {
             Component::message()->error($res);
         }
 

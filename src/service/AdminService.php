@@ -82,11 +82,11 @@ class AdminService extends Service
         $node = strtolower($node);
         $ext = pathinfo($node, PATHINFO_EXTENSION);
         if(strpos($node,'edit.rest')){
-            $node = preg_replace("/(.+)\/(\d+)\/edit\.rest$/U","\\1/:id/edit.rest",$node);
+            $node = preg_replace("/(.+)\/(\w+)\/edit\.rest$/U","\\1/:id/edit.rest",$node);
         }elseif(strpos($node,'create.rest')){
             $node = preg_replace("/(.+)\/create\.rest$/U","\\1/create.rest",$node);
         }elseif($ext == 'rest'){
-            $node = preg_replace("/(.+)\/(\d+)\.rest$/U","\\1/:id.rest",$node);
+            $node = preg_replace("/(.+)\/(\w+)\.rest$/U","\\1/:id.rest",$node);
         }
         $permissions = $this->permissions();
         if(empty($method)){

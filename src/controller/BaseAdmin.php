@@ -83,7 +83,6 @@ class BaseAdmin extends Controller
         $view = $content->title($this->form()->title())->body($this->form()->addExtraData(['submitFromMethod' => 'form']))->view();
         Component::view($view);
     }
-
     /**
      * 保存更新的资源
      *
@@ -94,7 +93,7 @@ class BaseAdmin extends Controller
     public function update(Request $request, $id)
     {
         $url = '';
-        if ($id == '00') {
+        if ($id == 'batch') {
             $ids = $request->put('ids');
             $res = $this->grid()->update($ids, $request->put());
         } else {
