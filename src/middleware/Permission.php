@@ -12,6 +12,7 @@ namespace thinkEasy\middleware;
 use think\facade\App;
 use think\Request;
 use thinkEasy\service\AdminService;
+use thinkEasy\service\NodeService;
 use thinkEasy\service\TokenService;
 
 class Permission
@@ -30,9 +31,8 @@ class Permission
                 $pathinfo = '/' . $method;
             }
         }
-
         $node = $node.$pathinfo;
-        if (empty($node) || $request->method() == 'options' ||$node == 'eadmin/upload') {
+        if (empty($node) || $request->method() == 'options') {
             return $next($request);
         }
         $moudel = app('http')->getName();

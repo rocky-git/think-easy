@@ -45,7 +45,7 @@ class Plug extends BaseAdmin
 <div style='display: flex;justify-content: space-between;align-items: center'>
    
     <div style="flex: 1">
-        名称 : <b><el-link target="_blank" href="https://github.com/{$rows['name']}">{$rows['title']}</el-link> &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
+        名称 : <b><el-link target="_blank" href="{$rows['web_url']}">{$rows['title']}</el-link> &nbsp;<el-tag size="mini">{$rows['version']}</b></el-tag><br>描述 : {$rows['description']}
     </div>
 </div> 
 EOF;

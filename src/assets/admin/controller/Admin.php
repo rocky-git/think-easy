@@ -233,14 +233,14 @@ class Admin extends BaseAdmin
         $tokens = TokenService::instance()->refresh();
         $this->successCode($tokens);
     }
-
+    /**
+     * 初始化加载
+     * @auth false
+     * @login true
+     */
     public function init()
     {
-        if (is_dir(app()->getBasePath() . 'im')) {
-            $url = 'im/index';
-        } else {
-            $url = '';
-        }
+        $template = '';
         $this->successCode($url);
     }
 }

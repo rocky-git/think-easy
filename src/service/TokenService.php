@@ -129,6 +129,12 @@ class TokenService extends Service
      */
     public function decode($token = '')
     {
+        if (empty($token)) {
+            $token = Request::header('Authorization');
+            if(Request::has('Authorization')){
+                $token = rawurldecode(Request::get('Authorization'));
+            }
+        }
         $str = openssl_decrypt($token, 'aes-256-cbc', $this->key, 0, self::IV);
         if ($str === false) {
             return false;

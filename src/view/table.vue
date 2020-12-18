@@ -822,7 +822,7 @@
                 if(this.deleteColumnShow){
                     requestParams = Object.assign(requestParams,this.globalRequestParams,{'is_deleted':true})
                 }
-                requestParams = Object.assign(requestParams,this.form,this.sortableParams)
+                requestParams = Object.assign(requestParams,this.globalRequestParams,this.form,this.sortableParams)
                 requestParams.eadmin_component = true
                 requestParams.eadmingrid = this.$route.path + JSON.stringify(this.$route.meta.params)
                 this.$request({

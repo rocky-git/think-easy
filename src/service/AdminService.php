@@ -74,7 +74,6 @@ class AdminService extends Service
      */
     public function check($node,$method='')
     {
-
         if ($this->id() == config('admin.admin_auth_id')) {
             return TokenService::instance()->auth();
         }
@@ -88,29 +87,30 @@ class AdminService extends Service
         }elseif($ext == 'rest'){
             $node = preg_replace("/(.+)\/(\w+)\.rest$/U","\\1/:id.rest",$node);
         }
-        $permissions = $this->permissions();
-        if(empty($method)){
-            $rules = array_column($permissions, 'rule');
-            if (in_array($node, $rules)) {
-                return true;
-            } else {
+        $authNodes = NodeService::instance()->all();
+        $rules = array_column($authNodes,'rule');
+        if (in_array($node, $rules)) {
+            $permissions = $this->permissions();
+            if(empty($method)){
+                $rules = array_column($permissions, 'rule');
+                if (in_array($node, $rules)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }else{
+                foreach ($permissions as $permission){
+                    if($permission['rule'] == $node && ($permission['method'] == $method || $permission['method'] == 'any')){
+                        if($permission['is_login']){
+                            TokenService::instance()->auth();
+                        }
+                        return true;
+                    }
+                }
                 return false;
             }
-        }else{
-
-            foreach ($permissions as $permission){
-
-                if($permission['rule'] == $node && ($permission['method'] == $method || $permission['method'] == 'any')){
-
-                    if($permission['is_login']){
-                        TokenService::instance()->auth();
-                    }
-                    return true;
-                }
-            }
-            return false;
         }
-
+        return true;
     }
 
     /**
@@ -129,13 +129,13 @@ class AdminService extends Service
     {
         $permissionsKey = 'eadmin_permissions'.$this->id();
         $newNodes = Cache::get($permissionsKey);
+
         if($newNodes){
             return $newNodes;
         }
         $nodes = NodeService::instance()->all();
         if($this->id()){
             $permissions = $this->user()->permissions();
-
         }else{
             $permissions = [];
         }

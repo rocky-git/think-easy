@@ -21,6 +21,7 @@ class GitlabService extends Service
     {
         $this->client = new Client([
             'base_uri' => 'https://gitlab.my8m.com/api/v4/',
+            'verify' => false,
         ]);
     }
 

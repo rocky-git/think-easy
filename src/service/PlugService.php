@@ -68,19 +68,21 @@ class PlugService extends Service
         $loader = $this->loader();
         foreach ($this->plugPaths as $plugPaths) {
             $file = $plugPaths . DIRECTORY_SEPARATOR . 'composer.json';
-            $arr = json_decode(file_get_contents($file), true);
-            $psr4 = Arr::get($arr, 'autoload.psr-4');
-            $name = Arr::get($arr,'name');
-            if($this->status($name)){
-                if ($psr4) {
-                    foreach ($psr4 as $namespace => $path) {
-                        $path = $plugPaths . '/' . trim($path, '/') . '/';
-                        $loader->addPsr4($namespace, $path);
+            if(is_file($file)){
+                $arr = json_decode(file_get_contents($file), true);
+                $psr4 = Arr::get($arr, 'autoload.psr-4');
+                $name = Arr::get($arr,'name');
+                if($this->status($name)){
+                    if ($psr4) {
+                        foreach ($psr4 as $namespace => $path) {
+                            $path = $plugPaths . '/' . trim($path, '/') . '/';
+                            $loader->addPsr4($namespace, $path);
+                        }
                     }
-                }
-                $serviceProvider = Arr::get($arr, 'extra.e-admin');
-                if ($serviceProvider) {
-                    $this->app->register($serviceProvider);
+                    $serviceProvider = Arr::get($arr, 'extra.e-admin');
+                    if ($serviceProvider) {
+                        $this->app->register($serviceProvider);
+                    }
                 }
             }
         }
@@ -98,6 +100,8 @@ class PlugService extends Service
             if($content){
                 $info = $this->getInfo($content);
                 $info['title'] = $info['name']. " ({$plug['name']})";
+                $info['web_url'] = $plug['web_url'];
+                $info['description'] = $plug['description'];
                 $info['download'] = "https://gitlab.my8m.com/api/v4/projects/{$plug['id']}/repository/archive.zip";
                 $this->plugs[] = $info;
                 if(!is_dir($info['path'])){
@@ -194,7 +198,7 @@ class PlugService extends Service
             if ($zip->open($plugZip) === true) {
                 $path = $this->plugPathBase.'/'.$name;
                 if(!is_dir($path)){
-                    mkdir($path,0777,true);
+                    mkdir($path,0755,true);
                 }
                 for ($i=0;$i<$zip->numFiles;$i++){
                     if($i > 0){
@@ -207,7 +211,7 @@ class PlugService extends Service
                         if(isset($fileinfo['extension'])){
                             copy("zip://".$plugZip."#".$filename, $toFile);
                         }else{
-                            if(!is_dir($toFile))mkdir($toFile,0777,true);
+                            if(!is_dir($toFile))mkdir($toFile,0755,true);
                         }
                     }
                 }
