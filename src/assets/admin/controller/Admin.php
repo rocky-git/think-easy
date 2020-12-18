@@ -241,6 +241,6 @@ class Admin extends BaseAdmin
     public function init()
     {
         $template = '';
-        $this->successCode($url);
+        $this->successCode($template);
     }
 }

@@ -93,7 +93,7 @@ class PlugService extends Service
      */
     public function all($search='')
     {
-        $plugs = GitlabService::instance()->getGroupProject(57,$search);
+        $plugs = GitlabService::instance()->getGroupProject(57,$search,1,100);
         $delNames = [];
         foreach ($plugs as $plug){
             $content = GitlabService::instance()->getFile($plug['id'],'composer.json');
