@@ -828,9 +828,9 @@ EOF;
                     $whenTagNow = $formItem->getTag() . $indexTag;
                     call_user_func_array($whenItem['closure'], [$this]);
                     $whenNestNext[$indexTag] = $whenNest;
-                   // $whenNest = [];
-                    array_push($whenNestNext[$indexTag],['field'=>$formItem->field,'value'=>$whenItem['value']]);
-                    $formItemHtml = $this->parseFormItem($formItemHtml, $whenTagNow,$whenNestNext[$indexTag]);
+                    $whenNestsNext = $whenNestNext[$indexTag];
+                    array_push($whenNestsNext,['field'=>$formItem->field,'value'=>$whenItem['value']]);
+                    $formItemHtml = $this->parseFormItem($formItemHtml, $whenTagNow,$whenNestsNext);
                     $formWhenItem = [];
                     if (isset($this->formWhenItem[$whenTagNow])) {
                         $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
