@@ -82,12 +82,16 @@
             },
         },
         methods:{
-            //单选框切换事件
-            radioChange(val,tag,manyIndex,changeType=''){
-                {$radioJs|raw|default=''}
+            interactChangeInit(){
+                {$interactChangeInitJs|raw|default=''}
+            },
+            //互动切换事件
+            interactChange(val,tag,manyIndex,changeType=''){
+                {$interactChangeJs|raw|default=''}
             },
             init(){
                 {$script|raw}
+                this.interactChangeInit()
             },
             //数组寻找并删除
             deleteArr(arr,value){

@@ -113,11 +113,12 @@ class Form extends View
 
     protected $layoutTags = [];
     protected $formTags = [];
-    protected $whenValue = null;
+   
     protected $formWhenItem = [];
 
-    //radio事件js
-    protected $radioJs = null;
+    //表单互动事件js
+    protected $interactChangeJs = null;
+    protected $interactChangeInitJs = null;
     //表字段
     protected $tableFields = [];
 
@@ -464,7 +465,7 @@ class Form extends View
 
     /**
      * 当前表单是否编辑模式
-     * @return string 返回add或edit
+     * @return bool
      */
     public function isEdit()
     {
@@ -564,9 +565,12 @@ class Form extends View
 
     /**
      * 解析formItem
+     * @param string $formItemHtml
+     * @param string $whenTag 当前when条件标记
+     * @param string $whenNest 当前when嵌套条件
      * @return string
      */
-    protected function parseFormItem($formItemHtml = '', $whenTag = '')
+    protected function parseFormItem($formItemHtml = '', $whenTag = '',$whenNest = [])
     {
         foreach ($this->formItem as $key => $formItem) {
             if (is_array($formItem)) {
@@ -616,7 +620,7 @@ class Form extends View
                         }
                         $field = new Field('', '', []);
                         $this->layoutTags[$whenTag][] = $field->getTag();
-                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row :gutter="'.$formItem['gutter'].'">' . $this->parseFormItem('', $whenTag) . '</el-row></div>';
+                        $formItemHtml .= "<div v-show=\"formItemTags.indexOf('{$field->getTag()}0') === -1\">" . $title . '<el-row :gutter="'.$formItem['gutter'].'">' . $this->parseFormItem('', $whenTag,$whenNest) . '</el-row></div>';
                         break;
                     case 'tabs':
                         if (is_null($this->tabs)) {
@@ -701,7 +705,7 @@ class Form extends View
                     if (!is_null($formItem->value)) {
                         $this->setData($formItem->field, $formItem->value);
                     }
-                    $this->script($formItem->getWhenInitJs());
+                    $this->interactChangeInitJs .= $formItem->getWhenInitJs();
                 } else {
                     //一对多解析
                     $formItem->setAttr('@blur', "clearValidateArr(\"{$this->hasManyRelation}\",\"{$formItem->field}\",manyIndex)");
@@ -733,15 +737,15 @@ class Form extends View
                     if (!is_null($formItem->value)) {
                         $this->hasManyRowData[$formItem->field] = $formItem->value;
                     }
-                    //一对多radio事件初始化值
+                    //一对多表单互动事件初始化值
                     if ($formItem instanceof Radio) {
                         $manyData = $this->getData($this->hasManyRelation);
-                        $radioJs = <<<EOF
+                        $interactChangeJs = <<<EOF
                         this.form.{$this->hasManyRelation}.forEach((item,index)=>{
-                            this.radioChange(item.{$formItem->field},'{$formItem->getTag()}',index,'when')
+                            this.interactChange(item.{$formItem->field},'{$formItem->getTag()}',index,'when')
                         })
 EOF;
-                        $this->script($radioJs);
+                        $this->interactChangeInitJs .= $interactChangeJs;
                     }
                     $formItem->setField("{$this->hasManyRelation}.$formItem->field");
                 }
@@ -750,7 +754,7 @@ EOF;
                 $this->setRules($rule, $msg, 1);
                 list($rule, $msg) = $formItem->paseRule($formItem->updateRules);
                 $this->setRules($rule, $msg, 2);
-                $this->radioJs .= $formItem->changeJs;
+                $this->interactChangeJs .= $formItem->changeJs;
                 $render = $formItem->render();
                 if (isset($this->saveData[$formItem->field]) && is_array($this->saveData[$formItem->field])) {
                     $field = $formItem->field;
@@ -823,7 +827,10 @@ EOF;
                     }
                     $whenTagNow = $formItem->getTag() . $indexTag;
                     call_user_func_array($whenItem['closure'], [$this]);
-                    $formItemHtml = $this->parseFormItem($formItemHtml, $whenTagNow);
+                    $whenNestNext[$indexTag] = $whenNest;
+                   // $whenNest = [];
+                    array_push($whenNestNext[$indexTag],['field'=>$formItem->field,'value'=>$whenItem['value']]);
+                    $formItemHtml = $this->parseFormItem($formItemHtml, $whenTagNow,$whenNestNext[$indexTag]);
                     $formWhenItem = [];
                     if (isset($this->formWhenItem[$whenTagNow])) {
                         $formWhenItem = array_merge($this->formWhenItem[$whenTagNow], $this->formItem);
@@ -841,12 +848,13 @@ EOF;
                         }
                     }
                 }
+                
                 if (count($whenTags) > 0) {
                     $hideTagsAllArr = array_map(function ($v) {
                         return "'{$v}' + manyIndex";
                     }, $whenTagsAll);
                     $HideTagsAllJs = implode(',', $hideTagsAllArr);
-                    $this->radioJs .= "if(tag === '{$formItem->getTag()}'){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}" . PHP_EOL;
+                    $this->interactChangeJs .= "if((tag + manyIndex) === ('{$formItem->getTag()}' + manyIndex)){this.formItemTags.splice(-1,0,{$HideTagsAllJs});}" . PHP_EOL;
                 }
                 foreach ($whenTags as $whenVal) {
                     $tags = $whenVal['tag'];
@@ -862,13 +870,22 @@ EOF;
                     $whenVals = [];
                     if (is_array($value)) {
                         $whenVals = $value;
+                        $indexTag = implode('', $value);
                     } else {
                         $whenVals[] = $value;
+                        $indexTag = $value;
                     }
                     foreach ($whenVals as $val) {
-                        $this->radioJs .= "if(val == '{$val}' && tag === '{$formItem->getTag()}' && changeType == 'when'){{$hideTagsJs};}" . PHP_EOL;
+                        $whenNestJs = '';
+                        if(isset($whenNestNext[$indexTag]) > 0){
+                            foreach ($whenNestNext[$indexTag] as $nest){
+                                $whenNestJs .= "(this.form.{$nest['field']} == '{$nest['value']}') && ";
+                            }
+                        }
+                        $this->interactChangeJs .= "if({$whenNestJs}val == '{$val}' && (tag + manyIndex) === ('{$formItem->getTag()}' + manyIndex) && changeType == 'when'){{$hideTagsJs};console.log(this.formItemTags)}" . PHP_EOL;
                     }
                 }
+
             }
         }
         return $formItemHtml;
@@ -1008,7 +1025,6 @@ EOF;
             $this->edit($this->extraData[$this->pkField]);
         }
         $formItem = $this->parseFormItem();
-
         $scriptStr = implode(',', array_unique($this->scriptArr));
         list($attrStr, $formScriptVar) = $this->parseAttr();
         if (!empty($scriptStr)) {
@@ -1020,7 +1036,8 @@ EOF;
         $this->setVar('formTags', json_encode($this->formTags, JSON_UNESCAPED_UNICODE));
         $this->setVar('script', $this->script);
         $this->setVar('attrStr', $attrStr);
-        $this->setVar('radioJs', $this->radioJs);
+        $this->setVar('interactChangeJs', $this->interactChangeJs);
+        $this->setVar('interactChangeInitJs', $this->interactChangeInitJs);
         $this->setVar('watchJs', $this->createWatchJs());
         $this->setVar('formItem', $formItem);
         $this->setVar('submitUrl',$this->requestUrl());

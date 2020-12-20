@@ -244,7 +244,7 @@ class Field extends View
      */
     public function when(...$conditon)
     {
-        $this->setAttr('@change', "(e)=>radioChange(e,\"{$this->getTag()}\",manyIndex,\"when\")");
+        $this->setAttr('@change', "interactChangeInit");
         if (count($conditon) == 3) {
             list($val, $operator, $closure) = $conditon;
         } elseif (count($conditon) == 2) {
@@ -260,7 +260,7 @@ class Field extends View
     }
     public function getWhenInitJs(){
         if(count($this->whenItem) > 0){
-            return "this.radioChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
+            return "this.interactChange(this.form.{$this->field},'{$this->getTag()}',0,\"when\")" . PHP_EOL;
         }
         return '';
     }
