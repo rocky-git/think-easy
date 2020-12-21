@@ -31,6 +31,18 @@ class SystemConfigSeeder extends Seeder
                 'name' => 'web_copyright',
                 'value' => '©版权所有 2014-2020',
             ],
+            [
+                'name' => 'databackup_on',
+                'value' => '1',
+            ],
+            [
+                'name' => 'database_number',
+                'value' => '10',
+            ],
+            [
+                'name' => 'database_day',
+                'value' => '1',
+            ],
         ];
         $this->table('system_config')->insert($data)->save();
     }

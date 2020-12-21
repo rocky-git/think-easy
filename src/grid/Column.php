@@ -617,15 +617,27 @@ EOF;
         }
         $this->rowField = 'data.' . $this->field;
         $this->relationRowField = 'data.' . $this->relation;
+        $fields = explode('.', $this->field);
+        $fieldVar = '';
+        foreach ($fields as $field){
+            if(empty($fieldVar)){
+                $fieldVar = $field;
+            }else{
+                $fieldVar .= '.'.$field;
+            }
+            $ifCondtion[] = "data.{$fieldVar} === null";
+        }
+        $ifCondtion  = implode(' || ',$ifCondtion);
         if (!empty($this->tag)) {
             $this->display = sprintf($this->tag, "{{{$this->rowField}}}");
         } elseif (count($this->usings) > 0) {
             $html = '';
             foreach ($this->usings as $key => $value) {
+                $html = "<span style='font-size: 14px;' v-if=\"{$ifCondtion}\">--</span>";
                 if (is_string($key)) {
-                    $html .= "<span style='font-size: 14px;' v-if=\"{$this->rowField} == '{$key}'\">%s</span>";
+                    $html .= "<span style='font-size: 14px;' v-else-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
                 } else {
-                    $html .= "<span style='font-size: 14px;' v-if='{$this->rowField} == {$key}'>%s</span>";
+                    $$html .= "<span style='font-size: 14px;' v-else-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
                 }
                 if (isset($this->tagColor[$key])) {
                     $this->tag($this->tagColor[$key], $this->tagTheme);
@@ -636,7 +648,7 @@ EOF;
             }
             $this->display = $html;
         } elseif (empty($this->display) && !empty($this->field)) {
-            $this->display = "<span style='font-size: 14px;' v-if=\"{$this->relationRowField} === null || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
+            $this->display = "<span style='font-size: 14px;' v-if=\"{$ifCondtion} || {$this->rowField} === null || {$this->rowField} === ''\">--</span><span style='font-size: 14px;' v-else>{{{$this->rowField}}}</span>";
         }
         $this->display = "<el-col :span='{$this->md}' style='border-bottom-width: 1px; padding-top: 15px;padding-bottom: 15px;border-bottom-style: solid;border-bottom-color: #f0f0f0;display: flex;align-items: center'>" . $label . $this->display . "</el-col>";
         list($attrStr, $dataStr) = $this->parseAttr();
