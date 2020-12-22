@@ -3,6 +3,13 @@
 use rockySysLog\model\SystemLog;
 use thinkEasy\service\TokenService;
 
+
+if (!function_exists('sysconf')) {
+    function sysconf($name, $value = null)
+    {
+        return \thinkEasy\tools\Data::sysconf($name,$value);
+    }
+}
 if (!function_exists('eadmin_log')) {
     function eadmin_log($action, $content)
     {

@@ -40,7 +40,9 @@ class ServiceProvider extends Service
     protected function registerView(){
         //入口加载
         $this->app->route->get('/',function (){
-            return file_get_contents(__DIR__.'/view/index.vue');
+            $view = file_get_contents(__DIR__.'/view/index.vue');
+            $view =  str_replace('E-Admin',sysconf('web_name'),$view);
+            return $view;
         });
         //菜单管理
         $this->app->route->resource('menu',Menu::class);
