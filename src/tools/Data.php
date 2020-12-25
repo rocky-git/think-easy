@@ -48,6 +48,7 @@ class Data
         foreach($data as $v){
             $items[$v[$id]] = $v;
         }
+       
         $tree = array();
         foreach($items as $k => $item){
             if(isset($items[$item[$pid]])){

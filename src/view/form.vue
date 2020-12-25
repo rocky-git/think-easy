@@ -50,6 +50,7 @@
                 formItemTags:[],
                 closeVisible:true,
                 closeWindow:false,
+                newWindow:false,
                 validates:[],
                 watchOldValue:[],
                 form:{$formData|raw},
@@ -165,7 +166,15 @@
                             title: '操作完成',
                             message: response.message,
                             type: 'success',
-                            duration: 1500
+                            duration: 1500,
+                            onClose:()=>{
+                                if(this.closeWindow){
+                                    window.close()
+                                }
+                                if(this.newWindow){
+                                    window.open(location.href, "", "fullscreen=yes")
+                                }
+                            }
                         })
                         if(response.data.url && response.data.url == 'back'){
                             this.$router.go(-1)
@@ -176,9 +185,7 @@
                             this.$emit('update:dialogVisible', false)
                             this.$emit('update:tableDataUpdate', true)
                         }
-                        if(this.closeWindow){
-                            window.close()
-                        }
+
                         if (this.refresh == 1) {
                             this.reload()
                         }
