@@ -32,7 +32,6 @@ class LineChart extends EchartAbstract
                 'left' => 10,
                 'right' => 10,
                 'bottom' => 20,
-                'top' => 30,
                 'containLabel' => true
             ],
             'tooltip' => [
