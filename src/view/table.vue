@@ -298,6 +298,7 @@
             },
             tableDataUpdate(val){
                 if(val){
+                    this.tableDataUpdate = false
                     this.requestPageData()
                 }
             },
