@@ -20,6 +20,7 @@ use think\model\relation\BelongsTo;
 use think\model\relation\BelongsToMany;
 use think\model\relation\HasMany;
 use think\model\relation\HasOne;
+use think\model\relation\MorphOne;
 use thinkEasy\model\SystemConfig;
 use thinkEasy\View;
 
@@ -224,10 +225,11 @@ class Form extends View
     /**
      * 布局
      * @param \Closure $closure
+     * @param string $title 标题
      */
-    public function layout(\Closure $closure)
+    public function layout(\Closure $closure,$title='')
     {
-        array_push($this->formItem, ['type' => 'layout', 'closure' => $closure]);
+        array_push($this->formItem, ['type' => 'layout', 'closure' => $closure,'title'=>$title]);
         return $this;
     }
 
@@ -330,7 +332,7 @@ class Form extends View
                             if (count($relationData) > 0) {
                                 $this->model->$field()->saveAll($relationData);
                             }
-                        } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo) {
+                        } elseif ($this->model->$field() instanceof HasOne || $this->model->$field() instanceof BelongsTo || $this->model->$field() instanceof MorphOne) {
                             $relationData = $this->saveData[$field];
                             if (is_null($id) || empty($this->data->$field)) {
                                 $this->model->$field()->save($relationData);
@@ -557,9 +559,13 @@ class Form extends View
                         $this->hasManyRelation = null;
                         break;
                     case 'layout':
-                        $this->layout = true;
-                        $formItemHtml = "<el-row>{$formItemHtml}</el-row>";
-                        $formItemHtml = '<el-row>' . $this->parseFormItem($formItemHtml) . '</el-row>';
+                         $this->layout = true;
+                        if (empty($formItem['title'])) {
+                            $title = '';
+                        } else {
+                            $title = "<div><h4 style='color: #999999;font-size: 14px'>{$formItem['title']}</h4></div>";
+                        }
+                        $formItemHtml .=  $title . '<el-row>' . $this->parseFormItem('') . '</el-row>';
                         $this->layout = false;
                         break;
                     case 'tabs':
