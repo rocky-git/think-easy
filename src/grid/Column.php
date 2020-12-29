@@ -633,7 +633,7 @@ EOF;
         } elseif (count($this->usings) > 0) {
             $html = '';
             foreach ($this->usings as $key => $value) {
-                $html = "<span style='font-size: 14px;' v-if=\"{$ifCondtion}\">--</span>";
+                $html .= "<span style='font-size: 14px;' v-if=\"{$ifCondtion}\">--</span>";
                 if (is_string($key)) {
                     $html .= "<span style='font-size: 14px;' v-else-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
                 } else {
