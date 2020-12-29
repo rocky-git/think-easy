@@ -138,8 +138,8 @@ class Column extends View
 
     /**
      * 弹出框
-     * @param $val 显示的内容
-     * @param $content 弹出内容
+     * @param string $val 显示的内容
+     * @param string $content 弹出内容
      * @param int $width 弹出宽度
      * @param string $placement 弹出方向
      * @return $this
@@ -193,7 +193,7 @@ class Column extends View
 
     /**
      * 对齐方式
-     * @param $align 左对齐 left/ 居中 center/ 右对齐 right
+     * @param string $align 左对齐 left/ 居中 center/ 右对齐 right
      */
     public function align($align)
     {
@@ -213,9 +213,9 @@ class Column extends View
 
     /**
      * 标签显示
-     * @param $color 标签颜色：success，info，warning，danger
-     * @param $theme 主题：dark，light，plain
-     * @param $size 尺寸:medium，small，mini
+     * @param string $color 标签颜色：success，info，warning，danger
+     * @param string$theme 主题：dark，light，plain
+     * @param string$size 尺寸:medium，small，mini
      */
     public function tag($color = '', $theme = 'dark', $size = 'mini')
     {
@@ -227,7 +227,7 @@ class Column extends View
      * 内容映射
      * @param array $usings 映射内容
      * @param array $tagColor 标签颜色
-     * @param tagTheme 标签颜色主题：dark，light，plain
+     * @param string tagTheme 标签颜色主题：dark，light，plain
      */
     public function using(array $usings, array $tagColor = [], $tagTheme = 'light')
     {
@@ -380,7 +380,7 @@ class Column extends View
      * @param int $width 宽度
      * @param int $height 高度
      * @param int $radius 圆角
-     * @param int $multi 是否显示多图
+     * @param bool $multi 是否显示多图
      * @return $this
      */
     public function image($width = 80, $height = 80, $radius = 5, $multi = false)
@@ -503,7 +503,7 @@ class Column extends View
 
     /**
      * 获取数据
-     * @param $data 行数据
+     * @param string $data 行数据
      * @param null $field 字段
      * @return |null
      */
@@ -600,7 +600,7 @@ EOF;
 
     /**
      * 占位栅格数，24栏占满
-     * @param $num 数量
+     * @param int $num 数量
      * @return $this
      */
     public function md($num = 3)
@@ -637,7 +637,7 @@ EOF;
                 if (is_string($key)) {
                     $html .= "<span style='font-size: 14px;' v-else-if=\"{$this->relationRowField} != undefined && {$this->rowField} == '{$key}'\">%s</span>";
                 } else {
-                    $$html .= "<span style='font-size: 14px;' v-else-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
+                    $html .= "<span style='font-size: 14px;' v-else-if='{$this->relationRowField} != undefined && {$this->rowField} == {$key}'>%s</span>";
                 }
                 if (isset($this->tagColor[$key])) {
                     $this->tag($this->tagColor[$key], $this->tagTheme);

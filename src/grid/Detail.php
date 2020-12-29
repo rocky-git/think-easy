@@ -47,7 +47,7 @@ class Detail extends View
 
     /**
      * 设置详情数据
-     * @param $id 详情id
+     * @param int $id 详情id
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -79,8 +79,8 @@ class Detail extends View
     }
     /**
      * 布局
-     * @param $title 标题
-     * @param $md 占列
+     * @param string $title 标题
+     * @param string $md 占列
      * @param \Closure $closure
      * @return $this
      */
@@ -93,8 +93,8 @@ class Detail extends View
      * 设置列
      * @Author: rocky
      * 2019/7/25 16:20
-     * @param $field 字段
-     * @param $label 标签
+     * @param string $field 字段
+     * @param string $label 标签
      * @return Column
      */
     public function column($field, $label)
@@ -107,8 +107,8 @@ class Detail extends View
     /**
      * 一对多
      * @param $relationMethod 一对多方法
-     * @param $title 标题
-     * @param $md 占列
+     * @param string $title 标题
+     * @param int $md 占列
      * @param \Closure $closure
      * @return $this
      */
@@ -121,8 +121,8 @@ class Detail extends View
      * 解析一对多
      * @Author: rocky
      * 2019/8/1 15:00
-     * @param $relationMethod 一对多关联方法
-     * @return string\
+     * @param string $relationMethod 一对多关联方法
+     * @return string
      */
     private function parsehasManData($relationMethod){
         foreach ($this->data->$relationMethod as $rowIndex=>$val){
@@ -140,8 +140,8 @@ class Detail extends View
 
     /**
      * 解析布局
-     * @param $title 标题
-     * @param $md 占列
+     * @param string $title 标题
+     * @param int $md 占列
      * @return string
      */
     private function paseLayout($title,$md){

@@ -20,14 +20,14 @@ class Watch implements ArrayAccess
     }
     /**
      * 显示
-     * @param $field 字段
+     * @param string $field 字段
      */
     public function hide($field){
         $this->hideField[] = $field;
     }
     /**
      * 隐藏
-     * @param $field 字段
+     * @param string  $field 字段
      */
     public function show($field){
         $this->showField[] = $field;
@@ -54,8 +54,8 @@ class Watch implements ArrayAccess
     }
     /**
      * 设置值
-     * @param $field 字段
-     * @param $value
+     * @param string $field 字段
+     * @param string $value
      */
     public function set($field, $value)
     {
