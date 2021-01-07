@@ -25,11 +25,11 @@ use thinkEasy\View;
 /**
  * Class Echarts
  * @package buildView
- * @method $this count($text, \Closure $query) 统计数量
- * @method $this max($text, $filed, \Closure $query) 统计最大值
- * @method $this avg($text, $field, \Closure $query) 统计平均值
- * @method $this sum($text, $field, \Closure $query) 统计总和
- * @method $this min($text, $field, \Closure $query) 统计最小值
+ * @method $this count(string $text, \Closure $query) 统计数量
+ * @method $this max(string $text, string $filed, \Closure $query) 统计最大值
+ * @method $this avg(string $text, string $field, \Closure $query) 统计平均值
+ * @method $this sum(string $text, string $field, \Closure $query) 统计总和
+ * @method $this min(string $text, string $field, \Closure $query) 统计最小值
  */
 class Echart extends View
 {
