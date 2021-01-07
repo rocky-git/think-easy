@@ -13,8 +13,8 @@ use think\Facade;
 /**
  * Class Quick
  * @package \thinkEasy\layout\Quick
- * @method \thinkEasy\layout\Quick create($title,$icon,$iconColor='') static 创建快捷入口
- * @method \thinkEasy\layout\Quick href($url) static 跳转链接
+ * @method \thinkEasy\layout\Quick create(string $title,string $icon,string $iconColor='') static 创建快捷入口
+ * @method \thinkEasy\layout\Quick href(string $url) static 跳转链接
  */
 class Quick extends Facade
 {

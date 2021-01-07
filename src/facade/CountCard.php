@@ -13,7 +13,7 @@ use think\Facade;
 /**
  * Class CountCard
  * @package \thinkEasy\layout\CountCard
- * @method string create($title,$currentTotal,$total,$icon,$iconColor='',$badge='日') static 创建统计卡片
+ * @method string create(string $title,int $currentTotal,int $total,string $icon,string $iconColor='',string $badge='日') static 创建统计卡片
  */
 class CountCard extends Facade
 {
