@@ -48,7 +48,7 @@ class Echart extends View
 
     /**
      * Echart constructor.
-     * @param $title 标题
+     * @param string $title 标题
      * @param string $type 图表类型 line折线，bar柱状 pie饼图 radar雷达图 funnel
      * @param string $height 图表高度
      */
@@ -82,7 +82,7 @@ class Echart extends View
     }
     /**
      * 设置表名数据源
-     * @param $table 模型或表名
+     * @param mixed $table 模型或表名
      * @param string $dateField 日期字段
      */
     public function table($table, $dateField = 'create_time')
@@ -164,7 +164,7 @@ class Echart extends View
     }
     /**
      * 分组
-     * @param $name 组名
+     * @param string $name 组名
      * @param \Closure $closure
      */
     public function group($name, \Closure $closure)

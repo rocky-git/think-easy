@@ -19,11 +19,13 @@ use thinkEasy\View;
 class CountCard extends View
 {
     /**
-     * @param $title 标题
-     * @param $currentTotal 当前统计数量
-     * @param $total    总统计数量
-     * @param $icon 图标
+     * @param string $title 标题
+     * @param int $currentTotal 当前统计数量
+     * @param int $total    总统计数量
+     * @param string $icon 图标
      * @param string $iconColor 图标颜色
+     * @param string $badge 右上的描述
+     * @param string $badgeType 描述背景色
      * @return $this
      */
     public function create($title, $currentTotal, $total, $icon, $iconColor = '',$badge ='日',$badgeType='primary')

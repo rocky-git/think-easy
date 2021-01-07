@@ -26,8 +26,8 @@ class Content extends View
     }
     /**
      * 添加一行
-     * @param Closure|String  $content 内容
-     * @param $span 栅格占据的列数,默认24
+     * @param mixed  $content 内容
+     * @param int $span 栅格占据的列数,默认24
      */
     public function row($content,$span = 24){
         $row = new Row();
@@ -42,9 +42,9 @@ class Content extends View
     }
     /**
      * 添加一行组件
-     * @param $component 组件
-     * @param $span 栅格占据的列数,默认24
-     * @param $name 组件名称标记
+     * @param mixed $component 组件
+     * @param int $span 栅格占据的列数,默认24
+     * @param string $name 组件名称标记
      */
     public function rowComponent($component,$span = 24,$name=''){
         $row = new Row();
@@ -54,9 +54,9 @@ class Content extends View
     }
     /**
      * 添加一行组件
-     * @param $url 组件url
-     * @param $span 栅格占据的列数,默认24
-     * @param $name 组件名称标记
+     * @param string $url 组件url
+     * @param int $span 栅格占据的列数,默认24
+     * @param string $name 组件名称标记
      */
     public function rowComponentUrl($url,$span = 24,$name=''){
         $row = new Row();

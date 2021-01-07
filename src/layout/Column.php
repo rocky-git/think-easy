@@ -34,8 +34,8 @@ class Column extends View
     }
     /**
      * 添加一行组件
-     * @param $component 组件
-     * @param $span 栅格占据的列数,默认24
+     * @param mixed$component 组件
+     * @param int $span 栅格占据的列数,默认24
      */
     public function rowComponent($component,$span = 24){
         $row = new Row();
@@ -45,8 +45,8 @@ class Column extends View
     }
     /**
      * 添加一行组件
-     * @param $url 组件url
-     * @param $span 栅格占据的列数,默认24
+     * @param string $url 组件url
+     * @param int $span 栅格占据的列数,默认24
      */
     public function rowComponentUrl($url,$span = 24){
         $row = new Row();
@@ -60,7 +60,7 @@ class Column extends View
 
     /**
      * 添加内容
-     * @param $html
+     * @param mixed $html
      */
     public function content($html){
         if($html instanceof Grid || $html instanceof Form || $html instanceof Detail || $html instanceof Table){
@@ -73,7 +73,7 @@ class Column extends View
     }
     /**
      * 栅格占据的列数
-     * @param $num 默认24
+     * @param int $num 默认24
      */
     public function span($num = 24){
         $this->setAttr(':span',$num);
@@ -85,21 +85,21 @@ class Column extends View
     }
     /**
      * 栅格左侧的间隔格数
-     * @param $num
+     * @param int $num
      */
     public function offset($num){
         $this->setAttr(':offset',$num);
     }
     /**
      * 栅格向右移动格数
-     * @param $num 默认24
+     * @param int $num 默认24
      */
     public function push($num){
         $this->setAttr(':push',$num);
     }
     /**
      * 栅格向左移动格数
-     * @param $num
+     * @param int $num
      */
     public function pull($num){
         $this->setAttr(':pull',$num);
@@ -107,8 +107,8 @@ class Column extends View
 
     /**
      * 点击切换组件
-     * @param $url 链接
-     * @param $name 组件名称标记
+     * @param string $url 链接
+     * @param string $name 组件名称标记
      */
     public function clickLink($url,$name){
         $this->clickLink = [$url,$name];
