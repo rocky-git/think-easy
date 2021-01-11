@@ -390,6 +390,7 @@ EOF;
                 $this->setRelation($relation, $relation);
             }
         }
+		 $column->tip();
         array_push($this->columns, $column);
         return $column;
     }
