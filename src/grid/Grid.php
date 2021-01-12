@@ -163,7 +163,7 @@ class Grid extends View
 </div>
 EOF;
             return $html;
-        })->width(50)->align('center');
+        })->width(100)->align('center');
     }
 
     /**
