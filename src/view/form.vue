@@ -40,6 +40,7 @@
         data(){
             let _self = this
             return {
+                dataFormSave:false,
                 tableData:[],
                 loading:false,
                 auto:'',
@@ -66,6 +67,7 @@
             },
             form:{
               handler(val) {
+                  this.dataFormSave = false
                   this.$emit('update:dataIsSave', false)
               },
               deep:true
@@ -161,6 +163,7 @@
                 }).then(response=>{
                     this.loading = false
                     if(response.code == 200){
+                        this.dataFormSave = true
                         this.$emit('update:dataIsSave',true)
                         this.$notify({
                             title: '操作完成',
