@@ -94,7 +94,7 @@ class Grid extends View
     protected $headerAlign = 'left';
     //初始化
     protected static $init = null;
-
+    protected $closureColumn = false;
     public function __construct(Model $model)
     {
 
@@ -163,7 +163,7 @@ class Grid extends View
 </div>
 EOF;
             return $html;
-        })->width(50)->align('center');
+        })->width(100)->align('center');
     }
 
     /**
@@ -369,7 +369,9 @@ EOF;
             $column->align($this->headerAlign);
             $gridColumn = $this->columns;
             $this->columns = [];
+            $this->closureColumn = true;
             call_user_func_array($field,[$this]);
+            $this->closureColumn = false;
             $column->setChild($this->columns);
             $this->columns = $gridColumn;
         }else{
@@ -389,6 +391,10 @@ EOF;
             } else {
                 $this->setRelation($relation, $relation);
             }
+
+        }
+        if(!$this->closureColumn){
+            $column->tip();
         }
         array_push($this->columns, $column);
         return $column;
