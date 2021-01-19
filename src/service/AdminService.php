@@ -9,7 +9,7 @@
 namespace thinkEasy\service;
 
 use thinkEasy\Service;
-
+use think\facade\Cache;
 /**
  * 系统权限服务
  * Class AuthService
@@ -128,9 +128,15 @@ class AdminService extends Service
      */
     public function permissions()
     {
+        $permissionsKey = 'eadmin_permissions'.$this->id();
+        $newNodes = Cache::get($permissionsKey);
+        if($newNodes){
+            return $newNodes;
+        }
         $nodes = NodeService::instance()->all();
-        if($this->user()){
+        if($this->id()){
             $permissions = $this->user()->permissions();
+
         }else{
             $permissions = [];
         }
@@ -146,7 +152,7 @@ class AdminService extends Service
                 $newNodes[] = $nodes[$key];
             }
         }
-
+        Cache::tag('eadmin_permissions')->set($permissionsKey,$newNodes);
         return $newNodes;
     }
 
