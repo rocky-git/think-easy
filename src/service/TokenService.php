@@ -176,14 +176,17 @@ class TokenService extends Service
             $this->errorCode(40000, '请先登陆再访问');
         }
         $data = $this->decode($token);
-		$password = AdminModel::where('id', $data['id'])->value('password');
+        $password = '';
+        if (isset($data['id'])) {
+			$password = AdminModel::where('id', $data['id'])->value('password');
+		}
 		if ($data === false) {
 			$this->errorCode(40001, '授权认证失败');
 		} elseif (Cache::has(md5($token))) {
 			$this->errorCode(40003, '账号已在其他地方登陆');
 		} elseif ($data['expire'] < time()) {
 			$this->errorCode(40002, '认证身份过期，请重新登陆');
-		} elseif ($data['password'] != $password) {
+		} elseif (isset($data['id']) && $data['password'] != $password) {
 			$this->errorCode(40002, '密码不一致请重新登录');
 		}
         return true;
