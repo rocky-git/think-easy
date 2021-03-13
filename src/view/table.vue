@@ -439,7 +439,7 @@
                         }
                     })
                     if(sums[index]){
-                        sums[index] += data[0][column.property + 'totalText']
+                        sums[index] = data[0][column.property + 'totalText'] + '：' + sums[index].toFixed(2)
                     }
                 })
                 return sums;
