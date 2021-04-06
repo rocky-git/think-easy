@@ -711,6 +711,8 @@ EOF;
                 }
             } elseif (Request::get('export_type') == 'select') {
                 $this->data = $this->model->whereIn($this->model->getPk(), Request::get('ids'))->select();
+            }else{
+                $this->data = $this->db->page(Request::get('page', 1), Request::get('size', $this->pageLimit))->select();
             }
             $this->parseColumn();
             $excel->rows($this->exportData)->export();
@@ -864,8 +866,6 @@ EOF;
             $count = $this->getRowTotal();
             $this->table->setVar('pageTotal', $count);
         }
-        //如果是导出数据
-        $this->exportData();
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
@@ -890,7 +890,8 @@ EOF;
                 $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow')->closeExport();
             }
         }
-
+        //如果是导出数据
+        $this->exportData();
         //权限控制按钮
         $this->permissionCheck();
         //解析列
