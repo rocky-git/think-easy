@@ -864,6 +864,8 @@ EOF;
             $count = $this->getRowTotal();
             $this->table->setVar('pageTotal', $count);
         }
+        //如果是导出数据
+        $this->exportData();
         //分页
         if ($this->isPage) {
             $this->table->setVar('pageHide', 'false');
@@ -888,8 +890,7 @@ EOF;
                 $this->column($this->softDeleteField, '删除时间')->setAttr('v-if', 'deleteColumnShow')->closeExport();
             }
         }
-        //如果是导出数据
-        $this->exportData();
+
         //权限控制按钮
         $this->permissionCheck();
         //解析列

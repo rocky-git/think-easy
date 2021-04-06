@@ -410,8 +410,9 @@
                     return false
                 }
                 let param = ''
-                for(field in this.globalRequestParams) {
-                    param += '&'+field+'=' +this.globalRequestParams[field]
+                let requestParam = Object.assign(this.form,this.globalRequestParams)
+                for(field in requestParam) {
+                    param += '&'+field+'=' +requestParam[field]
                 }
                 if(type == 0){
                     location.href = "{$exportUrl|raw|default=''}&build_request_type=export&export_type=all" + param
