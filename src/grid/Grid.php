@@ -697,7 +697,7 @@ EOF;
             if (Request::get('export_type') == 'all') {
                 set_time_limit(0);
                 if ($excel instanceof Excel) {
-					$this->data = $this->db->removeOption('page')->select()->toArray();
+					$this->data = $this->db->removeOption('limit')->removeOption('page')->select()->toArray();
 					$this->parseColumn();
 					$excel->rows($this->exportData)->export();
                 } else {
