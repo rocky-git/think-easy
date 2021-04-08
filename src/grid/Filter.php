@@ -611,6 +611,9 @@ class Filter extends View
                     $this->db->whereMonth($dbField, $data[$field]);
                     break;
                 case 'dateBetween':
+					if (is_string($data[$field])) {
+						$data[$field] = explode(',', $data[$field]);
+					}
                     list($startTime, $endTime) = $data[$field];
                     $this->db->whereBetween($dbField, [$startTime, $endTime]);
                     break;
