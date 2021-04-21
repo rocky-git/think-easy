@@ -165,7 +165,7 @@ class Grid extends View
 </div>
 EOF;
             return $html;
-        })->width(50)->align('center');
+        })->width(50)->align('center')->closeExport();
     }
 
     /**
